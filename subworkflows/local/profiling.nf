@@ -15,6 +15,7 @@ include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
 include { MOTUS_PROFILE                                 } from '../../modules/nf-core/motus/profile/main'
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ                } from '../../modules/nf-core/krakenuniq/preloadedkrakenuniq/main'
+include { QIIME_QIIME                                   } from '../../modules/nf-core/qiime/qiime/main'
 
 workflow PROFILING {
     take:
@@ -26,6 +27,7 @@ workflow PROFILING {
     ch_multiqc_files        = Channel.empty()
     ch_raw_classifications  = Channel.empty()
     ch_raw_profiles         = Channel.empty()
+    ch_barplot_comp         = Channel.empty()
 
 /*
         COMBINE READS WITH POSSIBLE DATABASES
@@ -252,6 +254,10 @@ workflow PROFILING {
         METAPHLAN4_METAPHLAN4 ( ch_input_for_metaphlan4.reads, ch_input_for_metaphlan4.db )
         ch_versions        = ch_versions.mix( METAPHLAN4_METAPHLAN4.out.versions.first() )
         ch_raw_profiles    = ch_raw_profiles.mix( METAPHLAN4_METAPHLAN4.out.profile )
+
+        QIIME_QIIME( METAPHLAN4_METAPHLAN4.out.biom )
+        ch_barplot_comp = ch_barplot_comp.mix(QIIME_QIIME.out.composition)
+        ch_versions     = ch_versions.mix( QIIME_QIIME.out.versions.first() )
 
     }
 
