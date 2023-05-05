@@ -1,27 +1,37 @@
 process QIIME_QIIME {
     label 'process_medium'
     
-    conda "bioconda::qiime=1.9.1"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/qiime:1.9.1--py_3' :
-        'quay.io/biocontainers/qiime:1.9.1--py_3' }"
+    container 'quay.io/qiime2/core:2023.2'
     
     input:
-    tuple val(meta), path(biom)
+    tuple val(meta), path(profile)
+    path(taxonomy)
 
     output:
-    path('qiime_summarize_taxa/*.txt')   , emit: composition
-    path('qiime_summarize_taxa/*.biom')
-    path "versions.yml"                  , emit: versions
+    path('*.csv')   , emit: composition
+    path "versions.yml"                        , emit: versions
     
 
     script:
-    """
-    summarize_taxa.py -i ${biom} -o qiime_summarize_taxa/  
+    def prefix = task.ext.prefix ?: "${meta.id}"
     
+    """
+    qiime tools import --input-path $profile --type 'FeatureTable[Frequency]' --input-format BIOMV100Format --output-path ${prefix}_qiime_relfreq_table.qza
+    qiime tools import --input-path $taxonomy --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path ${prefix}_qiime_taxonomy.qza
+
+    qiime taxa barplot --i-table ${prefix}_qiime_relfreq_table.qza --i-taxonomy ${prefix}_qiime_taxonomy.qza --o-visualization ${prefix}_visualization.qzv
+    qiime tools export --input-path ${prefix}_visualization.qzv --output-path ${prefix}_exported_QIIME_barplot
+    
+    array=( \$( seq 1 7) )
+
+    for i in \${array[@]}
+    do
+        mv ${prefix}_exported_QIIME_barplot/level-\$i.csv ${prefix}_level-\$i.csv
+    done 
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        qiime: \$(print_qiime_config.py --version 2>&1 | sed 's/Version: print_qiime_config.py //')
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
     END_VERSIONS
     """
 }

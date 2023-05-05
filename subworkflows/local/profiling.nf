@@ -15,7 +15,9 @@ include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
 include { MOTUS_PROFILE                                 } from '../../modules/nf-core/motus/profile/main'
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ                } from '../../modules/nf-core/krakenuniq/preloadedkrakenuniq/main'
+include { BIOMPREP_FORQIIME                             } from '../../modules/nf-core/qiime/biomprep_forqiime/main'
 include { QIIME_QIIME                                   } from '../../modules/nf-core/qiime/qiime/main'
+
 
 workflow PROFILING {
     take:
@@ -255,9 +257,13 @@ workflow PROFILING {
         ch_versions        = ch_versions.mix( METAPHLAN4_METAPHLAN4.out.versions.first() )
         ch_raw_profiles    = ch_raw_profiles.mix( METAPHLAN4_METAPHLAN4.out.profile )
 
-        QIIME_QIIME( METAPHLAN4_METAPHLAN4.out.biom )
-        ch_barplot_comp = ch_barplot_comp.mix(QIIME_QIIME.out.composition)
+        BIOMPREP_FORQIIME( METAPHLAN4_METAPHLAN4.out.profile )
+        ch_versions     = ch_versions.mix( BIOMPREP_FORQIIME.out.versions.first() )
+ 
+        QIIME_QIIME( BIOMPREP_FORQIIME.out.mpa_biomprofile, BIOMPREP_FORQIIME.out.taxonomy)
         ch_versions     = ch_versions.mix( QIIME_QIIME.out.versions.first() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_QIIME.out.composition.collect().ifEmpty([]) )
+        ch_barplot_comp = ch_barplot_comp.mix(BIOMPREP_FORQIIME.out.taxonomy)
 
     }
 
