@@ -8,7 +8,8 @@ process QIIME_QIIME {
     path(taxonomy)
 
     output:
-    path('*.csv')   , emit: composition
+    path('*exported_QIIME_barplot/*')   , emit: qiime_export
+    path('*exported_QIIME_barplot/*.csv') , emit: composition
     path "versions.yml"                        , emit: versions
     
 
@@ -26,9 +27,9 @@ process QIIME_QIIME {
 
     for i in \${array[@]}
     do
-        mv ${prefix}_exported_QIIME_barplot/level-\$i.csv ${prefix}_level-\$i.csv
-    done 
-
+        qiimebarplot_tomultiqc.py -d ${prefix}_exported_QIIME_barplot/level-\$i.csv -p "${prefix}" -l \$i
+    done
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')

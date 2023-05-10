@@ -51,6 +51,7 @@ if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: [nf-core/taxprofi
     CONFIG FILES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+def mqcPlugins = Channel.fromPath("${baseDir}/assets/mqc_plugins/", checkIfExists: true)
 
 ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
@@ -305,7 +306,8 @@ workflow TAXPROFILER {
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList()
+        ch_multiqc_logo.toList(),
+        mqcPlugins
     )
     multiqc_report = MULTIQC.out.report.toList()
 }
