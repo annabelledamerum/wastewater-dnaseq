@@ -32,6 +32,7 @@ process METAPHLAN4_METAPHLAN4 {
 
     metaphlan \\
         --nproc $task.cpus \\
+        -t rel_ab_w_read_stats \\
         $input_type \\
         $input_data \\
         $args \\
