@@ -11,7 +11,7 @@ setup(
     description="Custom MultiQC plugins for zymobiomics pipeline",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['multiqc==1.9'],
+    install_requires=['multiqc==1.14'],
     entry_points={
         'multiqc.templates.v1': [
             'default = multiqc.templates.default'

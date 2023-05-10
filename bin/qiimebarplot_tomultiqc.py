@@ -8,7 +8,7 @@ import re
 def qiimebarplot_tomultiqc(table, prefix, levelnum):
     f = pd.read_csv(table, sep=",")
     #Drop first unecessary column
-    f = f.iloc[:,2:]
+    f = f.iloc[:,1:]
     f = f.transpose()
     f["#OTU ID"] = f.index
     f.columns = [prefix, "#OTU ID"]

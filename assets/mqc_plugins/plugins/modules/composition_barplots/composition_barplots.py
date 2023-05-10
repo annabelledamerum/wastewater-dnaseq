@@ -24,7 +24,7 @@ class MultiqcModule(BaseMultiqcModule):
         self.comp_data = dict()
         self.comp_keys = list()
         taxonomy_level = {"level-7.csv":"Species","level-6.csv":"Genus","level-5.csv":"Family","level-4.csv":"Order","level-3.csv":"Class","level-2.csv":"Phylum", "level-1.csv":"Kingdom"}
-        level_order = ["level-2.csv","level-3.csv","level-4.csv","level-5.csv","level-6.csv","level-7.csv","level-8.csv"]
+        level_order = ["level-1.csv", "level-2.csv","level-3.csv","level-4.csv","level-5.csv","level-6.csv","level-7.csv"]
         html = """<style> li:hover {cursor: pointer;}
                 </style>"""
         button = ""

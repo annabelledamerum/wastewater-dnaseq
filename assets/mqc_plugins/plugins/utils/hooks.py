@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import logging
 
-from multiqc import config
-from multiqc.utils import report
+from multiqc.utils import report, config
 
 log = logging.getLogger('multiqc')
 
