@@ -14,6 +14,7 @@ def metaphlan_profileparse(headertext, mpa_profiletable, label):
     #For relative abundance: remove all entries that are not on species level
     profile = pd.read_csv(mpa_profiletable, sep="\t")
     profile = profile[["clade_name", "relative_abundance"]]
+    profile.columns = ["clade_name",label]
     profile = profile[profile["clade_name"].str.contains("s__") == True]
     profile = profile[profile["clade_name"].str.contains("t__") == False]
     profile.to_csv((label+"_parsed_mpaprofile.txt"), sep="\t", index=False)

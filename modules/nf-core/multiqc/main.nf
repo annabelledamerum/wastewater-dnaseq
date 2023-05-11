@@ -29,7 +29,7 @@ process MULTIQC {
         $extra_config \\
         -m composition_barplots \\
         -m fastqc \\
-        -m bbmap \\
+        -m bbduk \\
         -m custom_content \\
         .
 
