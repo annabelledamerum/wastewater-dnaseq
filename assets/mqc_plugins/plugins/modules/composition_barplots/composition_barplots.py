@@ -48,7 +48,7 @@ class MultiqcModule(BaseMultiqcModule):
 
         html_new = ""
         for s_name, df in final_dict.items():
-            type=list(df.columns[0:len(df.columns)])
+            type=list(df.columns[1:len(df.columns)])
             df=df.sort_values(by=type, ascending=False, kind='stable', ignore_index=True)
             df=df.set_index('#OTU ID', drop = True )
 
@@ -121,6 +121,7 @@ class MultiqcModule(BaseMultiqcModule):
                 'cpswitch_c_active': False,
                 'xlab': 'Samples',                           # X axis label
                 'ylab': 'Percentage',
+                'ymin': 0,
                 'ymax': 100,
                 'labelSize': 8,
                 'tt_decimals': 3,
