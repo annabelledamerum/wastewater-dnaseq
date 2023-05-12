@@ -1,0 +1,12 @@
+# You can use this file to create a conda environment for this pipeline:
+# conda env create -f environment.yml
+name: zymobiomics_shotgun
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  ## conda-forge packages
+  - pandas=2.0.1
+  - multiqc=1.14
+  - seaborn=0.12.2

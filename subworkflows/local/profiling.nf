@@ -16,8 +16,9 @@ include { DIAMOND_BLASTX                                } from '../../modules/nf
 include { MOTUS_PROFILE                                 } from '../../modules/nf-core/motus/profile/main'
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ                } from '../../modules/nf-core/krakenuniq/preloadedkrakenuniq/main'
 include { BIOMPREP_FORQIIME                             } from '../../modules/nf-core/qiime/biomprep_forqiime/main'
-include { QIIME_QIIME                                   } from '../../modules/nf-core/qiime/qiime/main'
-
+include { QIIME_TAXMERGE                                } from '../../modules/nf-core/qiime/taxmerge/main'
+include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
+include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
 
 workflow PROFILING {
     take:
@@ -29,7 +30,6 @@ workflow PROFILING {
     ch_multiqc_files        = Channel.empty()
     ch_raw_classifications  = Channel.empty()
     ch_raw_profiles         = Channel.empty()
-    ch_barplot_comp         = Channel.empty()
 
 /*
         COMBINE READS WITH POSSIBLE DATABASES
@@ -259,11 +259,13 @@ workflow PROFILING {
 
         BIOMPREP_FORQIIME( METAPHLAN4_METAPHLAN4.out.profile )
         ch_versions     = ch_versions.mix( BIOMPREP_FORQIIME.out.versions.first() )
+
+        QIIME_TAXMERGE( BIOMPREP_FORQIIME.out.taxonomy.collect() )
+        QIIME_IMPORT ( BIOMPREP_FORQIIME.out.mpa_biomprofile )
  
-        QIIME_QIIME( BIOMPREP_FORQIIME.out.mpa_biomprofile, BIOMPREP_FORQIIME.out.taxonomy)
-        ch_versions     = ch_versions.mix( QIIME_QIIME.out.versions.first() )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_QIIME.out.composition.collect().ifEmpty([]) )
-        ch_barplot_comp = ch_barplot_comp.mix(BIOMPREP_FORQIIME.out.taxonomy)
+        QIIME_BARPLOT( QIIME_IMPORT.out.mergedbiom_qza.collect(), QIIME_TAXMERGE.out.taxonomy)
+        ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions.first() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
     }
 

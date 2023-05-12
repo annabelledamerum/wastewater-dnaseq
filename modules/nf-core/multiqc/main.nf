@@ -1,16 +1,12 @@
 process MULTIQC {
     label 'process_single'
 
-    conda "bioconda::multiqc=1.14"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/multiqc:1.14--pyhdfd78af_0' :
-        'quay.io/biocontainers/multiqc:1.14--pyhdfd78af_0' }"
-
     input:
     path  multiqc_files, stageAs: "?/*"
     path(multiqc_config)
     path(extra_multiqc_config)
     path(multiqc_logo)
+    path "multiqc_custom_plugins"
 
     output:
     path "*multiqc_report.html", emit: report
@@ -31,6 +27,10 @@ process MULTIQC {
         $args \\
         $config \\
         $extra_config \\
+        -m composition_barplots \\
+        -m fastqc \\
+        -m bbduk \\
+        -m custom_content \\
         .
 
     cat <<-END_VERSIONS > versions.yml
