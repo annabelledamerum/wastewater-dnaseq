@@ -10,6 +10,7 @@ include { BRACKEN_BRACKEN                               } from '../../modules/nf
 include { CENTRIFUGE_CENTRIFUGE                         } from '../../modules/nf-core/centrifuge/centrifuge/main'
 include { CENTRIFUGE_KREPORT                            } from '../../modules/nf-core/centrifuge/kreport/main'
 include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf-core/metaphlan4/metaphlan4/main'
+include { METAPHLAN4_UNMAPPED                           } from '../../modules/nf-core/metaphlan4/unmapped/main'
 include { KAIJU_KAIJU                                   } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf-core/kaiju/kaiju2table/main'
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
@@ -18,7 +19,9 @@ include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ                } from '../../modules/nf
 include { BIOMPREP_FORQIIME                             } from '../../modules/nf-core/qiime/biomprep_forqiime/main'
 include { QIIME_TAXMERGE                                } from '../../modules/nf-core/qiime/taxmerge/main'
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
+include { QIIME_ALPHA                                   } from '../../modules/nf-core/qiime/alpha/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
+
 
 workflow PROFILING {
     take:
@@ -260,13 +263,18 @@ workflow PROFILING {
         BIOMPREP_FORQIIME( METAPHLAN4_METAPHLAN4.out.profile )
         ch_versions     = ch_versions.mix( BIOMPREP_FORQIIME.out.versions.first() )
 
+        METAPHLAN4_UNMAPPED( BIOMPREP_FORQIIME.out.mpa_info.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( METAPHLAN4_UNMAPPED.out.json.ifEmpty([]))
+
         QIIME_TAXMERGE( BIOMPREP_FORQIIME.out.taxonomy.collect() )
         QIIME_IMPORT ( BIOMPREP_FORQIIME.out.mpa_biomprofile )
  
-        QIIME_BARPLOT( QIIME_IMPORT.out.mergedbiom_qza.collect(), QIIME_TAXMERGE.out.taxonomy)
+        QIIME_BARPLOT( QIIME_IMPORT.out.relabun_mergedbiom_qza.collect(), QIIME_TAXMERGE.out.taxonomy)
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
+        QIIME_ALPHA( QIIME_IMPORT.out.absabun_mergedbiom_qza.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHA.out.mqc_alpha.collect().ifEmpty([]) )
     }
 
     if ( params.run_kaiju ) {
