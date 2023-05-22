@@ -13,7 +13,7 @@ def mqc_qiimealpha(alphatable):
     description = "The following bargraph provides the alpha diversity Shannon index calculated by QIIME for every sample"
 
     alpha_mqc = {
-        'id' : 'alpha chart',
+        'id' : 'individ_alpha_barchart',
         'section_name' : 'Shannon Alpha Diversity',
         'description': description,
         'plot_type'  : 'bargraph',
@@ -41,4 +41,3 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--alphadiversity", dest="alphatsv", type=str, help="qiime output alpha diversity measurements")
     args = parser.parse_args()
     mqc_qiimealpha(args.alphatsv)
-

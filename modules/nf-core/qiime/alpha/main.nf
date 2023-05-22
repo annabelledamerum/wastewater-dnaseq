@@ -1,24 +1,26 @@
 process QIIME_ALPHA {
     label 'process_low'
-    
+    tag "${vectors.baseName}"
+
     container 'quay.io/qiime2/core:2023.2'
-    
+
     input:
-    path(qza)
-
-    output:
-    path('*allsamples_alpha_export/alpha-diversity.tsv')   , emit: allsamplesalpha
-    path('*alphachart_mqc.json'), emit: mqc_alpha
+    path(vectors)
+    path(group_metadata)
     
+    output:
+    path("alpha_diversity/*.tsv"), optional:true, emit: metadata_tsv 
 
-    script:   
+    script:
     """
-    qiime feature-table merge --i-tables $qza --o-merged-table allsamples_mergedqiime.qza 
+    qiime diversity alpha-group-significance \
+        --i-alpha-diversity ${vectors.baseName}.qza \
+        --m-metadata-file $group_metadata \
+        --o-visualization ${vectors.baseName}_vis.qzv
 
-    qiime diversity alpha --i-table allsamples_mergedqiime.qza --p-metric 'shannon' --o-alpha-diversity allsamples_alpha.qza
- 
-    qiime tools export --input-path allsamples_alpha.qza --output-path allsamples_alpha_export
+    qiime tools export --input-path ${vectors.baseName}_vis.qzv --output-path "alpha_diversity/${vectors.baseName}"
 
-    display_qiimealpha_mqc.py -a allsamples_alpha_export/alpha-diversity.tsv
+    mv ${vectors.baseName}_vis.qzv alpha_diversity/${vectors.baseName}_alpha.qzv
+    cp "alpha_diversity/${vectors.baseName}/metadata.tsv" "alpha_diversity/${vectors.baseName}.tsv"
     """
 }

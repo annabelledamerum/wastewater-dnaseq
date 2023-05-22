@@ -23,6 +23,7 @@ def display_unmapped_mpareads(info):
                 reads_unaligned = int(reads_processed) - int(reads_aligned)
             aligned_unaligned = pd.DataFrame([[reads_aligned, reads_unaligned]], index=[samplename], columns=["aligned", "unaligned"])
             mpa_readstats = pd.concat([mpa_readstats, aligned_unaligned], axis = 0)
+            mpa_readstats["aligned"].to_csv("allsamples_alignedreads.csv")
 
         mpa_readstats_json = mpa_readstats.to_json(orient="index")
         mpa_readstats_parsed = json.loads(mpa_readstats_json)

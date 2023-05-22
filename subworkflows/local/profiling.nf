@@ -19,14 +19,16 @@ include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ                } from '../../modules/nf
 include { BIOMPREP_FORQIIME                             } from '../../modules/nf-core/qiime/biomprep_forqiime/main'
 include { QIIME_TAXMERGE                                } from '../../modules/nf-core/qiime/taxmerge/main'
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
-include { QIIME_ALPHA                                   } from '../../modules/nf-core/qiime/alpha/main'
+include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
-
+include { QIIME_ALPHA                                   } from '../../modules/nf-core/qiime/alpha/main'
+include { QIIME_MQCPLOT                                 } from '../../modules/nf-core/qiime/mqcplot/main'
 
 workflow PROFILING {
     take:
     reads // [ [ meta ], [ reads ] ]
     databases // [ [ meta ], path ]
+    groups // group_metadata.csv
 
     main:
     ch_versions             = Channel.empty()
@@ -42,7 +44,7 @@ workflow PROFILING {
     ch_input_for_profiling = reads
             .map {
                 meta, reads ->
-                    [meta + [id: "${meta.id}${meta.single_end ? '_se' : '_pe'}"], reads]
+                    [meta, reads]
             }
             .combine(databases)
             .branch {
@@ -273,8 +275,11 @@ workflow PROFILING {
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
-        QIIME_ALPHA( QIIME_IMPORT.out.absabun_mergedbiom_qza.collect() )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHA.out.mqc_alpha.collect().ifEmpty([]) )
+        QIIME_DIVERSITYCORE( QIIME_IMPORT.out.absabun_mergedbiom_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals, groups )
+
+        QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), groups )
+        QIIME_MQCPLOT( groups, QIIME_ALPHA.out.metadata_tsv.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_MQCPLOT.out.mqc_plot.collect() )
     }
 
     if ( params.run_kaiju ) {

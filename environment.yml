@@ -4,9 +4,14 @@ name: zymobiomics_shotgun
 channels:
   - conda-forge
   - bioconda
+  - qiime2
   - defaults
 dependencies:
   ## conda-forge packages
-  - pandas=2.0.1
-  - multiqc=1.14
-  - seaborn=0.12.2
+  - pandas=2.0.1=py38h01efb38_1
+  - multiqc=1.14=pyhdfd78af_0
+  - seaborn=0.12.2=hd8ed1ab_0
+  - plotly=5.14.1=pyhd8ed1ab_0
+  - qiime2=2023.2.0=py38_0
+  - q2cli=2023.2.0=py38_0
+  - python=3.8.16=he550d4f_1_cpython

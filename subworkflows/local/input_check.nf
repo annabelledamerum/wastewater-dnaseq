@@ -31,6 +31,7 @@ workflow INPUT_CHECK {
     fastq = fastq ?: []                       // channel: [ val(meta), [ reads ] ]
     nanopore = nanopore ?: []                 // channel: [ val(meta), [ reads ] ]
     fasta = fasta ?: []                       // channel: [ val(meta), fasta ]
+    groups = SAMPLESHEET_CHECK.out.grouping // channel: [ group_metadata.csv]
     versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
