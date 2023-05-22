@@ -5,7 +5,8 @@ import os
 import sys
 import errno
 import argparse
-
+import re
+import pandas as pd
 
 def parse_args(args=None):
     Description = "Reformat nf-core/taxprofiler samplesheet file and check its contents."
@@ -72,7 +73,7 @@ def check_samplesheet(file_in, file_out):
     sample_mapping_dict = {}
     with open(file_in, "r") as fin:
         ## Check header
-        MIN_COLS = 4
+        MIN_COLS = 5
         HEADER = [
             "sample",
             "run_accession",
@@ -80,6 +81,7 @@ def check_samplesheet(file_in, file_out):
             "fastq_1",
             "fastq_2",
             "fasta",
+            "group"
         ]
         header = [x.strip('"') for x in fin.readline().strip().split(",")]
 
@@ -99,6 +101,8 @@ def check_samplesheet(file_in, file_out):
             header_locs[i] = header.index(i)
 
         ## Check sample entries
+        groups = []
+        labels = []
         for line in fin:
             ## Pull out only relevant columns for downstream checking
             line_parsed = [x.strip().strip('"') for x in line.strip().split(",")]
@@ -129,10 +133,28 @@ def check_samplesheet(file_in, file_out):
                 fastq_1,
                 fastq_2,
                 fasta,
+                group
             ) = lspl[: len(HEADER)]
             sample = sample.replace(" ", "_")
+            legal_pattern = r"^[a-zA-Z][a-zA-Z0-9_]*$"
+            illegal_patterns = ["_tophat", "ReadsPerGene", "_star_aligned", "_fastqc", "_counts", "Aligned", "_slamdunk", "_bismark", "_SummaryStatistics", \
+                        "_duprate", "_vep", "ccs", "_NanoStats", "_R1", "_R2", "_trimmed", "_val", "_mqc", "short_summary_", "_summary", "_matrix", \
+                        r"_$", r"^R1", r"^R2", "_isomiRs_results", "_deseq2_results", "_dinucleotide_frequency", "_rseqc"]
             if not sample:
                 print_error("Sample entry has not been specified!", "Line", line)
+            if sample:
+                assert re.match(legal_pattern, sample), "Sample label {} contains illegal characters or does not start with letters!".format(sample)
+                for phrase in illegal_patterns:
+                    assert re.search(phrase, sample) == None, "Sample label {} contains file phrase(s) that will be automatically filtered out by MultiQC in the final report. Please choose a different label.".format(sample)
+                assert sample not in labels, "Duplicate sample label {}".format(sample)
+                labels.append(sample)
+
+            if group:
+                assert re.match(legal_pattern, group), "Group label {} contains illegal characters or does not start with letters!".format(group)
+                for phrase in illegal_patterns:
+                    assert re.search(phrase, group) == None, "Group label {} contains file phrase(s) that may be automatically filtered out by MultiQC in the final report. Please choose a different label.".format(group)
+                groups.append(group)
+                assert len(groups)==0 or len(groups) == len(labels), "Group label(s) missing in some but not all samples!"
 
             ## Check FastQ file extension
             for fastq in [fastq_1, fastq_2]:
@@ -190,6 +212,8 @@ def check_samplesheet(file_in, file_out):
                 )
             else:
                 print_error("Invalid combination of columns provided!", "Line", line)
+            
+            sample_info.append(group)
 
             ## Create sample mapping dictionary = { sample: [ run_accession, instrument_platform, single_end, fastq_1, fastq_2 , fasta ] }
             if sample not in sample_mapping_dict:
@@ -209,6 +233,7 @@ def check_samplesheet(file_in, file_out):
         "fastq_1",
         "fastq_2",
         "fasta",
+        "group"
     ]
     if len(sample_mapping_dict) > 0:
         out_dir = os.path.dirname(file_out)
@@ -221,6 +246,10 @@ def check_samplesheet(file_in, file_out):
     else:
         print_error("No entries to process!", "Samplesheet: {}".format(file_in))
 
+    metadata = pd.read_csv(file_out)
+    metadata = metadata[["sample", "group"]]
+    metadata.columns = ["sampleid", "group"]
+    metadata.to_csv("group_metadata.csv", sep="\t", index=False)
 
 def main(args=None):
     args = parse_args(args)

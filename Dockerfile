@@ -10,4 +10,6 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 RUN conda activate zymobiomics_shotgun && cd /opt/mqc_plugins && python setup.py install
 
-ENV PATH /opt/conda/envs/zymobiomics_shotgun/bin:$PATH
+ENV PATH "/opt/conda/envs/zymobiomics_shotgun/bin:$PATH"
+
+RUN echo "export PATH=/opt/conda/envs/zymobiomics_shotgun/bin:$PATH" >> /root/.bashrc
