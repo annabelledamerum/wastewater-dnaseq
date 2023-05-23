@@ -1,4 +1,4 @@
-process QIIME_MQCPLOT {
+process QIIME_ALPHAPLOT {
 
     input:
     path metadata
