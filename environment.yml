@@ -15,3 +15,7 @@ dependencies:
   - qiime2=2023.2.0=py38_0
   - q2cli=2023.2.0=py38_0
   - python=3.8.16=he550d4f_1_cpython
+  - r-base=4.2.3=hfabd6f2_3
+  - r-data.table=1.14.8=r42h133d619_0
+  - r-dplyr=1.1.2=r42ha503ecb_0
+  - scikit-learn=1.2.2=py38hd4b6e60_1

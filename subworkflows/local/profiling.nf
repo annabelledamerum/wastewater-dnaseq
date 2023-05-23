@@ -22,7 +22,9 @@ include { QIIME_IMPORT                                  } from '../../modules/nf
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
 include { QIIME_ALPHA                                   } from '../../modules/nf-core/qiime/alpha/main'
-include { QIIME_MQCPLOT                                 } from '../../modules/nf-core/qiime/mqcplot/main'
+include { QIIME_BETA                                    } from '../../modules/nf-core/qiime/beta/main'
+include { QIIME_BETAPLOT                                } from '../../modules/nf-core/qiime/betaplot/main'
+include { QIIME_ALPHAPLOT                                 } from '../../modules/nf-core/qiime/alphaplot/main'
 
 workflow PROFILING {
     take:
@@ -277,9 +279,15 @@ workflow PROFILING {
 
         QIIME_DIVERSITYCORE( QIIME_IMPORT.out.absabun_mergedbiom_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals, groups )
 
-        QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), groups )
-        QIIME_MQCPLOT( groups, QIIME_ALPHA.out.metadata_tsv.collect() )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_MQCPLOT.out.mqc_plot.collect() )
+        QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_DIVERSITYCORE.out.filtered_metadata )
+
+        QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_DIVERSITYCORE.out.filtered_metadata, QIIME_DIVERSITYCORE.out.group_list )
+
+        QIIME_ALPHAPLOT( QIIME_DIVERSITYCORE.out.filtered_metadata, QIIME_ALPHA.out.metadata_tsv.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect() )
+
+        QIIME_BETAPLOT( QIIME_DIVERSITYCORE.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect() )
     }
 
     if ( params.run_kaiju ) {

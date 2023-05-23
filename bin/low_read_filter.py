@@ -7,7 +7,6 @@ import argparse
 def qiime_taxmerge(qza, readcount):
     totalreads = pd.read_csv(readcount, index_col=0)
     exclude = totalreads[totalreads["aligned"] < 1000000].index
-    print(exclude)
     for i in exclude:
         qza = re.sub(i+"_qiime_absfreq_table.qza", "", qza)
     subset_num = totalreads[totalreads["aligned"] >= 1000000]["aligned"].min()

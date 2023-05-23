@@ -5,9 +5,11 @@ report_comment: >
 report_section_order:
   mpa_readstats:
     before: bowtie2
-  individ_alpha_barplot:
-    after: composition_barplots
+  individ_alpha_barchart:
+    after: Diversity_Analysis
   Alpha_Diversity: 
+    order: -998
+  Beta_Diversity:
     order: -999
   "nf-core-taxprofiler-methods-description":
     order: -1000
@@ -29,6 +31,13 @@ custom_data:
     parent_name: "Diversity Analysis"
     section_name: "Alpha Diversity"
     description: "Alpha diversity is a measurement of the microbial diversity of each group. For analyses with group comparison, a box-and-whisker plot of observed species in each group is shown."
+  beta_diversity:
+    anchor: "beta_diversity"
+    parent_id: Diversity_Analysis
+    parent_name: "Diversity Analysis"
+    section_name: "Beta Diversity"
+    description: "Beta diversity is a measurement of microbial diversity differences between samples. The figure below is the 3-dimensional principle coordinate analysis (PCoA) plot created using the matrix of paired-wise distance between samples calculated by the Weighted unifrac, Unweighted unifrac, Bray-Curtis, and Jaccard dissimilarity. Interactive 3-dimensional plots of beta-diversity with different matrices can be accessed by clicking the dropdown menus below.
+        Each dot on the beta diversity plot represents the whole microbial composition profile. Samples with similar microbial composition profiles are closer to each other, while samples with different profiles are farther away from each other."
 
 module_order:
   - fastqc
@@ -53,6 +62,8 @@ module_order:
 sp:
   Alpha_Diversity:
     fn: "*_Diversity_mqc.html"
+  beta_diversity:
+    fn: "beta_diversity_mqc.html"
   diamond:
     contents: "diamond v"
     num_lines: 10
