@@ -24,9 +24,9 @@ def execution_start():
         # 'download': {
         #     'fn': '*_summary.txt'
         # },
-        #'plot_heatmap': {
-        #    'fn': '*taxo_heatmap.csv'
-        #},
+        'plot_heatmap': {
+            'fn': '*taxo_heatmap.csv'
+        },
         #'ancombc_heatmap': {
         #    'fn': '*_toptaxon_heatmap.tsv'
         #},

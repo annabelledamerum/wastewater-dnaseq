@@ -7,7 +7,7 @@ process QIIME_TAXMERGE {
     path(taxonomy)
 
     output:
-    path('allsamples_taxonomylist.tsv'), emit: taxonomy
+    path('allsamples_qiime_taxonomy.qza'), emit: taxonomy
 
     script:
     """
@@ -17,6 +17,8 @@ process QIIME_TAXMERGE {
         echo \$path
     done > taxonomy_files.tsv
 
-    qiime_taxmerge.py -t taxonomy_files.tsv  
+    qiime_taxmerge.py -t taxonomy_files.tsv 
+
+    qiime tools import --input-path allsamples_taxonomylist.tsv --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path allsamples_qiime_taxonomy.qza 
     """
 }

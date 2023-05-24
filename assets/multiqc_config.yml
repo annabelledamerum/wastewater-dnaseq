@@ -57,6 +57,7 @@ module_order:
   - malt
   - motus
   - composition_barplots
+  - plot_heatmap
   - custom_content
 
 sp:
@@ -128,6 +129,12 @@ top_modules:
       target: "Barplot"
       path_filters:
         - "*level-*.csv"
+  - "plot_heatmap":
+      name: "Taxonomy Abundance Heatmap"
+      anchor: "heatmap"
+      target: "heatmap"
+      path_filters:
+        "*taxo_heatmap.csv"
   - "malt":
       name: "MALT"
   - "diamond"
