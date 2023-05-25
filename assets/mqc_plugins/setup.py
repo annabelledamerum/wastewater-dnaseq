@@ -19,7 +19,7 @@ setup(
         'multiqc.modules.v1': [
             # 'fastqc = plugins.modules.fastqc_ext:MultiqcModule',
             #'cutaidapt = plugins.modules.cutadapt_ext:MultiqcModule',
-            #'plot_heatmap = plugins.modules.plot_heatmap:MultiqcModule',
+            'plot_heatmap = plugins.modules.plot_heatmap:MultiqcModule',
             #'ancombc_heatmap = plugins.modules.ancombc_heatmap:MultiqcModule',
             #'ancombc_lfc = plugins.modules.ancombc_lfc:MultiqcModule',
             'composition_barplots = plugins.modules.composition_barplots:MultiqcModule'

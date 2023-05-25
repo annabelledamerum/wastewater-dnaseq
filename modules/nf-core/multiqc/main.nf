@@ -32,6 +32,7 @@ process MULTIQC {
         -m fastp \\
         -m bowtie2 \\
         -m bbduk \\
+        -m plot_heatmap \\
         -m custom_content \\
         .
 

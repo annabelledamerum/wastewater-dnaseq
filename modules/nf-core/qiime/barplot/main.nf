@@ -16,11 +16,7 @@ process QIIME_BARPLOT {
     script:   
  
     """
-    qiime feature-table merge --i-tables $qza --o-merged-table allsamples_mergedqiime.qza 
-
-    qiime tools import --input-path $taxonomy --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path allsamples_qiime_taxonomy.qza
-
-    qiime taxa barplot --i-table allsamples_mergedqiime.qza --i-taxonomy allsamples_qiime_taxonomy.qza --o-visualization allsamples_visualization.qzv
+    qiime taxa barplot --i-table $qza --i-taxonomy $taxonomy --o-visualization allsamples_visualization.qzv
     qiime tools export --input-path allsamples_visualization.qzv --output-path allsamples_exported_QIIME_barplot
     
     array=( \$( seq 1 7) )

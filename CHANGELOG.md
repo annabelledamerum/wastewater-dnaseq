@@ -9,10 +9,11 @@
 - qiime2 composition barplot added to MultiQC report
 - MultiQC barplot changed to work with multiple samples
 - MultiQC barplot now sorts taxonomy by group size
-- Reads unmapped by MultiQC bar chart added
-- Shannon alpha diversity per sample bar chart added
-- Between-group comparison of alpha diversity added
-- Beta diversity by group plot added
+- Reads unmapped by MultiQC bar chart added to MultiQC report
+- Shannon alpha diversity per sample bar chart added to MultiQC report
+- Between-group comparison of alpha diversity added to MultiQC report
+- Beta diversity by group plot added to MultiQC report
+- Taxonomy abundance heatmap added to MultiQC report
 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
