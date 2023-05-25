@@ -13,6 +13,7 @@
 - Shannon alpha diversity per sample bar chart added
 - Between-group comparison of alpha diversity added
 - Beta diversity by group plot added
+- Taxonomy abundance heatmap added
 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
