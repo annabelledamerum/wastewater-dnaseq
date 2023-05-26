@@ -22,11 +22,13 @@ include { QIIME_IMPORT                                  } from '../../modules/nf
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
-include { CUSTOM_HEATMAP                                } from '../../modules/nf-core/custom/heatmap/main'
+include { CUSTOM_HEATMAP                                } from '../../modules/nf-core/custom/heatmap/main' addParams(
+    top_taxa: params.top_taxa
+)
 include { QIIME_ALPHA                                   } from '../../modules/nf-core/qiime/alpha/main'
 include { QIIME_BETA                                    } from '../../modules/nf-core/qiime/beta/main'
 include { QIIME_BETAPLOT                                } from '../../modules/nf-core/qiime/betaplot/main'
-include { QIIME_ALPHAPLOT                                 } from '../../modules/nf-core/qiime/alphaplot/main'
+include { QIIME_ALPHAPLOT                               } from '../../modules/nf-core/qiime/alphaplot/main'
 
 workflow PROFILING {
     take:

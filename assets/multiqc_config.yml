@@ -79,14 +79,14 @@ top_modules:
   - "fastqc":
       name: "FastQC / Falco (pre-Trimming)"
       path_filters:
-        - "*raw*"
+        - '*_raw_1_fastqc.zip'
       path_filters_exclude:
         - "*processed*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
   - "fastqc":
       name: "FastQC / Falco (post-Trimming)"
       path_filters:
-        - "*processed*"
+        - '*_processed_1_fastqc.zip'
       path_filters_exclude:
         - "*raw*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
@@ -320,7 +320,9 @@ extra_fn_clean_exts:
   - "_filtered"
   - type: remove
     pattern: "_falco"
-  - _2
+  - "_processed"
+  - "_raw"
+  - "_1"
 
 section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."
