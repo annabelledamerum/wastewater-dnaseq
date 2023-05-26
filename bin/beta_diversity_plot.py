@@ -84,7 +84,7 @@ for name, df in input_dict.items():
                     color_discrete_sequence=default_colors)
         trace = fig.update_traces(marker=dict(size=7,
                                     line=dict(width=1,
-                                        color='#ecf0f1')), visible=True if name=="Weighted Unifrac" else False).data[i]
+                                        color='#ecf0f1')), visible=True if name=="Bray Curtis" else False).data[i]
         traces.append(trace)
     n+=1
 
