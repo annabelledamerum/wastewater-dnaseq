@@ -16,7 +16,7 @@ include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
 include { MOTUS_PROFILE                                 } from '../../modules/nf-core/motus/profile/main'
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ                } from '../../modules/nf-core/krakenuniq/preloadedkrakenuniq/main'
-include { BIOMPREP_FORQIIME                             } from '../../modules/nf-core/qiime/biomprep_forqiime/main'
+include { QIIME_BIOMPREP                                } from '../../modules/nf-core/qiime/biomprep/main'
 include { QIIME_TAXMERGE                                } from '../../modules/nf-core/qiime/taxmerge/main'
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
@@ -268,25 +268,25 @@ workflow PROFILING {
         ch_versions        = ch_versions.mix( METAPHLAN4_METAPHLAN4.out.versions.first() )
         ch_raw_profiles    = ch_raw_profiles.mix( METAPHLAN4_METAPHLAN4.out.profile )
 
-        BIOMPREP_FORQIIME( METAPHLAN4_METAPHLAN4.out.profile )
-        ch_versions     = ch_versions.mix( BIOMPREP_FORQIIME.out.versions.first() )
+        QIIME_BIOMPREP( METAPHLAN4_METAPHLAN4.out.profile )
+        ch_versions     = ch_versions.mix( QIIME_BIOMPREP.out.versions.first() )
 
-        METAPHLAN4_UNMAPPED( BIOMPREP_FORQIIME.out.mpa_info.collect() )
+        METAPHLAN4_UNMAPPED( QIIME_BIOMPREP.out.mpa_info.collect() )
         ch_multiqc_files = ch_multiqc_files.mix( METAPHLAN4_UNMAPPED.out.json.ifEmpty([]))
 
-        QIIME_TAXMERGE( BIOMPREP_FORQIIME.out.taxonomy.collect() )
-        QIIME_IMPORT ( BIOMPREP_FORQIIME.out.mpa_biomprofile )
+        QIIME_TAXMERGE( QIIME_BIOMPREP.out.taxonomy.collect() )
+        QIIME_IMPORT ( QIIME_BIOMPREP.out.mpa_biomprofile )
 
-        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_mergedbiom_qza.collect())
+        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_mergedbiom_qza.collect(), QIIME_IMPORT.out.absabun_mergedbiom_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals )
  
-        QIIME_BARPLOT( QIIME_DATAMERGE.out.qiime_qzamerged, QIIME_TAXMERGE.out.taxonomy)
+        QIIME_BARPLOT( QIIME_DATAMERGE.out.rel_qzamerged, QIIME_TAXMERGE.out.taxonomy)
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
         CUSTOM_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups)
         ch_multiqc_files = ch_multiqc_files.mix( CUSTOM_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
         
-        QIIME_DIVERSITYCORE( QIIME_IMPORT.out.absabun_mergedbiom_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals, groups )
+        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, groups )
 
         QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_DIVERSITYCORE.out.filtered_metadata )
 
