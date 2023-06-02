@@ -22,9 +22,7 @@ include { QIIME_IMPORT                                  } from '../../modules/nf
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
-include { CUSTOM_HEATMAP                                } from '../../modules/nf-core/custom/heatmap/main' addParams(
-    top_taxa: params.top_taxa
-)
+include { QIIME_HEATMAP                                 } from '../../modules/nf-core/qiime/heatmap/main'
 include { QIIME_ALPHA                                   } from '../../modules/nf-core/qiime/alpha/main'
 include { QIIME_BETA                                    } from '../../modules/nf-core/qiime/beta/main'
 include { QIIME_BETAPLOT                                } from '../../modules/nf-core/qiime/betaplot/main'
@@ -283,8 +281,8 @@ workflow PROFILING {
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
-        CUSTOM_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups)
-        ch_multiqc_files = ch_multiqc_files.mix( CUSTOM_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
+        QIIME_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups)
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
         
         QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, groups )
 

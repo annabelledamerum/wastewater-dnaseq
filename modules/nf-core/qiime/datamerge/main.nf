@@ -12,6 +12,7 @@ process QIIME_DATAMERGE {
     path('mergedrelqiime.qza')   , emit: rel_qzamerged
     path('mergedabsqiime.qza')   , emit: abs_qzamerged
     path('allsamples_relcounts.txt'),       emit: allsamples_relcounts
+    path('allsamples_abscounts.txt'),       emit: allsamples_abscounts
     path('readcount_maxsubset.txt'),        emit: readcount_maxsubset
     
 
@@ -27,5 +28,9 @@ process QIIME_DATAMERGE {
     low_read_filter.py -q "$abs_qza" -r $aligned_read_totals
 
     qiime feature-table merge --i-tables \$( < qza_lowqualityfiltered.txt) --o-merged-table mergedabsqiime.qza
+
+    qiime tools export --input-path mergedabsqiime.qza --output-path allsamples_abscounts_out/
+
+    biom convert -i allsamples_abscounts_out/feature-table.biom -o allsamples_abscounts.txt --to-tsv
     """
 }

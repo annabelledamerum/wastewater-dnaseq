@@ -9,7 +9,8 @@ process QIIME_ALPHA {
     path(group_metadata)
     
     output:
-    path("alpha_diversity/*.tsv"), optional:true, emit: metadata_tsv 
+    path("alpha_diversity/*.tsv"), optional:true, emit: metadata_tsv
+    path("alpha_diversity/*.qzv") 
 
     script:
     """
