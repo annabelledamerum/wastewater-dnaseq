@@ -278,7 +278,7 @@ workflow PROFILING {
         QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_mergedbiom_qza.collect(), QIIME_IMPORT.out.absabun_mergedbiom_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals )
  
         QIIME_BARPLOT( QIIME_DATAMERGE.out.rel_qzamerged, QIIME_TAXMERGE.out.taxonomy)
-        ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions.first() )
+        ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
         QIIME_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups)
