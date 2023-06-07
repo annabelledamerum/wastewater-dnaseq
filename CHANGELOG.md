@@ -25,7 +25,6 @@
 - MultiQC beta diversity by group plot added
 - Added process QIIME_HEATMAP that plots relationships in top 20 taxa in each sample
 
-
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
