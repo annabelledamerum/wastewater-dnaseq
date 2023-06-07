@@ -10,7 +10,7 @@ process QIIME_BETA {
 
     output:
     path("beta_diversity/*"), emit: beta
-    path("beta_diversity/beta_qzv/*.qzv"), emit: qzv
+    path("*.qzv"), emit: qzv
     path("*.tsv"), optional:true, emit: tsv
 
 
@@ -26,7 +26,6 @@ process QIIME_BETA {
         --output-path beta_diversity/${distance.baseName}-group
     #rename the output file name
     mkdir beta_diversity/beta_qzv/
-    mv ${distance.baseName}-group.qzv beta_diversity/beta_qzv/${distance.baseName}_beta-group.qzv
     mv beta_diversity/${distance.baseName}-group/raw_data.tsv ${distance.baseName}-group.tsv
     """
 }

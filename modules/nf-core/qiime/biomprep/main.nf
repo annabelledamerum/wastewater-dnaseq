@@ -1,4 +1,4 @@
-process BIOMPREP_FORQIIME {
+process QIIME_BIOMPREP {
     label 'process_medium'
     
     conda "bioconda::biom-format=2.1.7=py27_0"

@@ -10,14 +10,15 @@ process QIIME_BARPLOT {
     output:
     path('*exported_QIIME_barplot/*')   , emit: qiime_export
     path('*exported_QIIME_barplot/*.csv') , emit: composition
+    path('allsamples_compbarplot.qzv')   
     path "versions.yml"                        , emit: versions
     
 
     script:   
  
     """
-    qiime taxa barplot --i-table $qza --i-taxonomy $taxonomy --o-visualization allsamples_visualization.qzv
-    qiime tools export --input-path allsamples_visualization.qzv --output-path allsamples_exported_QIIME_barplot
+    qiime taxa barplot --i-table $qza --i-taxonomy $taxonomy --o-visualization allsamples_compbarplot.qzv
+    qiime tools export --input-path allsamples_compbarplot.qzv --output-path allsamples_exported_QIIME_barplot
     
     array=( \$( seq 1 7) )
 

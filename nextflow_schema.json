@@ -460,6 +460,10 @@
                     "description": "Turn on profiling with MetaPhlAn4. Requires database to be present CSV file passed to --databases",
                     "fa_icon": "fas fa-toggle-on"
                 },
+		"top_taxa": {
+		    "type": "integer",
+		    "description": "Specify the maximum number of top taxa from each sample you want to compare in QIIME_HEATMAP"
+		},
                 "run_motus": {
                     "type": "boolean",
                     "fa_icon": "fas fa-toggle-on",

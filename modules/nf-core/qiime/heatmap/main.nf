@@ -1,6 +1,6 @@
 params.top_taxa = 20
 
-process CUSTOM_HEATMAP {
+process QIIME_HEATMAP {
     input:
     path rel_tax
     path metadata
