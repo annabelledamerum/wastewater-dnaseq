@@ -6,7 +6,6 @@ process QIIME_BETA {
     input:
     path(distance)
     path(metadata)
-    path(group_list)
 
     output:
     path("beta_diversity/*"), emit: beta

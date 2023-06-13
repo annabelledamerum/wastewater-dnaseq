@@ -20,6 +20,7 @@ include { QIIME_BIOMPREP                                } from '../../modules/nf
 include { QIIME_TAXMERGE                                } from '../../modules/nf-core/qiime/taxmerge/main'
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
+include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
 include { QIIME_HEATMAP                                 } from '../../modules/nf-core/qiime/heatmap/main'
@@ -281,20 +282,22 @@ workflow PROFILING {
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
-        QIIME_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups)
+        QIIME_METADATAFILTER( groups )
+        
+        QIIME_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
         
-        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, groups )
+        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
 
-        QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_DIVERSITYCORE.out.filtered_metadata )
+        QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
-        QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_DIVERSITYCORE.out.filtered_metadata, QIIME_DIVERSITYCORE.out.group_list )
+        QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
-        QIIME_ALPHAPLOT( QIIME_DIVERSITYCORE.out.filtered_metadata, QIIME_ALPHA.out.metadata_tsv.collect() )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect() )
+        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHA.out.metadata_tsv.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
 
-        QIIME_BETAPLOT( QIIME_DIVERSITYCORE.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect() )
+        QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect().ifEmpty([]) )
     }
 
     if ( params.run_kaiju ) {
