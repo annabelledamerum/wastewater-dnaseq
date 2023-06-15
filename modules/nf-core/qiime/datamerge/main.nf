@@ -14,6 +14,7 @@ process QIIME_DATAMERGE {
     path('allsamples_relcounts.txt'),       emit: allsamples_relcounts
     path('allsamples_abscounts.txt'),       emit: allsamples_abscounts
     path('readcount_maxsubset.txt'),        emit: readcount_maxsubset
+    path('qza_lowqualityfiltered.txt'),     emit: samples_filtered
     
 
     script:

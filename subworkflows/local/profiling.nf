@@ -282,7 +282,7 @@ workflow PROFILING {
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
 
-        QIIME_METADATAFILTER( groups )
+        QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.samples_filtered )
         
         QIIME_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
