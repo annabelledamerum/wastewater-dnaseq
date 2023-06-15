@@ -22,9 +22,14 @@
 - MultiQC composition barplot changed to properly sort taxonomy by group size
 - Filter added to QIIME_DIVERSITYCORE to remove samples from group comparison if they 1) have blank or NA groups or 2) are the only sample in a group
 - Added process QIIME_BETA that runs group-level beta diversity calculations on QIIME_DIVERSITYCORE distance matrices
-- MultiQC beta diversity by group plot added
+- QIIME_ALPHA now also does alpha group comparison
+- MultiQC alpha diversity by group plot added in process QIIME_ALPHAPLOT
+- MultiQC beta diversity by group plot added in process QIIME_BETAPLOT
 - Added process QIIME_HEATMAP that plots relationships in top 20 taxa in each sample
-
+- Pipeline properly skips qiime2 diversity core step instead of throwing an error when an empty group list is provided in the samplesheet
+- Pipeline now only consider group labels in diversity core analysis if they have at least two samples/replicates. Group(s) with only one sample are excluded
+- Pipeline removes all samples with less than 1M reads from the diversity core step 
+- Pipeline skips the diversity core step if there are less than three valid (>1M reads) samples in the samplesheet or only one valid group label in the samplesheet
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
