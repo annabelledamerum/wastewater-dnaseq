@@ -6,7 +6,7 @@ process QIIME_HEATMAP {
     path metadata
 
     output:
-    path("*taxo_heatmap.csv")  , emit: taxo_heatmap
+    path("*taxo_heatmap.csv")  , emit: taxo_heatmap, optional: true
 
     script:
     """
