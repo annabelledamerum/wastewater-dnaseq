@@ -1,3 +1,5 @@
+params.lowread_filter = 1000000
+
 process QIIME_DATAMERGE {
     label 'process_low'
 
@@ -26,7 +28,7 @@ process QIIME_DATAMERGE {
 
     biom convert -i allsamples_relcounts_out/feature-table.biom -o allsamples_relcounts.txt --to-tsv
 
-    low_read_filter.py -q "$abs_qza" -r $aligned_read_totals
+    low_read_filter.py -q "$abs_qza" -r $aligned_read_totals -f $params.lowread_filter
 
     qiime feature-table merge --i-tables \$( < qza_lowqualityfiltered.txt) --o-merged-table mergedabsqiime.qza
 
