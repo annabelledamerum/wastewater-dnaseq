@@ -4,6 +4,9 @@ process QIIME_ALPHA {
 
     container 'quay.io/qiime2/core:2023.2'
 
+    when:
+    !params.skip_alphadiversity
+
     input:
     path(vectors)
     path(group_metadata)

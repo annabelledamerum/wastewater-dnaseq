@@ -30,6 +30,11 @@
 - Pipeline now only consider group labels in diversity core analysis if they have at least two samples/replicates. Group(s) with only one sample are excluded
 - Pipeline removes all samples with less than 1M reads from the diversity core step 
 - Pipeline skips the diversity core step if there are less than three valid (>1M reads) samples in the samplesheet or only one valid group label in the samplesheet
+- Sample read count cutoff changed to user-input parameter (default: 1 Million)
+- process QIIME_ALPHARAREFACTION added for alpha rarefaction analysis
+- Python script to plot QIIME_ALPHARAREFACTION results in MultiQC added
+- Option to skip alpha diversity or alpha rarefaction steps added
+- Heatmap will no longer plot low quality samples
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
