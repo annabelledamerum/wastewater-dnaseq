@@ -10,7 +10,7 @@ def qiime_taxmerge(qza, readcount, lowread_filter):
     for i in exclude:
         qza = re.sub(i+"_qiime_absfreq_table.qza", "", qza)
     subset_num = totalreads[totalreads["aligned"] >= lowread_filter]["aligned"].min()
-    with open('qza_lowqualityfiltered.txt', 'w+') as fn:
+    with open('absqza_lowqualityfiltered.txt', 'w+') as fn:
         fn.write(qza)
     with open('readcount_maxsubset.txt', 'w+') as fn:
         fn.write(str(subset_num))

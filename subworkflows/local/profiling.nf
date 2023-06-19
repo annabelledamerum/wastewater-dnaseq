@@ -21,6 +21,7 @@ include { QIIME_TAXMERGE                                } from '../../modules/nf
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
 include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
+include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
 include { QIIME_HEATMAP                                 } from '../../modules/nf-core/qiime/heatmap/main'
@@ -284,16 +285,18 @@ workflow PROFILING {
 
         QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.samples_filtered )
         
-        QIIME_HEATMAP( QIIME_DATAMERGE.out.allsamples_relcounts, groups )
+        QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_samples_relcounts, QIIME_METADATAFILTER.out.filtered_metadata )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
-        
+
+        QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
+
         QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
 
         QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
         QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
-        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHA.out.metadata_tsv.collect() )
+        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHA.out.metadata_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
 
         QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )

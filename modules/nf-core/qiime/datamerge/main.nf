@@ -11,12 +11,12 @@ process QIIME_DATAMERGE {
     path(aligned_read_totals)
 
     output:
-    path('mergedrelqiime.qza')   , emit: rel_qzamerged
-    path('mergedabsqiime.qza')   , emit: abs_qzamerged
-    path('allsamples_relcounts.txt'),       emit: allsamples_relcounts
-    path('allsamples_abscounts.txt'),       emit: allsamples_abscounts
+    path('mergedrelqiime.qza')   ,          emit: rel_qzamerged
+    path('mergedabsqiime.qza')   ,          emit: abs_qzamerged
+    path('filtered_samples_relcounts.txt'), emit: filtered_samples_relcounts
+    path('filtered_samples_abscounts.txt'), emit: filtered_samples_abscounts
     path('readcount_maxsubset.txt'),        emit: readcount_maxsubset
-    path('qza_lowqualityfiltered.txt'),     emit: samples_filtered
+    path('absqza_lowqualityfiltered.txt'),  emit: samples_filtered
     
 
     script:
@@ -24,16 +24,18 @@ process QIIME_DATAMERGE {
     """
     qiime feature-table merge --i-tables $rel_qza --o-merged-table mergedrelqiime.qza
 
-    qiime tools export --input-path mergedrelqiime.qza --output-path allsamples_relcounts_out/
-
-    biom convert -i allsamples_relcounts_out/feature-table.biom -o allsamples_relcounts.txt --to-tsv
-
     low_read_filter.py -q "$abs_qza" -r $aligned_read_totals -f $params.lowread_filter
 
-    qiime feature-table merge --i-tables \$( < qza_lowqualityfiltered.txt) --o-merged-table mergedabsqiime.qza
+    qiime feature-table merge --i-tables \$( < absqza_lowqualityfiltered.txt) --o-merged-table mergedabsqiime.qza
 
-    qiime tools export --input-path mergedabsqiime.qza --output-path allsamples_abscounts_out/
+    qiime tools export --input-path mergedabsqiime.qza --output-path filtered_samples_abscounts_out/
 
-    biom convert -i allsamples_abscounts_out/feature-table.biom -o allsamples_abscounts.txt --to-tsv
+    biom convert -i filtered_samples_abscounts_out/feature-table.biom -o filtered_samples_abscounts.txt --to-tsv
+
+    qiime feature-table merge --i-tables \$(sed 's/_qiime_absfreq_table.qza/_qiime_relfreq_table.qza/g' absqza_lowqualityfiltered.txt) --o-merged-table merged_filtered_relqiime.qza
+
+    qiime tools export --input-path merged_filtered_relqiime.qza --output-path filteredsamples_relcounts_out/
+
+    biom convert -i filteredsamples_relcounts_out/feature-table.biom -o filtered_samples_relcounts.txt --to-tsv
     """
 }
