@@ -28,11 +28,12 @@ def display_unmapped_mpareads(info):
         mpa_readstats_json = mpa_readstats.to_json(orient="index")
         mpa_readstats_parsed = json.loads(mpa_readstats_json)
 
-        description = "The following bargraph provides the number of reads Metaphlan was unable to align."
+        description = "The following bargraph provides the number of reads in each sample that Metaphlan was able to align to the user-selected microbiomics reference database."
         mpa_readstats_multiqc = {
             'id' : 'mpa_readstats',
             'section_name' : 'Number of Metaphlan Aligned Reads',
             'description' : description,
+            'doi' : 'https://www.nature.com/articles/s41587-023-01688-w'
             'plot_type' : 'bargraph',
             'pconfig' : {
                 'id' : 'estimated_unaligned_mpareads_plot',
