@@ -25,7 +25,7 @@ include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
 include { QIIME_HEATMAP                                 } from '../../modules/nf-core/qiime/heatmap/main'
-include { QIIME_ALPHA                                   } from '../../modules/nf-core/qiime/alpha/main'
+include { QIIME_ALPHADIVERSITY                          } from '../../modules/nf-core/qiime/alphadiversity/main'
 include { QIIME_BETA                                    } from '../../modules/nf-core/qiime/beta/main'
 include { QIIME_BETAPLOT                                } from '../../modules/nf-core/qiime/betaplot/main'
 include { QIIME_ALPHAPLOT                               } from '../../modules/nf-core/qiime/alphaplot/main'
@@ -277,26 +277,26 @@ workflow PROFILING {
         QIIME_TAXMERGE( QIIME_BIOMPREP.out.taxonomy.collect() )
         QIIME_IMPORT ( QIIME_BIOMPREP.out.mpa_biomprofile )
 
-        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_mergedbiom_qza.collect(), QIIME_IMPORT.out.absabun_mergedbiom_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals )
+        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals )
  
-        QIIME_BARPLOT( QIIME_DATAMERGE.out.rel_qzamerged, QIIME_TAXMERGE.out.taxonomy)
+        QIIME_BARPLOT( QIIME_DATAMERGE.out.allsamples_rel_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.composition.collect().ifEmpty([]) )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
 
         QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.samples_filtered )
         
         QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_samples_relcounts, QIIME_METADATAFILTER.out.filtered_metadata )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
 
-        QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
+        QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
 
-        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
+        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
 
-        QIIME_ALPHA( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
+        QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
         QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
-        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHA.out.metadata_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
+        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
 
         QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )

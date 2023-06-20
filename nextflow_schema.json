@@ -460,6 +460,10 @@
                     "description": "Turn on profiling with MetaPhlAn4. Requires database to be present CSV file passed to --databases",
                     "fa_icon": "fas fa-toggle-on"
                 },
+		"skip_heatmap": {
+		    "type": "boolean",
+		    "description": "Remove off heatmap plot from MultiQC report"
+		},
 		"skip_alpha_rarefaction": {
 		    "type": "boolean",
 		    "description": "Turn off alpha rarefaction analysis and remove Alpha Rarefaction plot from MultiQC report"
@@ -470,12 +474,20 @@
 		},
 		"skip_alphadiversity": {
 		    "type": "boolean",
-		    "description": "Turn off alpha diversity analysis and remove alphs diversity plot from MultiQC report"
+		    "description": "Turn off alpha diversity analysis and remove alpha diversity plot from MultiQC report"
+		},
+		"skip_individalpha" : {
+	            "type": "boolean",
+		    "description": "Turn off the chart showing individual alpha diversity per sample."
 		},
 		"lowread_filter": {
 		    "type": "integer",
 		    "description": "Specify the minimum number of reads a sample must have to be included in alpha and beta diversity and heatmap analysis.",
 		    "default": 1000000
+		},
+		"skip_betadiversity": {
+		    "type": "boolean",
+	            "description": "Turn off beta diversity analysis and remove beta diversity plot from MultiQC reports"
 		},
                 "run_motus": {
                     "type": "boolean",

@@ -7,8 +7,8 @@ process QIIME_IMPORT {
     tuple val(meta), path(rel_profile), path(abs_profile)
 
     output:
-    path('*relfreq_table.qza')   , emit: relabun_mergedbiom_qza
-    path('*absfreq_table.qza')   , emit: absabun_mergedbiom_qza
+    path('*relfreq_table.qza')   , emit: relabun_merged_qza
+    path('*absfreq_table.qza')   , emit: absabun_merged_qza
     path "versions.yml"                        , emit: versions
     
 

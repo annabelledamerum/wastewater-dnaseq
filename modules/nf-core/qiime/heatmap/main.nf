@@ -1,6 +1,9 @@
 params.top_taxa = 20
 
 process QIIME_HEATMAP {
+    when:
+    !params.skip_heatmap
+
     input:
     path rel_tax
     path metadata
