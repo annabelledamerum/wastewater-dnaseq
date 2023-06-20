@@ -62,35 +62,24 @@ if (a < 10) {
   species$Species <- paste(species$Genus, species$Species)
   species <-species[!(species$Species=="NA NA"),]
 }
+
 species <- subset(species, select = -c(Genus))
-names(species)[1] <- "id"
-species <- filter(data = species,grouping = grouping, top_taxa = top_taxa)
-write.table(species, "Species_taxo_heatmap.csv", sep="\t", quote=FALSE)
-
 genus <- input[,c(6,8:ncol(input))]
-names(genus)[1] <- "id"
-genus <- filter(data = genus,grouping = grouping, top_taxa = top_taxa)
-write.table(genus, "Genus_taxo_heatmap.csv", sep="\t", quote=FALSE)
-
 family <- input[,c(5,8:ncol(input))]
-names(family)[1] <- "id"
-family <- filter(data = family,grouping = grouping, top_taxa = top_taxa)
-write.table(family, "Family_taxo_heatmap.csv", sep="\t", quote=FALSE)
-
 order <- input[,c(4,8:ncol(input))]
-names(order)[1] <- "id"
-order <- filter(data = order,grouping = grouping,top_taxa = top_taxa)
-write.table(order, "Order_taxo_heatmap.csv", sep="\t", quote=FALSE)
-
 class <- input[,c(3,8:ncol(input))]
-names(class)[1] <- "id"
-class <- filter(data = class,grouping = grouping, top_taxa = top_taxa)
-write.table(class, "Class_taxo_heatmap.csv", sep="\t", quote=FALSE)
-
 phylum <- input[,c(2,8:ncol(input))]
-names(phylum)[1] <- "id"
-phylum <- filter(data = phylum,grouping = grouping, top_taxa = top_taxa)
-write.table(phylum, "Phylum_taxo_heatmap.csv", sep="\t", quote=FALSE)
+
+levels <- list(species, genus, family, order, class, phylum)
+labels <- c("Species", "Genus", "Family", "Order", "Class", "Phylum")
+
+for (i in 1:6) {
+    level = levels[[i]]
+    label = labels[i]
+    names(level)[1] <- "id"
+    level <- filter(data = level, grouping = grouping, top_taxa = top_taxa)
+    write.table(level, paste0(label, "_taxo_heatmap.csv", sep=""), sep="\t", quote=FALSE)
+}
 
 kingdom <- input[,c(1,8:ncol(input))]
 names(kingdom)[1] <- "id"
