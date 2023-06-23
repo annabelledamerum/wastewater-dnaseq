@@ -10,10 +10,11 @@ def qiime_taxmerge(qza, readcount, lowread_filter):
     for i in exclude:
         qza = re.sub(i+"_qiime_absfreq_table.qza", "", qza)
     subset_num = totalreads[totalreads["aligned"] >= lowread_filter]["aligned"].min()
-    with open('absqza_lowqualityfiltered.txt', 'w+') as fn:
-        fn.write(qza)
-    with open('readcount_maxsubset.txt', 'w+') as fn:
-        fn.write(str(subset_num))
+    if pd.notna(subset_num):
+        with open('absqza_lowqualityfiltered.txt', 'w+') as fn:
+            fn.write(qza)
+        with open('readcount_maxsubset.txt', 'w+') as fn:
+            fn.write(str(subset_num))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""Merge together all taxonomy file output""")

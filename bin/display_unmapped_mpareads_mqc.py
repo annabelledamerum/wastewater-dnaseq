@@ -33,7 +33,6 @@ def display_unmapped_mpareads(info):
             'id' : 'mpa_readstats',
             'section_name' : 'Number of Metaphlan Aligned Reads',
             'description' : description,
-            'doi' : 'https://www.nature.com/articles/s41587-023-01688-w'
             'plot_type' : 'bargraph',
             'pconfig' : {
                 'id' : 'estimated_unaligned_mpareads_plot',
