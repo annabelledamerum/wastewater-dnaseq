@@ -7,7 +7,7 @@ process QIIME_TAXMERGE {
     path(taxonomy)
 
     output:
-    path('allsamples_qiime_taxonomy.qza'), emit: taxonomy
+    path('allsamples_qiime_taxonomy.qza'), emit: merged_taxonomy
 
     script:
     """

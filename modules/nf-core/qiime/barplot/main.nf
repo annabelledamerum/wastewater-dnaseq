@@ -8,8 +8,8 @@ process QIIME_BARPLOT {
     path(taxonomy)
 
     output:
-    path('*exported_QIIME_barplot/*')   , emit: qiime_export
-    path('*exported_QIIME_barplot/*.csv') , emit: composition
+    path('*exported_QIIME_barplot/*')   , emit: barplot_export
+    path('*exported_QIIME_barplot/*.csv') , emit: barplot_composition
     path('allsamples_compbarplot.qzv')   
     path "versions.yml"                        , emit: versions
     

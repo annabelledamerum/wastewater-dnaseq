@@ -3,6 +3,9 @@ process QIIME_BETA {
     label 'process_low'
     container "quay.io/qiime2/core:2023.2"
 
+    when:
+    !params.skip_betadiversity
+
     input:
     path(distance)
     path(metadata)

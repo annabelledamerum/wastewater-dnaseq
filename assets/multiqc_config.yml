@@ -110,6 +110,7 @@ top_modules:
   - "filtlong"
   - "bowtie2":
       name: "bowtie2"
+      info: "In this pipeline, bowtie2 aligns sample reads to the host reference genome. Preferably, most reads in a microbiomics sample should not align to the host's genome. Any reads that align with the host are removed with bowtie2 from further analysis."
   - "samtools":
       name: "Samtools Stats"
   - "kraken":

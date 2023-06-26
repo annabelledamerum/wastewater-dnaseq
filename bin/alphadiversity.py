@@ -19,26 +19,20 @@ def alpha_diversity_plot(shannon, evenness, observed_features, output_file):
     # evenness            = "evenness_vector.tsv"
     # observed_features   = "observed_features_vector.tsv"
 
-    #prepare dataframe shannon
-    shannon = pd.read_csv(shannon, sep = '\t')
-    shannon = shannon.drop([0])
-    shannon=shannon.drop(columns=['id'])
-    shannon=shannon.set_axis([*shannon.columns[:-1], 'Value'], axis=1)
-    shannon ['Value'] = shannon['Value'].apply(pd.to_numeric)
+    df_dict = {'Shannon': shannon, 
+                  'Evenness': evenness,
+                  'Observed features': observed_features
+                 }
 
-    #prepare dataframe evenness
-    evenness = pd.read_csv(evenness, sep = '\t')
-    evenness = evenness.drop([0])
-    evenness=evenness.drop(columns=['id'])
-    evenness=evenness.set_axis([*evenness.columns[:-1], 'Value'], axis=1)
-    evenness ['Value'] = evenness['Value'].apply(pd.to_numeric)
+    for label, method in df_dict.items():
+        #prepare dataframe for each alpha diversity method
+        method = pd.read_csv(method, sep = '\t')
+        method = method.drop([0])
+        method = method.drop(columns=['id'])
+        method = method.set_axis([*method.columns[:-1], 'Value'], axis=1)
+        method['Value'] = method['Value'].apply(pd.to_numeric)
+        df_dict[label] = method
 
-    #prepare dataframe observed_features
-    observed_features = pd.read_csv(observed_features, sep = '\t')
-    observed_features = observed_features.drop([0])
-    observed_features=observed_features.drop(columns=['id'])
-    observed_features=observed_features.set_axis([*observed_features.columns[:-1], 'Value'], axis=1)
-    observed_features ['Value'] = observed_features['Value'].apply(pd.to_numeric)
     default_colors = [
         "#7cb5ec",
         "#434348",
@@ -52,10 +46,6 @@ def alpha_diversity_plot(shannon, evenness, observed_features, output_file):
         "#91e8e1",
     ]
     #prepare dataframe to input into plotly
-    df_dict = {'Shannon': shannon,
-               'Evenness' : evenness,
-               'Observed features':observed_features,
-               }
     figs = []
     buttons = []
     i = 0

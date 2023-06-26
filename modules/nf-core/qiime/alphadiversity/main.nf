@@ -1,4 +1,4 @@
-process QIIME_ALPHA {
+process QIIME_ALPHADIVERSITY {
     label 'process_low'
     tag "${vectors.baseName}"
 
@@ -12,7 +12,7 @@ process QIIME_ALPHA {
     path(group_metadata)
     
     output:
-    path("alpha_diversity/*.tsv"), optional:true, emit: metadata_tsv
+    path("alpha_diversity/*.tsv"), optional:true, emit: alphadiversity_tsv
     path("alpha_diversity/*.qzv") 
 
     script:
