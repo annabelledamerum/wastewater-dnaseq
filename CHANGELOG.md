@@ -35,6 +35,9 @@
 - Python script to plot QIIME_ALPHARAREFACTION results in MultiQC added
 - Option to skip alpha diversity or alpha rarefaction steps added
 - Heatmap will no longer plot low quality samples
+- Option to skip beta diversity and heatmap added
+- Redundant code in some python and R scripts cleaned up
+- Pipeline now skips diversity core step when all samples are below read cutoff
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
