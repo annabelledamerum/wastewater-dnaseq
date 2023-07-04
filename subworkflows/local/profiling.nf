@@ -9,8 +9,11 @@ include { KRAKEN2_STANDARD_REPORT                       } from '../../modules/lo
 include { BRACKEN_BRACKEN                               } from '../../modules/nf-core/bracken/bracken/main'
 include { CENTRIFUGE_CENTRIFUGE                         } from '../../modules/nf-core/centrifuge/centrifuge/main'
 include { CENTRIFUGE_KREPORT                            } from '../../modules/nf-core/centrifuge/kreport/main'
+include { SOURMASH_SKETCH                               } from '../../modules/local/sourmash/sketch/main'
+include { SOURMASH_GATHER                               } from '../../modules/local/sourmash/gather/main'
 include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf-core/metaphlan4/metaphlan4/main'
 include { METAPHLAN4_UNMAPPED                           } from '../../modules/nf-core/metaphlan4/unmapped/main'
+include { SOURMASH_QIIMEPREP                            } from '../../modules/local/sourmash/qiimeprep/main'
 include { KAIJU_KAIJU                                   } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf-core/kaiju/kaiju2table/main'
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
@@ -60,6 +63,7 @@ workflow PROFILING {
                 kraken2: it[2]['tool'] == 'kraken2' || it[2]['tool'] == 'bracken' // to reuse the kraken module to produce the input data for bracken
                 krakenuniq: it[2]['tool'] == 'krakenuniq'
                 malt:    it[2]['tool'] == 'malt'
+                sourmash: it[2]['tool'] == 'sourmash'
                 metaphlan4: it[2]['tool'] == 'metaphlan4'
                 motus: it[2]['tool'] == 'motus'
                 unknown: true
@@ -251,6 +255,53 @@ workflow PROFILING {
 
     }
 
+    if ( params.run_sourmash ){
+ 
+        ch_input_for_sourmash =  ch_input_for_profiling.sourmash
+                                .filter{
+                                    if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] Sourmash currently does not accept FASTA files as input. Skipping Sourmash for sample ${it[0].id}."
+                                    !it[0].is_fasta
+                                }
+                                .multiMap {
+                                    it ->
+                                        reads: [ it[0] + it[2], it[1] ]
+                                        db: it[3]
+                                }
+    
+        SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
+        SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
+        SOURMASH_QIIMEPREP ( SOURMASH_GATHER.out.gather, SOURMASH_SKETCH.out.sourmash_fqreadcount )
+
+        QIIME_TAXMERGE( SOURMASH_QIIMEPREP.out.taxonomy.collect() )
+        QIIME_IMPORT ( SOURMASH_QIIMEPREP.out.mpa_biomprofile )
+
+        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), SOURMASH_SKETCH.out.sourmash_fqreadcount )
+
+        QIIME_BARPLOT( QIIME_DATAMERGE.out.allsamples_rel_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
+        ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
+
+        QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.samples_filtered )
+
+        QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_samples_relcounts, QIIME_METADATAFILTER.out.filtered_metadata )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) )
+
+        QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
+
+        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
+
+        QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
+
+        QIIME_BETA( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
+
+        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
+
+        QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect().ifEmpty([]) )
+
+    }    
+
     if ( params.run_metaphlan4 ) {
 
         ch_input_for_metaphlan4 = ch_input_for_profiling.metaphlan4
@@ -294,7 +345,7 @@ workflow PROFILING {
 
         QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
-        QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
+        QIIME_BETA( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
 
         QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )

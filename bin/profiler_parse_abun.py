@@ -31,9 +31,31 @@ def metaphlan_profileparse( mpa_profiletable, label ):
     taxonomy.columns = ["Feature ID", "Taxon"]
     taxonomy.to_csv(label+"_profile_taxonomy.txt", sep="\t", index=False)
 
+def sourmash_profileparse( sourmash_profiletable, label, readcount ):
+    profile = pd.read_csv(sourmash_profiletable, sep=",")
+    profile = profile[["lineage", "match_containment_ani", "unique_intersect_bp", "f_unique_weighted"]]
+    profile = profile[(profile["match_containment_ani"] >= 0.935) | (profile["unique_intersect_bp"] > 1000000)]
+    rel_profile = profile[["lineage","f_unique_weighted"]]
+    rel_profile.columns = ["clade_name", label]
+    rel_profile.to_csv((label+'_relabun_parsed_mpaprofile.txt', sep="\t", index=False)
+
+    abs_profile = rel_profile
+    abs_profile[label] = abs_profile[label]*readcount
+    abs_profile.to_csv((label+'_absabun_parsed_mpaprofile.txt', sep="\t", index=False)
+   
+    taxonomy = pd.DataFrame(profile["clade_name"].str.replace(";", "|", regex=False))    
+    taxonomy = pd.concat((taxonomy, profile["clade_name"]), axis=1)
+    taxonomy.columns = ["Feature ID", "Taxon"]
+    taxonomy.to_csv(label+"_profile_taxonomy.txt", sep="\t", index=False)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""Parse metaphlan table""")
     parser.add_argument("-t", "--mpa_table", dest="mpa_profiletable", type=str, help="metaphlan assigned reads")
     parser.add_argument("-l", "--label", dest="label", type=str, help="sample label")
+    parser.add_argument("-p", "--profiler", dest="profiler", type=str, help="profiler used")
+    parser.add_arugment("-c", "--count", dest="readcount", type=str, help="profiler read count")
     args = parser.parse_args()
-    metaphlan_profileparse(args.mpa_profiletable, args.label)
+    if args.profiler == "metaphlan4":
+        metaphlan_profileparse(args.mpa_profiletable, args.label)
+    if args.profiler == "sourmash":
+        sourmash_profileparse(args.mpa_profiletable, args.label, args.readcount)
