@@ -6,9 +6,8 @@ process SOURMASH_SKETCH {
     tuple val(meta), path(input)
 
     output:
-    tuple val(meta), path('*.sig')           ,                emit: sketch
-    path('*_sketchfq_readcount.txt')         ,                emit: sourmash_fqreadcount
-    path "versions.yml"                      ,                emit: versions
+    tuple val(meta), path('*.sig'), path('*_sketchfq_readcount.txt'), emit: sketch
+    path "versions.yml"                                             , emit: versions
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
