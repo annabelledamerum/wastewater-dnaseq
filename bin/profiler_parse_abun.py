@@ -35,8 +35,18 @@ def sourmash_profileparse( sourmash_profiletable, label, readcount ):
     profile = pd.read_csv(sourmash_profiletable, sep=",")
     profile = profile[["lineage", "match_containment_ani", "unique_intersect_bp", "f_unique_weighted"]]
     profile = profile[(profile["match_containment_ani"] >= 0.935) | (profile["unique_intersect_bp"] > 1000000)]
+
     rel_profile = profile[["lineage","f_unique_weighted"]]
     rel_profile.columns = ["clade_name", label]
+    #collapsing rows together in case of duplicate clade name
+    #Save old numbered index
+    oldindex = rel_profile.index
+    rel_profile = rel_profile.groupby(['clade_name']).sum()
+    #clade_name will become the new index after groupby. Return it to a column in rel_profile dataframe
+    rel_profile['clade_name'] = rel_profile.index
+    rel_profile.index = oldindex
+    #Set columns to proper order
+    rel_profile = rel_profile[['clade_name', label]]
     rel_profile.to_csv(label+'_relabun_parsed_mpaprofile.txt', sep="\t", index=False)
 
     abs_profile = rel_profile
