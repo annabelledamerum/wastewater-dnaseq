@@ -38,12 +38,19 @@ def sourmash_profileparse( sourmash_profiletable, label, readcount ):
 
     rel_profile = profile[["lineage","f_unique_weighted"]]
     rel_profile.columns = ["clade_name", label]
+    #collapsing rows together in case of duplicate clade name
+    #Save old numbered index
+    oldindex = rel_profile.index
     rel_profile = rel_profile.groupby(['clade_name']).sum()
+    #clade_name will become the new index after groupby. Return it to a column in rel_profile dataframe
+    rel_profile['clade_name'] = rel_profile.index
+    rel_profile.index = oldindex
+    #Set columns to proper order
+    rel_profile = rel_profile[['clade_name', label]]
     rel_profile.to_csv(label+'_relabun_parsed_mpaprofile.txt', sep="\t", index=False)
 
     abs_profile = rel_profile
     abs_profile[label] = abs_profile[label]*readcount
-    abs_profile = abs_profile.groupby(['clade_name']).sum()
     abs_profile.to_csv(label+'_absabun_parsed_mpaprofile.txt', sep="\t", index=False)
    
     taxonomy = pd.DataFrame(rel_profile["clade_name"].str.replace(";", "|", regex=False))    
