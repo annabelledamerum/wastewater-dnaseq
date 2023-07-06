@@ -14,6 +14,7 @@ include { SOURMASH_GATHER                               } from '../../modules/lo
 include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf-core/metaphlan4/metaphlan4/main'
 include { METAPHLAN4_UNMAPPED                           } from '../../modules/nf-core/metaphlan4/unmapped/main'
 include { SOURMASH_QIIMEPREP                            } from '../../modules/local/sourmash/qiimeprep/main'
+include { SOURMASH_MERGEREADCOUNT                       } from '../../modules/local/sourmash/mergereadcount/main'
 include { KAIJU_KAIJU                                   } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf-core/kaiju/kaiju2table/main'
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
@@ -270,12 +271,13 @@ workflow PROFILING {
     
         SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
         SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
-        SOURMASH_QIIMEPREP ( SOURMASH_GATHER.out.gather, SOURMASH_SKETCH.out.sourmash_fqreadcount )
+        SOURMASH_QIIMEPREP ( SOURMASH_GATHER.out.gather )
+        SOURMASH_MERGEREADCOUNT( SOURMASH_QIIMEPREP.out.fq_readcount.collect() )
 
         QIIME_TAXMERGE( SOURMASH_QIIMEPREP.out.taxonomy.collect() )
         QIIME_IMPORT ( SOURMASH_QIIMEPREP.out.mpa_biomprofile )
 
-        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), SOURMASH_SKETCH.out.sourmash_fqreadcount )
+        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), SOURMASH_MERGEREADCOUNT.out.allsamples_totalreads )
 
         QIIME_BARPLOT( QIIME_DATAMERGE.out.allsamples_rel_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )

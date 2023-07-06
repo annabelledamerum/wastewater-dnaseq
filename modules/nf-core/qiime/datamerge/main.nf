@@ -11,12 +11,12 @@ process QIIME_DATAMERGE {
     path(aligned_read_totals)
 
     output:
-    path('allsamples_mergedrelqiime.qza')   ,          emit: allsamples_rel_qzamerged
-    path('filtered_mergedabsqiime.qza')   ,          emit: filtered_abs_qzamerged, optional: true
-    path('filtered_samples_relcounts.txt'), emit: filtered_samples_relcounts, optional: true
-    path('filtered_samples_abscounts.txt'), emit: filtered_samples_abscounts, optional: true
-    path('readcount_maxsubset.txt'),        emit: readcount_maxsubset, optional: true
-    path('absqza_lowqualityfiltered.txt'),  emit: samples_filtered, optional: true
+    path('allsamples_mergedrelqiime.qza')   , emit: allsamples_rel_qzamerged
+    path('filtered_mergedabsqiime.qza')     , emit: filtered_abs_qzamerged, optional: true
+    path('filtered_samples_relcounts.txt')  , emit: filtered_samples_relcounts, optional: true
+    path('filtered_samples_abscounts.txt')  , emit: filtered_samples_abscounts, optional: true
+    path('readcount_maxsubset.txt')         , emit: readcount_maxsubset, optional: true
+    path('absqza_lowqualityfiltered.txt')   , emit: samples_filtered, optional: true
    
     //All samples' qza with relative counts are merged for use in qiime composition barplot
     //All sample's qza with absolute counts are filtered by read count for use in group diversity comparisons
