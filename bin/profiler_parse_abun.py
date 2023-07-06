@@ -35,12 +35,15 @@ def sourmash_profileparse( sourmash_profiletable, label, readcount ):
     profile = pd.read_csv(sourmash_profiletable, sep=",")
     profile = profile[["lineage", "match_containment_ani", "unique_intersect_bp", "f_unique_weighted"]]
     profile = profile[(profile["match_containment_ani"] >= 0.935) | (profile["unique_intersect_bp"] > 1000000)]
+
     rel_profile = profile[["lineage","f_unique_weighted"]]
     rel_profile.columns = ["clade_name", label]
+    rel_profile = rel_profile.groupby(['clade_name']).sum()
     rel_profile.to_csv(label+'_relabun_parsed_mpaprofile.txt', sep="\t", index=False)
 
     abs_profile = rel_profile
     abs_profile[label] = abs_profile[label]*readcount
+    abs_profile = abs_profile.groupby(['clade_name']).sum()
     abs_profile.to_csv(label+'_absabun_parsed_mpaprofile.txt', sep="\t", index=False)
    
     taxonomy = pd.DataFrame(rel_profile["clade_name"].str.replace(";", "|", regex=False))    
