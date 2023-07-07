@@ -271,8 +271,13 @@ workflow PROFILING {
     
         SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
         SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
-        SOURMASH_QIIMEPREP ( SOURMASH_GATHER.out.gather )
-        SOURMASH_MERGEREADCOUNT( SOURMASH_QIIMEPREP.out.fq_readcount.collect() )
+        SOURMASH_GATHER.out.gather
+            .join( SOURMASH_SKETCH.out.sketch )
+            .map { [it[0], it[1], it[3]] }
+            .set { qiime2_input }
+        SOURMASH_QIIMEPREP ( qiime2_input )
+        ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
+        SOURMASH_MERGEREADCOUNT( SOURMASH_QIIMEPREP.out.mqc.collect() )
 
         QIIME_TAXMERGE( SOURMASH_QIIMEPREP.out.taxonomy.collect() )
         QIIME_IMPORT ( SOURMASH_QIIMEPREP.out.mpa_biomprofile )
