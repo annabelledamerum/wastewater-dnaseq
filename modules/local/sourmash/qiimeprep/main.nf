@@ -16,7 +16,7 @@ process SOURMASH_QIIMEPREP {
 
     script:
     prefix = task.ext.prefix ?: "${meta.id}"
-    host_lineage_param = host_lineage ? "--host-lineage $host_lineage" : ""
+    host_lineage_param = host_lineage ? "--host_lineage $host_lineage" : ""
     """
     parse_sourmash_results_for_qiime.py $gather -n $prefix -l $sketch_log -f $host_lineage_param
     biom convert -i ${prefix}_relabun_parsed_mpaprofile.txt -o ${prefix}_relabun_parsed_mpaprofile.biom --table-type="OTU table" --to-json

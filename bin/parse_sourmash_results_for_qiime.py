@@ -52,7 +52,7 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
 
     # Calculate total percentages of microbes and unidenfied kmers
     mqc_data["data"][name]["Microbes"] = profile["f_unique_weighted"].sum()*100
-    mqc_data["data"][name]["Unidentified"] = 100 - mqc_data["data"]["Microbes"]
+    mqc_data["data"][name]["Unidentified"] = 100 - mqc_data["data"][name]["Microbes"]
 
     # Read host lineage file to get a list of host genome accessions and species names
     if host_lineage:

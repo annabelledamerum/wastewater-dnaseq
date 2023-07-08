@@ -277,7 +277,7 @@ workflow PROFILING {
             .join( SOURMASH_SKETCH.out.sketch )
             .map { [it[0], it[1], it[3]] }
             .set { qiime2_input }
-        SOURMASH_QIIMEPREP ( qiime2_input, host_lineage.ifEmpty([]) )
+        SOURMASH_QIIMEPREP ( qiime2_input, host_lineage.collect().ifEmpty([]) )
         ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
         SOURMASH_MERGEREADCOUNT( SOURMASH_QIIMEPREP.out.mqc.collect() )
 
