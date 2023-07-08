@@ -19,7 +19,7 @@ process SOURMASH_GATHER {
     LINEAGE=`find -L "sourmash_database" -name "*.csv"`
 
     sourmash gather $sketch \$DB --dna --ksize 51 --threshold-bp 50000 -o ${prefix}_sourmashgather.csv 2> ${prefix}_sourmashgather.log
-    sourmash tax annotate -g sourmash_gather_output -t \$LINEAGE 2> ${prefix}_sourmashannotate.log
+    sourmash tax annotate -g ${prefix}_sourmashgather.csv -t \$LINEAGE 2> ${prefix}_sourmashannotate.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

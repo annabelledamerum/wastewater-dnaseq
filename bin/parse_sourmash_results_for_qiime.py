@@ -96,6 +96,6 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--sketch_log", dest="sketch_log", type=str, required=True, help="Sourmash sketch log")
     parser.add_argument("-n", "--name", dest="name", type=str, help="Sample name")
     parser.add_argument("-f", "--filter_false_positive", dest="filter_fp", action="store_true", help="Whether to filter potentially false positive results, empirically")
-    parser.add_argument("-h", "--host_lineage", dest="host_lineage", type=str, help="Host/pathogen lineage file")
+    parser.add_argument("--host_lineage", dest="host_lineage", type=str, help="Host/pathogen lineage file")
     args = parser.parse_args()
     parse_sourmash(args.sourmash_results, args.sketch_log, args.name, args.filter_fp, args.host_lineage)

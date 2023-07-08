@@ -268,19 +268,21 @@ workflow PROFILING {
                                         reads: [ it[0] + it[2], it[1] ]
                                         db: it[3]
                                 }
-    
+        host_lineage = params.host_lineage ? Channel.fromPath(params.host_lineage) : Channel.empty()
+        // Temporary place holder for host lineage file until reconfiguration of database into a config file
+
         SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
         SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
         SOURMASH_GATHER.out.gather
             .join( SOURMASH_SKETCH.out.sketch )
             .map { [it[0], it[1], it[3]] }
             .set { qiime2_input }
-        SOURMASH_QIIMEPREP ( qiime2_input )
+        SOURMASH_QIIMEPREP ( qiime2_input, host_lineage.ifEmpty([]) )
         ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
         SOURMASH_MERGEREADCOUNT( SOURMASH_QIIMEPREP.out.mqc.collect() )
 
         QIIME_TAXMERGE( SOURMASH_QIIMEPREP.out.taxonomy.collect() )
-        QIIME_IMPORT ( SOURMASH_QIIMEPREP.out.mpa_biomprofile )
+        QIIME_IMPORT ( SOURMASH_QIIMEPREP.out.biom )
 
         QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), SOURMASH_MERGEREADCOUNT.out.allsamples_totalreads )
 
