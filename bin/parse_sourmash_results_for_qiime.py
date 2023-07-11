@@ -20,16 +20,18 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
                         "common eukaryotic pathogens/parasites, and other microbes. Unidentified kmers "
                         "are those do not have match with the database or those with a match but fail to reach "
                         "the base-pair threshold set during the sourmash step of the pipeline. Please refer to "
-                        "plots in sections below for detailed compositions of other microbes."),
+                        "plots in sections below for detailed compositions of other microbes. "
+                        "sourmash only outputs percentages of kmers identified, the numbers of reads you see "
+                        "here are estimated using percentages and total numbers of reads that are input into sourmash."),
         "plot_type": "bargraph",
         "anchor": "sourmash_kmer_composition",
         "pconfig": {
             "id": "kmer_composition_bargraph",
             "title": "Kmer composition (sourmash)",
-            "ylab": "Percent of all Kmers",
-            "cpswitch": False
+            "cpswitch_c_active": False,
+            "cpswitch_counts_label": "Read counts (Estimated)",
+            "cpswitch_percent_label": "Percent Kmers"
         },
-        "yCeiling": 100,
         "data": { name : dict() }
     }
 
@@ -50,9 +52,9 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     if filter_fp:
         profile = profile[(profile["match_containment_ani"] >= 0.935) | (profile["unique_intersect_bp"] > 1000000)]
 
-    # Calculate total percentages of microbes and unidenfied kmers
-    mqc_data["data"][name]["Microbes"] = profile["f_unique_weighted"].sum()*100
-    mqc_data["data"][name]["Unidentified"] = 100 - mqc_data["data"][name]["Microbes"]
+    # Calculate total no. reads of microbes and unidenfied kmers
+    mqc_data["data"][name]["Microbes"] = round(profile["f_unique_weighted"].sum()*readcount, 2)
+    mqc_data["data"][name]["Unidentified"] = round(readcount-mqc_data["data"][name]["Microbes"], 2)
 
     # Read host lineage file to get a list of host genome accessions and species names
     if host_lineage:
@@ -63,12 +65,12 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
         # Separate host and other matches
         host = profile.loc[profile["accession"].isin(host_info["ident"])]
         profile = profile.loc[~profile["accession"].isin(host_info["ident"])]
-        mqc_data["data"][name]["Microbes"] = profile["f_unique_weighted"].sum()*100
+        mqc_data["data"][name]["Microbes"] = round(profile["f_unique_weighted"].sum()*readcount, 2)
         # Add the species name to the host profile
         host = host[["accession","f_unique_weighted"]]
         host = pd.merge(host, host_info, left_on="accession", right_on="ident", how="left")
-        # Record the percentages of each host organism
-        mqc_data["data"][name].update(host.set_index("species")["f_unique_weighted"].mul(100).to_dict())
+        # Record the no. reads of each host organism
+        mqc_data["data"][name].update(host.set_index("species")["f_unique_weighted"].mul(readcount).round(2).to_dict())
 
     profile = profile[["lineage","f_unique_weighted"]]
     profile = profile.rename(columns={'f_unique_weighted':name})
