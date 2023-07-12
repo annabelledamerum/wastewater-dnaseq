@@ -81,7 +81,8 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     profile.to_csv(name+'_absabun_parsed_mpaprofile.txt', sep="\t")
 
     # Create a taxonomy file
-    profile['Taxon'] = profile.index.str.replace(";", "|", regex=False)
+    profile['Taxon'] = profile.index
+    profile.index = profile.index.str.replace(";", "|", regex=False)
     profile = profile.drop(name, axis=1)
     profile.index.name = 'Feature ID'
     profile.to_csv(name+"_profile_taxonomy.txt", sep="\t")
