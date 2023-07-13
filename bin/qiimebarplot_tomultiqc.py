@@ -11,6 +11,8 @@ def qiimebarplot_tomultiqc(table, levelnum):
     f=f.transpose()
     f.columns = f.iloc[0]
     f = f.iloc[1:,:]
+    for col in f.columns:
+        f[col] = (f[col]/f[col].sum())*100
     f.insert(0, "#OTU ID", f.index)
 
     f.to_csv("allsamples_exported_QIIME_barplot/level-"+levelnum+".csv", index=False, header=True)

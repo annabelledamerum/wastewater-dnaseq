@@ -286,7 +286,7 @@ workflow PROFILING {
 
         QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), SOURMASH_MERGEREADCOUNT.out.allsamples_totalreads )
 
-        QIIME_BARPLOT( QIIME_DATAMERGE.out.allsamples_rel_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
+        QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
         ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
 
