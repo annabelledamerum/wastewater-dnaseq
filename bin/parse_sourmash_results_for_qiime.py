@@ -5,6 +5,19 @@ import pandas as pd
 import re
 import json
 
+def add_prefix_to_lineage(lineage):
+    # Some of the sourmash databases has these prefixes at each taxonomy level
+    # but some doesn't. This code will add prefixes to those without for consistency
+    prefixes = ['d__','p__','c__','o__','f__','g__','s__']
+    levels = lineage.split(';')
+    parsed_lineage = []
+    for idx,lvl in enumerate(levels):
+        if idx<len(prefixes) and not lvl.startswith(prefixes[idx]):
+            parsed_lineage.append(prefixes[idx]+lvl)
+        else:
+            parsed_lineage.append(lvl)
+    return ';'.join(parsed_lineage)
+
 def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     # Get sample name if not specified
     if not name:
@@ -73,6 +86,7 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
         mqc_data["data"][name].update(host.set_index("species")["f_unique_weighted"].mul(readcount).round(2).to_dict())
 
     profile = profile[["lineage","f_unique_weighted"]]
+    profile["lineage"] = profile["lineage"].map(add_prefix_to_lineage)
     profile = profile.rename(columns={'f_unique_weighted':name})
     # Collapsing rows together in case of duplicate clade name
     profile = profile.groupby('lineage').sum()
