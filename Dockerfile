@@ -1,4 +1,4 @@
-FROM nfcore/base:1.9
+FROM nfcore/base:2.1
 
 COPY environment.yml /
 
@@ -10,6 +10,4 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 RUN conda activate zymobiomics_shotgun && cd /opt/mqc_plugins && python setup.py install
 
-ENV PATH "/opt/conda/envs/zymobiomics_shotgun/bin:$PATH"
-
-RUN echo "export PATH=/opt/conda/envs/zymobiomics_shotgun/bin:$PATH" >> /root/.bashrc
+ENV PATH /opt/conda/envs/zymobiomics_shotgun/bin:$PATH

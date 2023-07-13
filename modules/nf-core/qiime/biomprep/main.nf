@@ -19,7 +19,7 @@ process QIIME_BIOMPREP {
     """
     head -n 5 $mpa_profile > ${prefix}_infotext.txt
     sed '1,5d' $mpa_profile | sed 's/#//g' > ${prefix}_profile.txt
-    metaphlan_parse_abun.py -t ${prefix}_profile.txt --label "${prefix}"
+    profiler_parse_abun.py -t ${prefix}_profile.txt --label "${prefix}" --profiler "metaphlan4"
     biom convert -i ${prefix}_relabun_parsed_mpaprofile.txt -o ${prefix}_relabun_parsed_mpaprofile.biom --table-type="OTU table" --to-json
     biom convert -i ${prefix}_absabun_parsed_mpaprofile.txt -o ${prefix}_absabun_parsed_mpaprofile.biom --table-type="OTU table" --to-json
 
