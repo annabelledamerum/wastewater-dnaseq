@@ -9,6 +9,7 @@ include { KRAKEN2_STANDARD_REPORT                       } from '../../modules/lo
 include { BRACKEN_BRACKEN                               } from '../../modules/nf-core/bracken/bracken/main'
 include { CENTRIFUGE_CENTRIFUGE                         } from '../../modules/nf-core/centrifuge/centrifuge/main'
 include { CENTRIFUGE_KREPORT                            } from '../../modules/nf-core/centrifuge/kreport/main'
+include { KHMER_TRIM_LOW_ABUND                          } from '../../modules/local/khmer_trim_low_abund'
 include { SOURMASH_SKETCH                               } from '../../modules/local/sourmash/sketch/main'
 include { SOURMASH_GATHER                               } from '../../modules/local/sourmash/gather/main'
 include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf-core/metaphlan4/metaphlan4/main'
@@ -271,8 +272,17 @@ workflow PROFILING {
         host_lineage = params.host_lineage ? Channel.fromPath(params.host_lineage) : Channel.empty()
         // Temporary place holder for host lineage file until reconfiguration of database into a config file
 
-        SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
+        if (params.run_khmer_trim_low_abund) {
+            KHMER_TRIM_LOW_ABUND ( ch_input_for_sourmash.reads )
+            ch_input_for_sourmash_sketch = KHMER_TRIM_LOW_ABUND.out.reads
+            ch_versions = ch_versions.mix( KHMER_TRIM_LOW_ABUND.out.versions.first() )
+        } else {
+            ch_input_for_sourmash_sketch = ch_input_for_sourmash.reads
+        }
+        SOURMASH_SKETCH ( ch_input_for_sourmash_sketch )
+        ch_versions = ch_versions.mix( SOURMASH_SKETCH.out.versions.first() )
         SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
+        ch_versions = ch_versions.mix( SOURMASH_GATHER.out.versions.first() )
         SOURMASH_GATHER.out.gather
             .join( SOURMASH_SKETCH.out.sketch )
             .map { [it[0], it[1], it[3]] }
