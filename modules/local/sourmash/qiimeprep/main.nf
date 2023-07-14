@@ -1,5 +1,6 @@
 process SOURMASH_QIIMEPREP {
     label 'process_low'
+    tag "${meta.id}"
 
     conda "bioconda::biom-format=2.1.14"
     container 'quay.io/biocontainers/biom-format:2.1.14'
