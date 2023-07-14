@@ -11,13 +11,7 @@ process QIIME_TAXMERGE {
 
     script:
     """
-    for i in $taxonomy
-    do
-        path=\$(realpath \${i})
-        echo \$path
-    done > taxonomy_files.tsv
-
-    qiime_taxmerge.py -t taxonomy_files.tsv 
+    qiime_taxmerge.py -t $taxonomy 
 
     qiime tools import --input-path allsamples_taxonomylist.tsv --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path allsamples_qiime_taxonomy.qza 
     """

@@ -47,8 +47,6 @@ workflow DIVERSITY {
 
     QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
 
-    QIIME_DIVERSITYCORE.out.distance.flatten().view()
-
     QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
 
     QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
