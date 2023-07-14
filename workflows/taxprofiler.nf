@@ -76,6 +76,7 @@ include { SHORTREAD_HOSTREMOVAL         } from '../subworkflows/local/shortread_
 include { LONGREAD_HOSTREMOVAL          } from '../subworkflows/local/longread_hostremoval'
 include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_complexityfiltering'
 include { PROFILING                     } from '../subworkflows/local/profiling'
+include { DIVERSITY                     } from '../subworkflows/local/diversity'
 include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 
@@ -230,8 +231,10 @@ workflow TAXPROFILER {
         SUBWORKFLOW: PROFILING
     */
 
-    PROFILING ( ch_reads_runmerged, DB_CHECK.out.dbs, INPUT_CHECK.out.groups )
+    PROFILING ( ch_reads_runmerged, DB_CHECK.out.dbs )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
+
+    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, PROFILING.out.qiime_readcount, INPUT_CHECK.out.groups )
 
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
@@ -297,6 +300,7 @@ workflow TAXPROFILER {
     }
 
     ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
 
     if ( params.run_profile_standardisation ) {
         ch_multiqc_files = ch_multiqc_files.mix( STANDARDISATION_PROFILES.out.mqc.collect{it[1]}.ifEmpty([]) )

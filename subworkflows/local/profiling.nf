@@ -12,6 +12,7 @@ include { CENTRIFUGE_KREPORT                            } from '../../modules/nf
 include { SOURMASH_SKETCH                               } from '../../modules/local/sourmash/sketch/main'
 include { SOURMASH_GATHER                               } from '../../modules/local/sourmash/gather/main'
 include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf-core/metaphlan4/metaphlan4/main'
+include { METAPHLAN4_QIIMEPREP                          } from '../../modules/nf-core/metaphlan4/qiimeprep/main'
 include { METAPHLAN4_UNMAPPED                           } from '../../modules/nf-core/metaphlan4/unmapped/main'
 include { SOURMASH_QIIMEPREP                            } from '../../modules/local/sourmash/qiimeprep/main'
 include { SOURMASH_MERGEREADCOUNT                       } from '../../modules/local/sourmash/mergereadcount/main'
@@ -20,31 +21,20 @@ include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
 include { MOTUS_PROFILE                                 } from '../../modules/nf-core/motus/profile/main'
 include { KRAKENUNIQ_PRELOADEDKRAKENUNIQ                } from '../../modules/nf-core/krakenuniq/preloadedkrakenuniq/main'
-include { QIIME_BIOMPREP                                } from '../../modules/nf-core/qiime/biomprep/main'
-include { QIIME_TAXMERGE                                } from '../../modules/nf-core/qiime/taxmerge/main'
-include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
-include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
-include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
-include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
-include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
-include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
-include { QIIME_HEATMAP                                 } from '../../modules/nf-core/qiime/heatmap/main'
-include { QIIME_ALPHADIVERSITY                          } from '../../modules/nf-core/qiime/alphadiversity/main'
-include { QIIME_BETA                                    } from '../../modules/nf-core/qiime/beta/main'
-include { QIIME_BETAPLOT                                } from '../../modules/nf-core/qiime/betaplot/main'
-include { QIIME_ALPHAPLOT                               } from '../../modules/nf-core/qiime/alphaplot/main'
 
 workflow PROFILING {
     take:
     reads // [ [ meta ], [ reads ] ]
     databases // [ [ meta ], path ]
-    groups // group_metadata.csv
 
     main:
     ch_versions             = Channel.empty()
     ch_multiqc_files        = Channel.empty()
     ch_raw_classifications  = Channel.empty()
     ch_raw_profiles         = Channel.empty()
+    ch_qiime_profiles       = Channel.empty()
+    ch_taxonomy             = Channel.empty()
+    ch_readcount            = Channel.empty()
 
 /*
         COMBINE READS WITH POSSIBLE DATABASES
@@ -256,8 +246,36 @@ workflow PROFILING {
 
     }
 
-    if ( params.run_sourmash ){
- 
+    if ( params.run_metaphlan4 ) {
+
+        ch_input_for_metaphlan4 = ch_input_for_profiling.metaphlan4
+                            .filter{
+                                if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] MetaPhlAn4 currently does not accept FASTA files as input. Skipping MetaPhlAn4 for sample ${it[0].id}."
+                                !it[0].is_fasta
+                            }
+                            .multiMap {
+                                it ->
+                                    reads: [it[0] + it[2], it[1]]
+                                    db: it[3]
+                            }
+
+        METAPHLAN4_METAPHLAN4 ( ch_input_for_metaphlan4.reads, ch_input_for_metaphlan4.db )
+        ch_versions        = ch_versions.mix( METAPHLAN4_METAPHLAN4.out.versions.first() )
+        ch_raw_profiles    = ch_raw_profiles.mix( METAPHLAN4_METAPHLAN4.out.profile )
+
+        METAPHLAN4_QIIMEPREP ( METAPHLAN4_METAPHLAN4.out.profile )
+        ch_versions     = ch_versions.mix( METAPHLAN4_QIIMEPREP.out.versions.first() )
+        ch_qiime_profiles = ch_qiime_profiles.mix( METAPHLAN4_QIIMEPREP.out.mpa_biomprofile )
+        ch_taxonomy = ch_taxonomy.mix( METAPHLAN4_QIIMEPREP.out.taxonomy )
+
+        METAPHLAN4_UNMAPPED ( METAPHLAN4_QIIMEPREP.out.mpa_info.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( METAPHLAN4_UNMAPPED.out.json.ifEmpty([]))
+        ch_readcount = ch_readcount.mix( METAPHLAN4_UNMAPPED.out.aligned_read_totals )
+
+    }
+
+    if (params.run_sourmash) {
+
         ch_input_for_sourmash =  ch_input_for_profiling.sourmash
                                 .filter{
                                     if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] Sourmash currently does not accept FASTA files as input. Skipping Sourmash for sample ${it[0].id}."
@@ -279,89 +297,13 @@ workflow PROFILING {
             .set { qiime2_input }
         SOURMASH_QIIMEPREP ( qiime2_input, host_lineage.collect().ifEmpty([]) )
         ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
+        ch_qiime_profiles = ch_qiime_profiles.mix( SOURMASH_QIIMEPREP.out.biom )
+        ch_taxonomy = ch_taxonomy.mix( SOURMASH_QIIMEPREP.out.taxonomy )
+        
         SOURMASH_MERGEREADCOUNT( SOURMASH_QIIMEPREP.out.mqc.collect() )
-
-        QIIME_TAXMERGE( SOURMASH_QIIMEPREP.out.taxonomy.collect() )
-        QIIME_IMPORT ( SOURMASH_QIIMEPREP.out.biom )
-
-        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), SOURMASH_MERGEREADCOUNT.out.allsamples_totalreads )
-
-        QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
-        ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
-
-        QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.samples_filtered )
-
-        QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_samples_relcounts, QIIME_METADATAFILTER.out.filtered_metadata )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) )
-
-        QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
-
-        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
-
-        QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
-
-        QIIME_BETA( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
-
-        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
-
-        QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect().ifEmpty([]) )
+        ch_readcount = ch_readcount.mix( SOURMASH_MERGEREADCOUNT.out.allsamples_totalreads )
 
     }    
-
-    if ( params.run_metaphlan4 ) {
-
-        ch_input_for_metaphlan4 = ch_input_for_profiling.metaphlan4
-                            .filter{
-                                if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] MetaPhlAn4 currently does not accept FASTA files as input. Skipping MetaPhlAn4 for sample ${it[0].id}."
-                                !it[0].is_fasta
-                            }
-                            .multiMap {
-                                it ->
-                                    reads: [it[0] + it[2], it[1]]
-                                    db: it[3]
-                            }
-
-        METAPHLAN4_METAPHLAN4 ( ch_input_for_metaphlan4.reads, ch_input_for_metaphlan4.db )
-        ch_versions        = ch_versions.mix( METAPHLAN4_METAPHLAN4.out.versions.first() )
-        ch_raw_profiles    = ch_raw_profiles.mix( METAPHLAN4_METAPHLAN4.out.profile )
-
-        QIIME_BIOMPREP( METAPHLAN4_METAPHLAN4.out.profile )
-        ch_versions     = ch_versions.mix( QIIME_BIOMPREP.out.versions.first() )
-
-        METAPHLAN4_UNMAPPED( QIIME_BIOMPREP.out.mpa_info.collect() )
-        ch_multiqc_files = ch_multiqc_files.mix( METAPHLAN4_UNMAPPED.out.json.ifEmpty([]))
-
-        QIIME_TAXMERGE( QIIME_BIOMPREP.out.taxonomy.collect() )
-        QIIME_IMPORT ( QIIME_BIOMPREP.out.mpa_biomprofile )
-
-        QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), METAPHLAN4_UNMAPPED.out.aligned_read_totals )
- 
-        QIIME_BARPLOT( QIIME_DATAMERGE.out.allsamples_rel_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
-        ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
-
-        QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.samples_filtered )
-        
-        QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_samples_relcounts, QIIME_METADATAFILTER.out.filtered_metadata )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
-
-        QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
-
-        QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
-
-        QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
-
-        QIIME_BETA( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata )
-
-        QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
-
-        QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETA.out.tsv.collect() )
-        ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect().ifEmpty([]) )
-    }
 
     if ( params.run_kaiju ) {
 
@@ -445,6 +387,9 @@ workflow PROFILING {
     emit:
     classifications = ch_raw_classifications
     profiles        = ch_raw_profiles    // channel: [ val(meta), [ reads ] ] - should be text files or biom
+    qiime_profiles  = ch_qiime_profiles  // channel: [ val(meta), relative abundance profiles, absolute abundance profiles ]
+    qiime_taxonomy  = ch_taxonomy
+    qiime_readcount = ch_readcount
     versions        = ch_versions          // channel: [ versions.yml ]
     motus_version   = params.run_motus ? MOTUS_PROFILE.out.versions.first() : Channel.empty()
     mqc             = ch_multiqc_files
