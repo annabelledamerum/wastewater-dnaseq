@@ -12,7 +12,7 @@ def qiime_taxmerge(qza, readcount, lowread_filter):
     for i in exclude:
         qza = re.sub(i+"_qiime_absfreq_table.qza", "", qza)
     #next select the read count of the smallest sample that passed filtering. This number will be the maximum subset for diversity core analysis
-    subset_num = totalreads[totalreads["aligned"] >= lowread_filter]["aligned"].min()
+    subset_num = int(totalreads[totalreads["aligned"] >= lowread_filter]["aligned"].min())
     #stop diversity analysis if there are no samples that passed the total read cutoff filter
     if pd.notna(subset_num):
         with open('absqza_lowqualityfiltered.txt', 'w+') as fn:
