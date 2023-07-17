@@ -17,7 +17,10 @@ process QIIME_BARPLOT {
     script:   
  
     """
-    qiime taxa barplot --i-table $qza --i-taxonomy $taxonomy --o-visualization allsamples_compbarplot.qzv
+    qiime_taxmerge.py -t $taxonomy
+    qiime tools import --input-path allsamples_taxonomylist.tsv --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path allsamples_qiime_taxonomy.qza
+
+    qiime taxa barplot --i-table $qza --i-taxonomy allsamples_qiime_taxonomy.qza --o-visualization allsamples_compbarplot.qzv
     qiime tools export --input-path allsamples_compbarplot.qzv --output-path allsamples_exported_QIIME_barplot
     
     array=( \$( seq 1 7) )

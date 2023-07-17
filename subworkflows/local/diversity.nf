@@ -2,7 +2,6 @@
 // Run profiling
 //
 
-include { QIIME_TAXMERGE                                } from '../../modules/nf-core/qiime/taxmerge/main'
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
 include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
@@ -28,13 +27,11 @@ workflow DIVERSITY {
     ch_raw_classifications  = Channel.empty()
     ch_raw_profiles         = Channel.empty()
 
-
-    QIIME_TAXMERGE( qiime_taxonomy.collect() )
     QIIME_IMPORT ( qiime_profiles )
 
     QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), qiime_readcounts )
  
-    QIIME_BARPLOT( QIIME_DATAMERGE.out.allsamples_rel_qzamerged, QIIME_TAXMERGE.out.merged_taxonomy)
+    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_rel_qzamerged, qiime_taxonomy.collect())
     ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
 

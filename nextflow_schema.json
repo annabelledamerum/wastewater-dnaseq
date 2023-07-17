@@ -459,6 +459,10 @@
 		    "type": "boolean",
 		    "description": "Turn on profiling with Sourmash. Requires database to be present in CSV file passed to --databases"
 		},
+		"host_lineage": {
+		    "type": "boolean",
+		    "description": "Sourmash only: specify host genome when using sourmash tool. When this parameter is specified, pipeline will not run bowtie2 short read host removal."
+		},
                 "run_metaphlan4": {
                     "type": "boolean",
                     "description": "Turn on profiling with MetaPhlAn4. Requires database to be present in CSV file passed to --databases",

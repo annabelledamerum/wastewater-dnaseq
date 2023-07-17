@@ -1,4 +1,5 @@
 params.lowread_filter = 1000000
+params.min_downsample_limit = 500000
 
 process QIIME_DATAMERGE {
     label 'process_low'
@@ -11,7 +12,7 @@ process QIIME_DATAMERGE {
     path(aligned_read_totals)
 
     output:
-    path('allsamples_mergedrelqiime.qza')   , emit: allsamples_rel_qzamerged
+    path('filtered_mergedrelqiime.qza')     , emit: filtered_rel_qzamerged, optional: true
     path('filtered_mergedabsqiime.qza')     , emit: filtered_abs_qzamerged, optional: true
     path('filtered_samples_relcounts.txt')  , emit: filtered_samples_relcounts, optional: true
     path('filtered_samples_abscounts.txt')  , emit: filtered_samples_abscounts, optional: true
@@ -25,9 +26,7 @@ process QIIME_DATAMERGE {
 
     script:
     """
-    qiime feature-table merge --i-tables $rel_qza --o-merged-table allsamples_mergedrelqiime.qza
-
-    low_read_filter.py -q "$abs_qza" -r $aligned_read_totals -f $params.lowread_filter  
+    low_read_filter.py -q "$abs_qza" -r $aligned_read_totals -f $params.lowread_filter 
 
     if test -f \"absqza_lowqualityfiltered.txt\"; then
 
