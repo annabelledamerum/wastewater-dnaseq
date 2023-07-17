@@ -46,33 +46,19 @@ workflow PROFILING {
     ch_multiqc_files        = Channel.empty()
     ch_raw_classifications  = Channel.empty()
     ch_raw_profiles         = Channel.empty()
-
-/*
-        COMBINE READS WITH POSSIBLE DATABASES
-    */
-
+    
+    //COMBINE READS WITH POSSIBLE DATABASES
     // e.g. output [DUMP: reads_plus_db] [['id':'2612', 'run_accession':'combined', 'instrument_platform':'ILLUMINA', 'single_end':1], <reads_path>/2612.merged.fastq.gz, ['tool':'malt', 'db_name':'mal95', 'db_params':'"-id 90"'], <db_path>/malt90]
     ch_input_for_profiling = reads
             .map {
                 meta, reads ->
                     [meta, reads]
-            }
+            }//Not sure if this mapping is needed, will test later
             .combine(databases)
-            .branch {
-                centrifuge: it[2]['tool'] == 'centrifuge'
-                diamond: it[2]['tool'] == 'diamond'
-                kaiju: it[2]['tool'] == 'kaiju'
-                kraken2: it[2]['tool'] == 'kraken2' || it[2]['tool'] == 'bracken' // to reuse the kraken module to produce the input data for bracken
-                krakenuniq: it[2]['tool'] == 'krakenuniq'
-                malt:    it[2]['tool'] == 'malt'
-                sourmash: it[2]['tool'] == 'sourmash'
-                metaphlan4: it[2]['tool'] == 'metaphlan4'
-                motus: it[2]['tool'] == 'motus'
-                unknown: true
-            }
+            .set{ ch_input_for_profiling }
 
     /*
-        PREPARE PROFILER INPUT CHANNELS & RUN PROFILING
+    PREPARE PROFILER INPUT CHANNELS & RUN PROFILING
     */
 
     // Each tool as a slightly different input structure and generally separate
@@ -80,12 +66,13 @@ workflow PROFILING {
     // for each tool and make liberal use of multiMap to keep reads/databases
     // channel element order in sync with each other
 
-    if ( params.run_malt ) {
+    if ( params.profiler == "malt" ) {
 
+        if (!params.shortread_qc_mergepairs) log.warn "[nf-core/taxprofiler] MALT does not accept uncollapsed paired-reads. Pairs will be profiled as separate files."
 
         // MALT: We groupTuple to have all samples in one channel for MALT as database
         // loading takes a long time, so we only want to run it once per database
-        ch_input_for_malt =  ch_input_for_profiling.malt
+        ch_input_for_malt =  ch_input_for_profiling
             .map {
                 meta, reads, db_meta, db ->
 
@@ -138,11 +125,11 @@ workflow PROFILING {
 
     }
 
-    if ( params.run_kraken2 || params.run_bracken ) {
+    if ( params.profiler == "kraken2" ) {
         // Have to pick first element of db_params if using bracken,
         // as db sheet for bracken must have ; sep list to
         // distinguish between kraken and bracken parameters
-        ch_input_for_kraken2 = ch_input_for_profiling.kraken2
+        ch_input_for_kraken2 = ch_input_for_profiling
                                 .map {
                                     meta, reads, db_meta, db ->
                                         def db_meta_new = db_meta.clone()
@@ -177,7 +164,9 @@ workflow PROFILING {
         )
 
     }
-
+    
+    /*
+    // Currently cannot support sequential runs of kraken2 and bracken, to be worked on later
     if ( params.run_kraken2 && params.run_bracken ) {
         // Remove files from 'pure' kraken2 runs, so only those aligned against Bracken & kraken2 database are used.
         def ch_kraken2_output = KRAKEN2_KRAKEN2.out.report
@@ -234,10 +223,11 @@ workflow PROFILING {
         ch_raw_profiles = ch_raw_profiles.mix(BRACKEN_BRACKEN.out.reports)
 
     }
+    */
 
-    if ( params.run_centrifuge ) {
+    if ( params.profiler == "centrifuge" ) {
 
-        ch_input_for_centrifuge =  ch_input_for_profiling.centrifuge
+        ch_input_for_centrifuge =  ch_input_for_profiling
                                 .filter{
                                     if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] Centrifuge currently does not accept FASTA files as input. Skipping Centrifuge for sample ${it[0].id}."
                                     !it[0].is_fasta
@@ -257,9 +247,9 @@ workflow PROFILING {
 
     }
 
-    if ( params.run_sourmash ){
+    if ( params.profiler == "sourmash" ){
  
-        ch_input_for_sourmash =  ch_input_for_profiling.sourmash
+        ch_input_for_sourmash =  ch_input_for_profiling
                                 .filter{
                                     if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] Sourmash currently does not accept FASTA files as input. Skipping Sourmash for sample ${it[0].id}."
                                     !it[0].is_fasta
@@ -321,9 +311,9 @@ workflow PROFILING {
 
     }    
 
-    if ( params.run_metaphlan4 ) {
+    if ( params.profiler == "metaphlan4" ) {
 
-        ch_input_for_metaphlan4 = ch_input_for_profiling.metaphlan4
+        ch_input_for_metaphlan4 = ch_input_for_profiling
                             .filter{
                                 if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] MetaPhlAn4 currently does not accept FASTA files as input. Skipping MetaPhlAn4 for sample ${it[0].id}."
                                 !it[0].is_fasta
@@ -373,9 +363,9 @@ workflow PROFILING {
         ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect().ifEmpty([]) )
     }
 
-    if ( params.run_kaiju ) {
+    if ( params.profiler == "kaiju" ) {
 
-        ch_input_for_kaiju = ch_input_for_profiling.kaiju
+        ch_input_for_kaiju = ch_input_for_profiling
                             .multiMap {
                                 it ->
                                     reads: [it[0] + it[2], it[1]]
@@ -392,9 +382,10 @@ workflow PROFILING {
         ch_raw_profiles    = ch_raw_profiles.mix( KAIJU_KAIJU2TABLE_SINGLE.out.summary )
     }
 
-    if ( params.run_diamond ) {
+    if ( params.profiler == "diamond" ) {
+        if (params.diamond_save_reads) log.warn "[nf-core/taxprofiler] DIAMOND only allows output of a single format. As --diamond_save_reads supplied, only aligned reads in SAM format will be produced, no taxonomic profiles will be available."
 
-        ch_input_for_diamond = ch_input_for_profiling.diamond
+        ch_input_for_diamond = ch_input_for_profiling
                                 .multiMap {
                                     it ->
                                         reads: [it[0] + it[2], it[1]]
@@ -412,9 +403,9 @@ workflow PROFILING {
 
     }
 
-    if ( params.run_motus ) {
+    if ( params.profiler == "motus" ) {
 
-        ch_input_for_motus = ch_input_for_profiling.motus
+        ch_input_for_motus = ch_input_for_profiling
                                 .filter{
                                     if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] mOTUs currently does not accept FASTA files as input. Skipping mOTUs for sample ${it[0].id}."
                                     !it[0].is_fasta
@@ -431,8 +422,8 @@ workflow PROFILING {
         ch_multiqc_files   = ch_multiqc_files.mix( MOTUS_PROFILE.out.log )
     }
 
-    if ( params.run_krakenuniq ) {
-        ch_input_for_krakenuniq =  ch_input_for_profiling.krakenuniq
+    if ( params.profiler == "krakenuniq" ) {
+        ch_input_for_krakenuniq =  ch_input_for_profiling
                                     .map {
                                         meta, reads, db_meta, db ->
                                             [[id: db_meta.db_name, single_end: meta.single_end], reads, db_meta, db]
@@ -456,6 +447,6 @@ workflow PROFILING {
     classifications = ch_raw_classifications
     profiles        = ch_raw_profiles    // channel: [ val(meta), [ reads ] ] - should be text files or biom
     versions        = ch_versions          // channel: [ versions.yml ]
-    motus_version   = params.run_motus ? MOTUS_PROFILE.out.versions.first() : Channel.empty()
+    motus_version   = params.profiler == "motus" ? MOTUS_PROFILE.out.versions.first() : Channel.empty()
     mqc             = ch_multiqc_files
 }
