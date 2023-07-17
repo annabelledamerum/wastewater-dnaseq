@@ -55,7 +55,6 @@ workflow PROFILING {
                     [meta, reads]
             }//Not sure if this mapping is needed, will test later
             .combine(databases)
-            .set{ ch_input_for_profiling }
 
     /*
     PREPARE PROFILER INPUT CHANNELS & RUN PROFILING
