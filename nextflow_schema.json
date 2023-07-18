@@ -466,6 +466,7 @@
 		"kmersize": {
 		    "type": "integer",
 		    "default": 51,
+		    "enum": [51,31,21],
 		    "description": "Sourmash only: specify the database kmer size for sourmash assignment step. Generally, a larger kmer size provide better taxonomy resolution for microbial samples with good reference databases, such as human feces. Use 31 and 21 for samples that do not have good reference databases."
 		},
 		"threshold_bp": {
