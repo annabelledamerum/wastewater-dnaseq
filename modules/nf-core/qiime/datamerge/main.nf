@@ -1,5 +1,4 @@
 params.lowread_filter = 1000000
-params.min_downsample_limit = 500000
 
 process QIIME_DATAMERGE {
     label 'process_low'
