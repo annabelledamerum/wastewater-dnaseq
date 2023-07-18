@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import argparse
 
+#the following function takes in all taxonomy paths contained in filtered smaple profiler output and creates a complete list of one of each taxonomy
 def qiime_taxmerge(taxonomylist):
     complete_taxons = pd.DataFrame()
     for taxonpath in taxonomylist:

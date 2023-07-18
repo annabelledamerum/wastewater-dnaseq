@@ -11,6 +11,7 @@ def qiimebarplot_tomultiqc(table, levelnum):
     f=f.transpose()
     f.columns = f.iloc[0]
     f = f.iloc[1:,:]
+    #set column count to percentage
     for col in f.columns:
         f[col] = (f[col]/f[col].sum())*100
     f.insert(0, "#OTU ID", f.index)

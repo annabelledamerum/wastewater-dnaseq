@@ -463,7 +463,17 @@
 		    "type": "boolean",
 		    "description": "Sourmash only: specify host genome when using sourmash tool. When this parameter is specified, pipeline will not run bowtie2 short read host removal."
 		},
-                "run_metaphlan4": {
+		"kmersize": {
+		    "type": "integer",
+		    "default": 51,
+		    "description": "Sourmash only: specify the database kmer size for sourmash assignment step. Generally, a larger kmer size provide better taxonomy resolution for microbial samples with good reference databases, such as human feces. Use 31 and 21 for samples that do not have good reference databases."
+		},
+		"threshold_bp": {
+		    "type": "integer",
+		    "default": 50000,
+		    "description": "Sourmash only: specify the basepair threshold below which Sourmash matches are no longer reported."
+		},
+		"run_metaphlan4": {
                     "type": "boolean",
                     "description": "Turn on profiling with MetaPhlAn4. Requires database to be present in CSV file passed to --databases",
                     "fa_icon": "fas fa-toggle-on"

@@ -275,7 +275,6 @@ workflow PROFILING {
     }
 
     if (params.run_sourmash) {
-
         ch_input_for_sourmash =  ch_input_for_profiling.sourmash
                                 .filter{
                                     if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] Sourmash currently does not accept FASTA files as input. Skipping Sourmash for sample ${it[0].id}."

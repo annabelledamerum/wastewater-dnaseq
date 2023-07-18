@@ -31,7 +31,7 @@ workflow DIVERSITY {
 
     QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), qiime_readcounts )
  
-    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_rel_qzamerged, qiime_taxonomy.collect())
+    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_abs_qzamerged, qiime_taxonomy.collect())
     ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
 
