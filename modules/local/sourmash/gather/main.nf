@@ -1,4 +1,4 @@
-params.kmersize = false
+params.kmersize = 51
 
 process SOURMASH_GATHER {
     tag "$meta.id"

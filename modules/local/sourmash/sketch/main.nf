@@ -1,3 +1,5 @@
+params.kmersize=51
+
 process SOURMASH_SKETCH {
     tag "$meta.id"
     label 'process_high'
