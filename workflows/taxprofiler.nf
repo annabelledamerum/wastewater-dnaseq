@@ -10,7 +10,7 @@ def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 WorkflowTaxprofiler.initialise(params, log)
 
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.genome, params.databases,
+def checkPathParamList = [ params.input, params.genome,
                             params.outdir, params.longread_hostremoval_index,
                             params.hostremoval_reference, params.shortread_hostremoval_index,
                             params.multiqc_config, params.shortread_qc_adapterlist,
@@ -27,9 +27,22 @@ if ( params.input ) {
     exit 1, "Input samplesheet not specified"
 }
 
-if (params.databases) { ch_databases = file(params.databases, checkIfExists: true) } else { exit 1, 'Input database sheet not specified!' }
+if (params.database) {
+    if (!params.databases.containsKey(params.database)) {
+        exit 1, "The provided database '${params.database}' is not available. Currently the available databases are ${params.databases.keySet().join(',')}"
+    }
+    else {
+        // Make a db_meta map that is consistent with previous versions of pipeline
+        // For others, since we are only allowing one profiler at a time, better to have them in params than channel
+        params.db_meta = params.databases[params.database].subMap(['tool','db_param']) + ['db_name': params.database]
+        params.profiler = params.databases[params.database].tool
+        params.db_path = params.databases[params.database].db_path
+        params.host_lineage = params.databases[params.database].host_lineage ?: false
+    }
+} else {
+    exit 1, "Database not specified!"
+}
 
-if (!params.shortread_qc_mergepairs && params.run_malt ) log.warn "[nf-core/taxprofiler] MALT does not accept uncollapsed paired-reads. Pairs will be profiled as separate files."
 if (params.shortread_qc_includeunmerged && !params.shortread_qc_mergepairs) exit 1, "ERROR: [nf-core/taxprofiler] cannot include unmerged reads when merging is not turned on. Please specify --shortread_qc_mergepairs"
 
 if (params.shortread_complexityfilter_tool == 'fastp' && ( params.perform_shortread_qc == false || params.shortread_qc_tool != 'fastp' ))  exit 1, "ERROR: [nf-core/taxprofiler] cannot use fastp complexity filtering if preprocessing not turned on and/or tool is not fastp. Please specify --perform_shortread_qc and/or --shortread_qc_tool 'fastp'"
@@ -41,10 +54,9 @@ if (params.hostremoval_reference           ) { ch_reference = file(params.hostre
 if (params.shortread_hostremoval_index     ) { ch_shortread_reference_index = Channel.fromPath(params.shortread_hostremoval_index).map{[[], it]} } else { ch_shortread_reference_index = [] }
 if (params.longread_hostremoval_index      ) { ch_longread_reference_index  = file(params.longread_hostremoval_index     ) } else { ch_longread_reference_index  = [] }
 
-if (params.diamond_save_reads              ) log.warn "[nf-core/taxprofiler] DIAMOND only allows output of a single format. As --diamond_save_reads supplied, only aligned reads in SAM format will be produced, no taxonomic profiles will be available."
-
-if (params.run_malt && params.run_krona && !params.krona_taxonomy_directory) log.warn "[nf-core/taxprofiler] Krona can only be run on MALT output if path to Krona taxonomy database supplied to --krona_taxonomy_directory. Krona will not be executed in this run for MALT."
-if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: [nf-core/taxprofiler] You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
+if (params.profiler=='malt' && params.run_krona && !params.krona_taxonomy_directory) log.warn "[nf-core/taxprofiler] Krona can only be run on MALT output if path to Krona taxonomy database supplied to --krona_taxonomy_directory. Krona will not be executed in this run for MALT."
+//Not supporting sequential kraken2-bracken yet
+//if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: [nf-core/taxprofiler] You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,7 +81,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 include { INPUT_CHECK                   } from '../subworkflows/local/input_check'
 
-include { DB_CHECK                      } from '../subworkflows/local/db_check'
 include { SHORTREAD_PREPROCESSING       } from '../subworkflows/local/shortread_preprocessing'
 include { LONGREAD_PREPROCESSING        } from '../subworkflows/local/longread_preprocessing'
 include { SHORTREAD_HOSTREMOVAL         } from '../subworkflows/local/shortread_hostremoval'
@@ -88,6 +99,7 @@ include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardis
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { UNTAR                       } from '../modules/nf-core/untar/main'
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { FALCO                       } from '../modules/nf-core/falco/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
@@ -122,10 +134,13 @@ workflow TAXPROFILER {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    DB_CHECK (
-        ch_databases
-    )
-    ch_versions = ch_versions.mix(DB_CHECK.out.versions)
+    // Untar tar.gz database file
+    ch_db = Channel.from([[params.db_meta, file(params.db_path, checkIfExists: true)]])
+    if (params.db_path.endsWith(".tar.gz")) {
+        UNTAR (ch_db)
+        ch_versions = ch_versions.mix(UNTAR.out.versions.first())
+        ch_db = UNTAR.out.untar
+    }
 
     /*
         MODULE: Run FastQC
@@ -230,14 +245,14 @@ workflow TAXPROFILER {
         SUBWORKFLOW: PROFILING
     */
 
-    PROFILING ( ch_reads_runmerged, DB_CHECK.out.dbs, INPUT_CHECK.out.groups )
+    PROFILING ( ch_reads_runmerged, ch_db, INPUT_CHECK.out.groups )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
 
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
     */
     if ( params.run_krona ) {
-        VISUALIZATION_KRONA ( PROFILING.out.classifications, PROFILING.out.profiles, DB_CHECK.out.dbs )
+        VISUALIZATION_KRONA ( PROFILING.out.classifications, PROFILING.out.profiles, ch_db )
         ch_versions = ch_versions.mix( VISUALIZATION_KRONA.out.versions )
     }
 
@@ -245,7 +260,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: PROFILING STANDARDISATION
     */
     if ( params.run_profile_standardisation ) {
-        STANDARDISATION_PROFILES ( PROFILING.out.classifications, PROFILING.out.profiles, DB_CHECK.out.dbs, PROFILING.out.motus_version )
+        STANDARDISATION_PROFILES ( PROFILING.out.classifications, PROFILING.out.profiles, ch_db, PROFILING.out.motus_version )
         ch_versions = ch_versions.mix( STANDARDISATION_PROFILES.out.versions )
     }
 
