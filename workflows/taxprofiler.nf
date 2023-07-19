@@ -120,6 +120,7 @@ workflow TAXPROFILER {
 
     ch_versions = Channel.empty()
     ch_multiqc_logo= Channel.fromPath("$projectDir/docs/images/nf-core-taxprofiler_logo_custom_light.png")
+    ch_multiqc_files = Channel.empty()
     adapterlist = params.shortread_qc_adapterlist ? file(params.shortread_qc_adapterlist) : []
 
     if ( params.shortread_qc_adapterlist ) {
@@ -191,8 +192,14 @@ workflow TAXPROFILER {
     */
 
     if ( params.perform_shortread_hostremoval ) {
-        ch_shortreads_hostremoved = SHORTREAD_HOSTREMOVAL ( ch_shortreads_filtered, ch_reference, ch_shortread_reference_index ).reads
-        ch_versions = ch_versions.mix(SHORTREAD_HOSTREMOVAL.out.versions)
+        if ( !params.host_lineage ) {
+            ch_shortreads_hostremoved = SHORTREAD_HOSTREMOVAL ( ch_shortreads_filtered, ch_reference, ch_shortread_reference_index ).reads
+            ch_multiqc_files = ch_multiqc_files.mix(SHORTREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
+            ch_versions = ch_versions.mix(SHORTREAD_HOSTREMOVAL.out.versions)
+        } else {
+            log.warn "Host removal requested but profiler database already include host. Host removal not performed!"
+            ch_shortreads_hostremoved = ch_shortreads_filtered
+        }
     } else {
         ch_shortreads_hostremoved = ch_shortreads_filtered
     }
@@ -284,7 +291,6 @@ workflow TAXPROFILER {
     methods_description    = WorkflowTaxprofiler.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
     ch_methods_description = Channel.value(methods_description)
 
-    ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
@@ -306,10 +312,6 @@ workflow TAXPROFILER {
 
     if (params.perform_shortread_complexityfilter && params.shortread_complexityfilter_tool != 'fastp'){
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_COMPLEXITYFILTERING.out.mqc.collect{it[1]}.ifEmpty([]) )
-    }
-
-    if (params.perform_shortread_hostremoval) {
-        ch_multiqc_files = ch_multiqc_files.mix(SHORTREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
     }
 
     if (params.perform_longread_hostremoval) {
