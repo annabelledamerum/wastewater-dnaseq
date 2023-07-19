@@ -245,10 +245,12 @@ workflow TAXPROFILER {
     /*
         SUBWORKFLOW: PROFILING
     */
-
     PROFILING ( ch_reads_runmerged, ch_db )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
 
+    /*
+        SUBWORKFLOW: DIVERSITY with Qiime2
+    */
     DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, PROFILING.out.qiime_readcount, INPUT_CHECK.out.groups )
 
     /*

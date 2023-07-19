@@ -236,7 +236,6 @@ workflow PROFILING {
         ch_multiqc_files       = ch_multiqc_files.mix( CENTRIFUGE_KREPORT.out.kreport )
 
     }
-
     
     if ( params.profiler == "metaphlan4" ) {
 
