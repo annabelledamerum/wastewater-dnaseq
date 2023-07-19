@@ -14,7 +14,6 @@ process QIIME_DIVERSITYCORE {
 
     script:   
     """
-     
     qiime diversity core-metrics --i-table $qza --p-sampling-depth \$( < $readcount_maxsubset ) --m-metadata-file $filtered_metadata --output-dir allsamples_diversity_core --p-n-jobs ${task.cpus} 
     """
 }

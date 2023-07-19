@@ -1,3 +1,5 @@
+params.kmersize=51
+
 process SOURMASH_SKETCH {
     tag "$meta.id"
     label 'process_high'
@@ -13,7 +15,7 @@ process SOURMASH_SKETCH {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    sourmash sketch dna -p k=51,scaled=1000,abund $input -o ${prefix}.sig --name ${prefix} 2> ${prefix}_sourmashsketch.log
+    sourmash sketch dna -p k=$params.kmersize,scaled=1000,abund $input -o ${prefix}.sig --name ${prefix} 2> ${prefix}_sourmashsketch.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

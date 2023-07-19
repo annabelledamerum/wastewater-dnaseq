@@ -417,6 +417,50 @@
                     "description": "Turn on generation of MEGAN summary file from MALT results",
                     "help_text": "Turns on saving of MALT output in an additional MEGAN summary file (`.megan`) that can be loaded into the MEGAN metagenomic exploration tool.\n\nNote: this file is generated not directly from MALT but rather then MEGAN utility script `rma2info`.\n\n> Modifies tool parameter(s):\n> - rma2info: `-es`"
                 },
+                "kmersize": {
+                    "type": "integer",
+                    "default": 51,
+                    "enum": [51,31,21],
+                    "description": "Sourmash only: specify the database kmer size for sourmash assignment step. Generally, a larger kmer size provide better taxonomy resolution for microbial samples with good reference databases, such as human feces. Use 31 and 21 for samples that do not have good reference databases."
+                },
+                "threshold_bp": {
+                    "type": "integer",
+                    "description": "Sourmash only: specify the basepair threshold below which Sourmash matches are no longer reported.",
+                    "default": 50000,
+                    "minimum": 1000,
+                    "maximum": 1000000
+                },
+                "run_khmer_trim_low_abund": {
+                    "type": "boolean",
+                    "description": "Sourmash only: Run khmer's trim_low_abund.py to trim and remove low abundance kmers.",
+                    "default": false
+                },
+                "motus_use_relative_abundance": {
+                    "type": "boolean",
+                    "description": "Turn on printing relative abundance instead of counts."
+                },
+                "motus_save_mgc_read_counts": {
+                    "type": "boolean",
+                    "description": "Turn on saving the mgc reads count."
+                },
+                "motus_remove_ncbi_ids": {
+                    "type": "boolean",
+                    "description": "Turn on removing NCBI taxonomic IDs."
+                }
+            },
+            "fa_icon": "fas fa-align-center"
+        },
+        "postprocessing_and_visualisation_options": {
+            "title": "Postprocessing and visualisation options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "lowread_filter": {
+                    "type": "integer",
+                    "description": "Specify the minimum number of reads with taxonomy a sample must have to be included in alpha and beta diversity and heatmap analysis.",
+                    "default": 50000
+                },
                 "skip_heatmap": {
                     "type": "boolean",
                     "description": "Remove off heatmap plot from MultiQC report"
@@ -437,41 +481,10 @@
                         "type": "boolean",
                     "description": "Turn off the chart showing individual alpha diversity per sample."
                 },
-                "lowread_filter": {
-                    "type": "integer",
-                    "description": "Specify the minimum number of reads a sample must have to be included in alpha and beta diversity and heatmap analysis.",
-                    "default": 1000000
-                },
                 "skip_betadiversity": {
                     "type": "boolean",
                     "description": "Turn off beta diversity analysis and remove beta diversity plot from MultiQC reports"
                 },
-                "motus_use_relative_abundance": {
-                    "type": "boolean",
-                    "description": "Turn on printing relative abundance instead of counts."
-                },
-                "motus_save_mgc_read_counts": {
-                    "type": "boolean",
-                    "description": "Turn on saving the mgc reads count."
-                },
-                "motus_remove_ncbi_ids": {
-                    "type": "boolean",
-                    "description": "Turn on removing NCBI taxonomic IDs."
-                },
-                "run_khmer_trim_low_abund": {
-                    "type": "boolean",
-                    "description": "Run khmer's trim_low_abund.py to trim and remove low abundance kmers. Only applicable to sourmash databases.",
-                    "default": false
-                }
-            },
-            "fa_icon": "fas fa-align-center"
-        },
-        "postprocessing_and_visualisation_options": {
-            "title": "Postprocessing and visualisation options",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
                 "run_profile_standardisation": {
                     "type": "boolean",
                     "fa_icon": "fas fa-toggle-on",

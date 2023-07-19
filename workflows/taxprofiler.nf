@@ -87,6 +87,7 @@ include { SHORTREAD_HOSTREMOVAL         } from '../subworkflows/local/shortread_
 include { LONGREAD_HOSTREMOVAL          } from '../subworkflows/local/longread_hostremoval'
 include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_complexityfiltering'
 include { PROFILING                     } from '../subworkflows/local/profiling'
+include { DIVERSITY                     } from '../subworkflows/local/diversity'
 include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 
@@ -119,6 +120,7 @@ workflow TAXPROFILER {
 
     ch_versions = Channel.empty()
     ch_multiqc_logo= Channel.fromPath("$projectDir/docs/images/nf-core-taxprofiler_logo_custom_light.png")
+    ch_multiqc_files = Channel.empty()
     adapterlist = params.shortread_qc_adapterlist ? file(params.shortread_qc_adapterlist) : []
 
     if ( params.shortread_qc_adapterlist ) {
@@ -190,8 +192,14 @@ workflow TAXPROFILER {
     */
 
     if ( params.perform_shortread_hostremoval ) {
-        ch_shortreads_hostremoved = SHORTREAD_HOSTREMOVAL ( ch_shortreads_filtered, ch_reference, ch_shortread_reference_index ).reads
-        ch_versions = ch_versions.mix(SHORTREAD_HOSTREMOVAL.out.versions)
+        if ( !params.host_lineage ) {
+            ch_shortreads_hostremoved = SHORTREAD_HOSTREMOVAL ( ch_shortreads_filtered, ch_reference, ch_shortread_reference_index ).reads
+            ch_multiqc_files = ch_multiqc_files.mix(SHORTREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
+            ch_versions = ch_versions.mix(SHORTREAD_HOSTREMOVAL.out.versions)
+        } else {
+            log.warn "Host removal requested but profiler database already include host. Host removal not performed!"
+            ch_shortreads_hostremoved = ch_shortreads_filtered
+        }
     } else {
         ch_shortreads_hostremoved = ch_shortreads_filtered
     }
@@ -244,9 +252,13 @@ workflow TAXPROFILER {
     /*
         SUBWORKFLOW: PROFILING
     */
-
-    PROFILING ( ch_reads_runmerged, ch_db, INPUT_CHECK.out.groups )
+    PROFILING ( ch_reads_runmerged, ch_db )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
+
+    /*
+        SUBWORKFLOW: DIVERSITY with Qiime2
+    */
+    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, PROFILING.out.qiime_readcount, INPUT_CHECK.out.groups )
 
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
@@ -279,7 +291,6 @@ workflow TAXPROFILER {
     methods_description    = WorkflowTaxprofiler.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
     ch_methods_description = Channel.value(methods_description)
 
-    ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
@@ -303,15 +314,12 @@ workflow TAXPROFILER {
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_COMPLEXITYFILTERING.out.mqc.collect{it[1]}.ifEmpty([]) )
     }
 
-    if (params.perform_shortread_hostremoval) {
-        ch_multiqc_files = ch_multiqc_files.mix(SHORTREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
-    }
-
     if (params.perform_longread_hostremoval) {
         ch_multiqc_files = ch_multiqc_files.mix(LONGREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
     }
 
     ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
 
     if ( params.run_profile_standardisation ) {
         ch_multiqc_files = ch_multiqc_files.mix( STANDARDISATION_PROFILES.out.mqc.collect{it[1]}.ifEmpty([]) )
