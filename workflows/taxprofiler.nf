@@ -10,7 +10,7 @@ def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 WorkflowTaxprofiler.initialise(params, log)
 
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.genome,
+def checkPathParamList = [  
                             params.outdir, params.longread_hostremoval_index,
                             params.hostremoval_reference, params.shortread_hostremoval_index,
                             params.multiqc_config, params.shortread_qc_adapterlist,
@@ -21,10 +21,10 @@ def checkPathParamList = [ params.input, params.genome,
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if ( params.input ) {
-    ch_input              = file(params.input, checkIfExists: true)
+if ( params.design ) {
+    ch_design = file(params.design, checkIfExists: true)
 } else {
-    exit 1, "Input samplesheet not specified"
+    exit 1, "Design samplesheet not specified"
 }
 
 if (params.database) {
@@ -132,7 +132,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: Read in samplesheet, validate and stage input files
     */
     INPUT_CHECK (
-        ch_input
+        ch_design
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
