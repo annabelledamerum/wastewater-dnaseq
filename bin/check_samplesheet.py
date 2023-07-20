@@ -128,8 +128,8 @@ def check_samplesheet(file_in, file_out):
     if "instrument_platform" not in design.columns:
         design["instrument_platform"] = "ILLUMINA"
 
-    # Add a "single_end" column, because Python and Nextflow have different syntax for T/F, use 0/1 instead
-    design["single_end"] = design["read_2"].isna().map({True:1,False:0})
+    # Add a "single_end" column
+    design["single_end"] = design["read_2"].isna()
 
     # Add a "fasta" column, currently not using this info,
     # just add this to be compatible with existing pipeline code

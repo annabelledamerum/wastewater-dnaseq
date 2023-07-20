@@ -80,7 +80,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK                   } from '../subworkflows/local/input_check'
-
 include { SHORTREAD_PREPROCESSING       } from '../subworkflows/local/shortread_preprocessing'
 include { LONGREAD_PREPROCESSING        } from '../subworkflows/local/longread_preprocessing'
 include { SHORTREAD_HOSTREMOVAL         } from '../subworkflows/local/shortread_hostremoval'
@@ -106,6 +105,7 @@ include { FALCO                       } from '../modules/nf-core/falco/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { CAT_FASTQ                   } from '../modules/nf-core/cat/fastq/main'
+include { SUMMARIZE_DOWNLOADS         } from '../modules/local/summarize_downloads'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,6 +121,7 @@ workflow TAXPROFILER {
     ch_versions = Channel.empty()
     ch_multiqc_logo= Channel.fromPath("$projectDir/docs/images/nf-core-taxprofiler_logo_custom_light.png")
     ch_multiqc_files = Channel.empty()
+    ch_output_file_paths = Channel.empty()
     adapterlist = params.shortread_qc_adapterlist ? file(params.shortread_qc_adapterlist) : []
 
     if ( params.shortread_qc_adapterlist ) {
@@ -259,6 +260,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: DIVERSITY with Qiime2
     */
     DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, PROFILING.out.qiime_readcount, INPUT_CHECK.out.groups )
+    ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
 
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
@@ -333,6 +335,14 @@ workflow TAXPROFILER {
         mqcPlugins
     )
     multiqc_report = MULTIQC.out.report.toList()
+    report_path = MULTIQC.out.report.map { "${params.outdir}/multiqc/" + it.getName() }
+    ch_output_file_paths = ch_output_file_paths.mix(report_path)
+
+    output_paths = ch_output_file_paths
+                       .collectFile( name: "${params.outdir}/download_data/file_locations.txt", newLine: true )
+    
+    // Parse the list of files for downloading into a JSON file
+    SUMMARIZE_DOWNLOADS( output_paths, ch_design )
 }
 
 /*

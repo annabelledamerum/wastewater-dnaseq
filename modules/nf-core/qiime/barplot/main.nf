@@ -8,14 +8,12 @@ process QIIME_BARPLOT {
     path(taxonomy)
 
     output:
-    path('*exported_QIIME_barplot/*')   , emit: barplot_export
+    path('*exported_QIIME_barplot/*')     , emit: barplot_export
     path('*exported_QIIME_barplot/*.csv') , emit: barplot_composition
-    path('allsamples_compbarplot.qzv')   
-    path "versions.yml"                        , emit: versions
-    
+    path('allsamples_compbarplot.qzv')    , emit: qzv
+    path "versions.yml"                   , emit: versions
 
     script:   
- 
     """
     qiime_taxmerge.py -t $taxonomy
     qiime tools import --input-path allsamples_taxonomylist.tsv --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path allsamples_qiime_taxonomy.qza
