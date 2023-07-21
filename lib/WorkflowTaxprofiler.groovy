@@ -19,10 +19,10 @@ class WorkflowTaxprofiler {
     //
     public static String paramsSummaryMultiqc(workflow, summary) {
         String summary_section = "    <dl class=\"dl-horizontal\"; style=\"font-size: 13px\">\n"
-        exclude_groups = ['Core Nextflow options', 
-                          'Input/output options', 
-                          'Institutional config options', 
-                          'Max job request options'] // No need to show these in Aladdin reports
+        def exclude_groups = ['Core Nextflow options', 
+                              'Input/output options', 
+                              'Institutional config options', 
+                              'Max job request options'] // No need to show these in Aladdin reports
         for (group in summary.keySet()) {
             if (!exclude_groups.contains(group)) {
                 def group_params = summary.get(group)  // This gets the parameters of that particular group
