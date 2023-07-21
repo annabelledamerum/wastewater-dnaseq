@@ -50,9 +50,9 @@ def display_unmapped_mpareads(info):
             }
         }
 
-        mpa_readstats_multiqc['data'] = mpa_readstats_parsed
-        with open('mpa_readstats_mqc.json', 'w') as ofh:
-            json.dump(mpa_readstats_multiqc, ofh, indent=4)
+    mpa_readstats_multiqc['data'] = mpa_readstats_parsed
+    with open('mpa_readstats_mqc.json', 'w') as ofh:
+        json.dump(mpa_readstats_multiqc, ofh, indent=4)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""display unaligned/aligned read statistics""")
