@@ -51,8 +51,8 @@ def summarize_downloads(locations, design):
         'evenness_vector_alpha.qzv'          : ('Alpha Diversity Box Plot by Evenness', 'all_samples'), 
         'observed_features_vector_alpha.qzv' : ('Alpha Diversity Box Plot by Observed Features', 'all_samples'), 
         # beta diversity
-        'jaccard_distance_matrix_group.qzv'    : ('Principal Coordinate Plot of Beta Diversity by Jaccard Distance', 'all_samples'), 
-        'bray_curtis_distance_matrix_group.qzv': ('Principal Coordinate Plot of Beta Diversity by Bray-Curtis Distance', 'all_samples'), 
+        'jaccard_distance_matrix-group.qzv'    : ('Principal Coordinate Plot of Beta Diversity by Jaccard Distance', 'all_samples'), 
+        'bray_curtis_distance_matrix-group.qzv': ('Principal Coordinate Plot of Beta Diversity by Bray-Curtis Distance', 'all_samples'), 
     }
 
     # Read the file locations

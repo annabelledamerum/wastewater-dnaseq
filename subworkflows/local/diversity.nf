@@ -48,7 +48,7 @@ workflow DIVERSITY {
 
     QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_ALPHARAREFACTION.out.alpha_rarefaction_qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
+        QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
         )
 
     QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
