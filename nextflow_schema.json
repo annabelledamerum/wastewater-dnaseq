@@ -64,7 +64,7 @@
                     "help_text": "Falco is designed as a drop-in replacement for FastQC but written in C++ for faster computation. We particularly recommend using falco when using long reads (due to reduced memory constraints), however is also applicable for short reads.",
                     "description": "Specify the tool used for quality control of raw sequencing reads",
                     "fa_icon": "fas fa-tools",
-                    "advanced": true
+                    "hidden": true
                 },
                 "save_preprocessed_reads": {
                     "type": "boolean",
@@ -107,7 +107,6 @@
                 },
                 "shortread_qc_adapter1": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-grip-lines",
                     "description": "Specify adapter 1 nucleotide sequence",
                     "help_text": "Specify a custom forward or R1 adapter sequence to be removed from reads. \n\nIf not set, the selected short-read QC tool's defaults will be used.\n\n> Modifies tool parameter(s):\n> - fastp: `--adapter_sequence`. fastp default: `AGATCGGAAGAGCACACGTCTGAACTCCAGTCA`\n> - AdapterRemoval: `--adapter1`. AdapteRemoval2 default: `AGATCGGAAGAGCACACGTCTGAACTCCAGTCACNNNNNNATCTCGTATGCCGTCTTCTGCTTG`",
@@ -115,7 +114,6 @@
                 },
                 "shortread_qc_adapter2": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-grip-lines",
                     "description": "Specify adapter 2 nucleotide sequence",
                     "help_text": "Specify a custom reverse or R2 adapter sequence to be removed from reads. \n\nIf not set, the selected short-read QC tool's defaults will be used.\n\n> Modifies tool parameter(s):\n> - fastp: `--adapter_sequence`. fastp default: `AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT`\n> - AdapterRemoval: `--adapter1`. AdapteRemoval2 default: `AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT`",
@@ -123,7 +121,6 @@
                 },
                 "shortread_qc_adapterlist": {
                     "type": "string",
-                    "default": "None",
                     "description": "Specify a list of all possible adapters to trim. Overrides --shortread_qc_adapter1/2. Formats: .txt (AdapterRemoval) or .fasta. (fastp).",
                     "help_text": "Allows to supply a file with a list of adapter (combinations) to remove from all files. \n\nOverrides the --shortread_qc_adapter1/--shortread_qc_adapter2 parameters . \n\nFor AdapterRemoval this consists of a two column table with a `.txt` extension: first column represents forward strand, second column for reverse strand. You must supply all possible combinations, one per line, and this list is applied to all files. See AdapterRemoval documentation for more information.\n\nFor fastp this consists of a standard FASTA format with a `.fasta`/`.fa`/`.fna`/`.fas` extension. The adapter sequence in this file should be at least 6bp long, otherwise it will be skipped. fastp trims the adapters present in the FASTA file one by one.\n\n> Modifies AdapterRemoval parameter: --adapter-list\n> Modifies fastp parameter: --adapter_fasta",
                     "fa_icon": "fas fa-th-list",
@@ -300,7 +297,6 @@
                 },
                 "hostremoval_reference": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-file-alt",
                     "description": "Specify path to single reference FASTA of host(s) genome(s)",
                     "help_text": "Specify a path to the FASTA file (optionally gzipped) of the reference genome of the organism to be removed.\n\nIf you have two or more host organisms or contaminants you wish to remove, you can concatenate the FASTAs of the different taxa into a single one to provide to the pipeline.",
@@ -308,7 +304,6 @@
                 },
                 "shortread_hostremoval_index": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-address-book",
                     "description": "Specify path to the directory containing pre-made BowTie2 indexes of the host removal reference",
                     "help_text": "Specify the path to a _directory_ containing pre-made Bowtie2 reference index files (i.e. the directory containing `.bt1`, `.bt2` files etc.). These should sit in the same directory alongside the the reference file specified in `--hostremoval_reference`.\n\nSpecifying premade indices can speed up runtime of the host-removal step, however if not supplied the pipeline will generate the indices for you.",
@@ -316,7 +311,6 @@
                 },
                 "longread_hostremoval_index": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-address-book",
                     "description": "Specify path to a pre-made Minimap2 index file (.mmi) of the host removal reference",
                     "help_text": "Specify path to a pre-made Minimap2 index file (.mmi) of the host removal reference file given to `--hostremoval_reference`.\n\nSpecifying a premade index file can speed up runtime of the host-removal step, however if not supplied the pipeline will generate the indices for you.",
@@ -532,6 +526,7 @@
                 "top_taxa": {
                     "type": "integer",
                     "description": "Specify the maximum number of top taxa from each sample you want to compare in QIIME_HEATMAP",
+                    "default": 20,
                     "hidden": true
                 },
                 "skip_alphadiversity": {
@@ -542,6 +537,7 @@
                 "skip_individalpha" : {
                     "type": "boolean",
                     "description": "Turn off the chart showing individual alpha diversity per sample.",
+                    "default": true,
                     "hidden": true
                 },
                 "skip_betadiversity": {
@@ -572,7 +568,6 @@
                 },
                 "krona_taxonomy_directory": {
                     "type": "string",
-                    "default": "None",
                     "fa_icon": "fas fa-folder-open",
                     "description": "Specify path to krona taxonomy directories (required for MALT krona plots)",
                     "help_text": "Specify a path to a Krona taxonomy database directory (i.e. a directory containing a krona generated `.tab` file).\n\nThis is only required for generating Krona plots of MALT output.\n\nNote this taxonomy database must be downloaded and generated with the `updateTaxonomy.sh` script from the krona-tools package.",
@@ -690,7 +685,7 @@
                 "max_memory": {
                     "type": "string",
                     "description": "Maximum amount of memory that can be requested for any single job.",
-                    "default": "128.GB",
+                    "default": "120.GB",
                     "fa_icon": "fas fa-memory",
                     "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
                     "hidden": true,

@@ -18,21 +18,25 @@ class WorkflowTaxprofiler {
     // Get workflow summary for MultiQC
     //
     public static String paramsSummaryMultiqc(workflow, summary) {
-        String summary_section = ''
+        String summary_section = "    <dl class=\"dl-horizontal\"; style=\"font-size: 13px\">\n"
+        exclude_groups = ['Core Nextflow options', 
+                          'Input/output options', 
+                          'Institutional config options', 
+                          'Max job request options'] // No need to show these in Aladdin reports
         for (group in summary.keySet()) {
-            def group_params = summary.get(group)  // This gets the parameters of that particular group
-            if (group_params) {
-                summary_section += "    <p style=\"font-size:110%\"><b>$group</b></p>\n"
-                summary_section += "    <dl class=\"dl-horizontal\">\n"
-                for (param in group_params.keySet()) {
-                    summary_section += "        <dt>$param</dt><dd><samp>${group_params.get(param) ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>\n"
+            if (!exclude_groups.contains(group)) {
+                def group_params = summary.get(group)  // This gets the parameters of that particular group
+                if (group_params) {
+                    for (param in group_params.keySet()) {
+                        summary_section += "        <dt>$param</dt><dd><samp>${group_params.get(param) ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>\n"
+                    }
                 }
-                summary_section += "    </dl>\n"
             }
         }
+        summary_section += "    </dl>\n"
 
         String yaml_file_text  = "id: '${workflow.manifest.name.replace('/','-')}-summary'\n"
-        yaml_file_text        += "description: ' - this information is collected when the pipeline is started.'\n"
+        yaml_file_text        += "description: ' - this information is collected when the pipeline is started. Only paremeters that differ from the default is shown'\n"
         yaml_file_text        += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
         yaml_file_text        += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
         yaml_file_text        += "plot_type: 'html'\n"
