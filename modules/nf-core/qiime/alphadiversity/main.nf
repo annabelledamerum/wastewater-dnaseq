@@ -26,5 +26,11 @@ process QIIME_ALPHADIVERSITY {
 
     mv ${vectors.baseName}_vis.qzv alpha_diversity/${vectors.baseName}_alpha.qzv
     cp "alpha_diversity/${vectors.baseName}/metadata.tsv" "alpha_diversity/${vectors.baseName}.tsv"
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
+
     """
 }

@@ -29,5 +29,11 @@ process QIIME_BETA {
     #rename the output file name
     mkdir beta_diversity/beta_qzv/
     mv beta_diversity/${distance.baseName}-group/raw_data.tsv ${distance.baseName}-group.tsv
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
+
     """
 }

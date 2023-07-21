@@ -15,5 +15,11 @@ process QIIME_DIVERSITYCORE {
     script:   
     """
     qiime diversity core-metrics --i-table $qza --p-sampling-depth \$( < $readcount_maxsubset ) --m-metadata-file $filtered_metadata --output-dir allsamples_diversity_core --p-n-jobs ${task.cpus} 
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
+
     """
 }

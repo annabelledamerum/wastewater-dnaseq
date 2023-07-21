@@ -35,5 +35,11 @@ process QIIME_ALPHARAREFACTION {
 
     # mv alpha-rarefaction/index.html  alpha-rarefaction/alpha-rarefaction_index.html
     mv alpha-rarefaction.qzv alpha-rarefaction/alpha-rarefaction.qzv
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
+
     """
 }

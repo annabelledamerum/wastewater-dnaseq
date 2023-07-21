@@ -40,5 +40,12 @@ process QIIME_DATAMERGE {
 
         biom convert -i filteredsamples_relcounts_out/feature-table.biom -o filtered_samples_relcounts.txt --to-tsv
     fi
-    """
+
+    cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+        biom: \$(biom --version | sed 's/biom, version //')
+    END_VERSIONS 
+
+   """
 }

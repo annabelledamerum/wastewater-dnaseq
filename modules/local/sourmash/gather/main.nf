@@ -12,7 +12,6 @@ process SOURMASH_GATHER {
 
     output:
     tuple val(meta), path('*with-lineages.csv'), emit: gather
-    path "versions.yml", emit: versions
     path "*.log"
 
     script:
@@ -23,11 +22,12 @@ process SOURMASH_GATHER {
 
     sourmash gather $sketch \$DB --dna --ksize ${params.kmersize} --threshold-bp ${params.threshold_bp} -o ${prefix}_sourmashgather.csv 2> ${prefix}_sourmashgather.log
     sourmash tax annotate -g ${prefix}_sourmashgather.csv -t \$LINEAGE 2> ${prefix}_sourmashannotate.log
-
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sourmash: \$(sourmash --version 2>&1 | awk '{print \$3}')
+        sourmash: \$(sourmash --version | sed 's/sourmash //')
     END_VERSIONS
+
     """
 }
 

@@ -38,7 +38,6 @@ process METAPHLAN4_METAPHLAN4 {
         $args \\
         $bowtie2_out \\
         --bowtie2db \$BT2_DB \\
-        --biom ${prefix}.biom \\
         --output_file ${prefix}_profile.txt
 
     cat <<-END_VERSIONS > versions.yml

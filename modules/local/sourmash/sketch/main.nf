@@ -19,7 +19,7 @@ process SOURMASH_SKETCH {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        sourmash: \$(sourmash --version 2>&1 | awk '{print \$3}')
+        sourmash: \$(sourmash --version | sed 's/sourmash //')
     END_VERSIONS
     """
 }
