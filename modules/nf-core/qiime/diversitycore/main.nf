@@ -11,6 +11,7 @@ process QIIME_DIVERSITYCORE {
     output:
     path('allsamples_diversity_core/*_vector.qza')         , emit: vector
     path('allsamples_diversity_core/*_distance_matrix.qza'), emit: distance
+    path "versions.yml", emit: versions
 
     script:   
     """

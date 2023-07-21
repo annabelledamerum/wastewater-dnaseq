@@ -14,7 +14,7 @@ process QIIME_BETA {
     path("beta_diversity/*"), emit: beta
     path("*.qzv"), emit: qzv
     path("*.tsv"), optional:true, emit: tsv
-
+    path "versions.yml", emit: versions
 
     script:
     """

@@ -15,6 +15,7 @@ process QIIME_ALPHARAREFACTION {
     path("alpha-rarefaction/*")                             , emit: rarefaction
     path("alpha-rarefaction/*.csv")                         , optional:true, emit: rarefaction_csv
     path "alpha-rarefaction/alpha-rarefaction.qzv"   , emit: alpha_rarefaction_qzv
+    path "versions.yml", emit: versions
 
     script:
     """

@@ -12,6 +12,7 @@ process SOURMASH_GATHER {
 
     output:
     tuple val(meta), path('*with-lineages.csv'), emit: gather
+    path "versions.yml", emit: versions 
     path "*.log"
 
     script:
