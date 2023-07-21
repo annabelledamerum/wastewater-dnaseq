@@ -24,7 +24,7 @@ workflow DIVERSITY {
     main:
     ch_versions             = Channel.empty()
     ch_multiqc_files        = Channel.empty()
-    ch_output_paths         = Channel.empty()
+    ch_output_file_paths    = Channel.empty()
 
     QIIME_IMPORT ( qiime_profiles )
 
