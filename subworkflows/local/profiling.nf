@@ -265,7 +265,8 @@ workflow PROFILING {
 
     }
 
-    if (params.profiler == "sourmash") {
+    if ( params.profiler == "sourmash" ) {
+
         ch_input_for_sourmash =  ch_input_for_profiling
                                 .filter{
                                     if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] Sourmash currently does not accept FASTA files as input. Skipping Sourmash for sample ${it[0].id}."
@@ -278,6 +279,14 @@ workflow PROFILING {
                                 }
         host_lineage = params.host_lineage ? Channel.fromPath(params.host_lineage) : Channel.empty()
         // Temporary place holder for host lineage file until reconfiguration of database into a config file
+
+        if (params.run_khmer_trim_low_abund) {
+            KHMER_TRIM_LOW_ABUND ( ch_input_for_sourmash.reads )
+            ch_input_for_sourmash_sketch = KHMER_TRIM_LOW_ABUND.out.reads
+            ch_versions = ch_versions.mix( KHMER_TRIM_LOW_ABUND.out.versions.first() )
+        } else {
+            ch_input_for_sourmash_sketch = ch_input_for_sourmash.reads
+        }
 
         SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
         SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
