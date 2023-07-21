@@ -1,5 +1,4 @@
 process SOURMASH_MERGEREADCOUNT {
-    label 'process_low'
 
     input:
     path readcounts 

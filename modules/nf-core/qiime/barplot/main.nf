@@ -1,5 +1,5 @@
 process QIIME_BARPLOT {
-    label 'process_medium'
+    label 'process_low'
     
     container 'quay.io/qiime2/core:2023.2'
     
