@@ -290,6 +290,7 @@ workflow PROFILING {
         SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
         ch_versions = ch_versions.mix( SOURMASH_SKETCH.out.versions.first() )
         SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
+        ch_versions = ch_versions.mix( SOURMASH_GATHER.out.versions.first() )
         SOURMASH_GATHER.out.gather
             .join( SOURMASH_SKETCH.out.sketch )
             .map { [it[0], it[1], it[3]] }

@@ -28,8 +28,10 @@ workflow DIVERSITY {
     ch_raw_profiles         = Channel.empty()
 
     QIIME_IMPORT ( qiime_profiles )
+    ch_versions     = ch_versions.mix( QIIME_IMPORT.out.versions )
 
     QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), qiime_readcounts )
+    ch_versions     = ch_versions.mix( QIIME_DATAMERGE.out.versions )
  
     QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_abs_qzamerged, qiime_taxonomy.collect())
     ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
@@ -41,12 +43,16 @@ workflow DIVERSITY {
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
 
     QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
+    ch_versions     = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
 
     QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
+    ch_versions     = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
 
     QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
+    ch_versions     = ch_versions.mix( QIIME_ALPHADIVERSITY.out.versions )
 
     QIIME_BETA ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
+    ch_versions     = ch_versions.mix( QIIME_BETA.out.versions )
 
     QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
