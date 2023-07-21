@@ -2,7 +2,7 @@ params.kmersize=51
 
 process SOURMASH_SKETCH {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_low'
     container 'quay.io/biocontainers/sourmash:4.8.2--hdfd78af_0'
 
     input:

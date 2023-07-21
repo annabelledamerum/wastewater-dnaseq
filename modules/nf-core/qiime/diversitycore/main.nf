@@ -1,5 +1,5 @@
 process QIIME_DIVERSITYCORE {
-    label 'process_medium'
+    label 'process_low'
    
     container 'quay.io/qiime2/core:2023.2'
      
@@ -9,11 +9,17 @@ process QIIME_DIVERSITYCORE {
     path(filtered_metadata)
 
     output:
-    path('allsamples_diversity_core/*_vector.qza')         , emit: vector
-    path('allsamples_diversity_core/*_distance_matrix.qza'), emit: distance
+    path('diversity_core/*_vector.qza')         , emit: vector
+    path('diversity_core/*_distance_matrix.qza'), emit: distance
+    path("diversity_core/*.qzv")                , emit: qzv
 
     script:   
     """
-    qiime diversity core-metrics --i-table $qza --p-sampling-depth \$( < $readcount_maxsubset ) --m-metadata-file $filtered_metadata --output-dir allsamples_diversity_core --p-n-jobs ${task.cpus} 
+    qiime diversity core-metrics \
+        --i-table $qza \
+        --p-sampling-depth \$( < $readcount_maxsubset ) \
+        --m-metadata-file $filtered_metadata \
+        --output-dir diversity_core \
+        --p-n-jobs ${task.cpus} 
     """
 }
