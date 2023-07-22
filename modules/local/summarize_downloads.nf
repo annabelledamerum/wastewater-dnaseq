@@ -1,7 +1,7 @@
 // Collect and parse information about files for download on the aladdin platform
 
 process SUMMARIZE_DOWNLOADS {
-    label 'no_cache'
+    cache false
 
     input:
     path locations

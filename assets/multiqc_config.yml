@@ -5,10 +5,12 @@ report_comment: >
 report_section_order:
   mpa_readstats:
     before: bowtie2
+  kmer_composition:
+    after: barplot
   individ_alpha_barchart:
     after: Diversity_Analysis
   Alpha_Rarefaction:
-    before: beta_diversity
+    order: -997
   Alpha_Diversity: 
     order: -998
   Beta_Diversity:
@@ -65,9 +67,9 @@ module_order:
   - diamond
   - malt
   - motus
+  - custom_content
   - composition_barplots
   - plot_heatmap
-  - custom_content
 
 sp:
   Alpha_Diversity:
@@ -94,6 +96,10 @@ top_modules:
       path_filters_exclude:
         - "*processed*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
+  - "fastp"
+  - "adapterRemoval"
+  - "porechop":
+      extra: "ℹ️: if you get the error message 'Error - was not able to plot data.' this means that porechop did not detect any adapters and therefore no statistics generated."
   - "fastqc":
       name: "FastQC / Falco (post-Trimming)"
       path_filters:
@@ -101,10 +107,6 @@ top_modules:
       path_filters_exclude:
         - "*raw*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
-  - "fastp"
-  - "adapterRemoval"
-  - "porechop":
-      extra: "ℹ️: if you get the error message 'Error - was not able to plot data.' this means that porechop did not detect any adapters and therefore no statistics generated."
   - "bbduk"
   - "prinseqplusplus"
   - "filtlong"
