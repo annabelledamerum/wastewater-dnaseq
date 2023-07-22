@@ -5,10 +5,12 @@ report_comment: >
 report_section_order:
   mpa_readstats:
     before: bowtie2
+  kmer_composition:
+    after: barplot
   individ_alpha_barchart:
     after: Diversity_Analysis
   Alpha_Rarefaction:
-    before: beta_diversity
+    order: -997
   Alpha_Diversity: 
     order: -998
   Beta_Diversity:
