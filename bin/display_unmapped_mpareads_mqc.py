@@ -27,7 +27,7 @@ def display_unmapped_mpareads(infofiles):
     mpa_readstats_json = mpa_readstats.to_json(orient="index")
     mpa_readstats_parsed = json.loads(mpa_readstats_json)
 
-    description = "The following bargraph provides the number of reads in each sample that Metaphlan was able to align to the user-selected microbiomics reference database."
+    description = "The following bargraph provides the number of reads in each sample that Metaphlan4 was able to align to the Metaphlan microbiomics reference database mpa_vOct22_CHOCOPhlAnSGB_202212. Unmapped reads are those that did not match with the database. Please refer to plots in sections below for detailed compositions of other microbes."
     mpa_readstats_multiqc = {
         'id' : 'mpa_readstats',
         'section_name' : 'Number of Metaphlan Aligned Reads',
