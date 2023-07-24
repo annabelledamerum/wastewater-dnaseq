@@ -259,7 +259,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: DIVERSITY with Qiime2
     */
     DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, PROFILING.out.qiime_readcount, INPUT_CHECK.out.groups )
-
+    ch_versions = ch_versions.mix( DIVERSITY.out.versions )
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
     */

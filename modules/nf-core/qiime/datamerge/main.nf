@@ -43,7 +43,7 @@ process QIIME_DATAMERGE {
     fi
 
     cat <<-END_VERSIONS > versions.yml
-     "${task.process}":
+    "${task.process}":
         qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
         biom: \$(biom --version | sed 's/biom, version //')
     END_VERSIONS 

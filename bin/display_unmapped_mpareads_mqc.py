@@ -6,7 +6,7 @@ import argparse
 import re
 import json
 
-def display_unmapped_mpareads(info):
+def display_unmapped_mpareads(infofiles):
     mpa_readstats = pd.DataFrame()
 
     for sample in infofiles:
@@ -56,6 +56,6 @@ def display_unmapped_mpareads(info):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""display unaligned/aligned read statistics""")
-    parser.add_argument("-i", "--infotext", dest="info", nargs='+', type=str, help="file containing all paths for mpa read statistics")
+    parser.add_argument("-i", "--infotext", dest="infofiles", nargs='+', type=str, help="file containing all paths for mpa read statistics")
     args = parser.parse_args()
-    display_unmapped_mpareads(args.info)
+    display_unmapped_mpareads(args.infofiles)
