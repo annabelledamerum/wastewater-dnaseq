@@ -1,5 +1,4 @@
 process QIIME_METADATAFILTER {
-    label 'process_low'
    
     input:
     path( group_metadata ) 

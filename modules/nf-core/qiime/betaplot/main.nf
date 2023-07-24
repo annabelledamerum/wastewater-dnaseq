@@ -1,5 +1,4 @@
 process QIIME_BETAPLOT {
-    label 'process_low'
 
     when:
     !skip_betadiversity

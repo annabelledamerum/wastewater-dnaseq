@@ -10,26 +10,39 @@ def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 WorkflowTaxprofiler.initialise(params, log)
 
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.genome, params.databases,
+def checkPathParamList = [  
                             params.outdir, params.longread_hostremoval_index,
                             params.hostremoval_reference, params.shortread_hostremoval_index,
                             params.multiqc_config, params.shortread_qc_adapterlist,
                             params.krona_taxonomy_directory,
                             params.taxpasta_taxonomy_dir,
-                            params.multiqc_logo, params.multiqc_methods_description
+                            params.multiqc_logo//, params.multiqc_methods_description
                         ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if ( params.input ) {
-    ch_input              = file(params.input, checkIfExists: true)
+if ( params.design ) {
+    ch_design = file(params.design, checkIfExists: true)
 } else {
-    exit 1, "Input samplesheet not specified"
+    exit 1, "Design samplesheet not specified"
 }
 
-if (params.databases) { ch_databases = file(params.databases, checkIfExists: true) } else { exit 1, 'Input database sheet not specified!' }
+if (params.database) {
+    if (!params.databases.containsKey(params.database)) {
+        exit 1, "The provided database '${params.database}' is not available. Currently the available databases are ${params.databases.keySet().join(',')}"
+    }
+    else {
+        // Make a db_meta map that is consistent with previous versions of pipeline
+        // For others, since we are only allowing one profiler at a time, better to have them in params than channel
+        params.db_meta = params.databases[params.database].subMap(['tool','db_param']) + ['db_name': params.database]
+        params.profiler = params.databases[params.database].tool
+        params.db_path = params.databases[params.database].db_path
+        params.host_lineage = params.databases[params.database].host_lineage ?: false
+    }
+} else {
+    exit 1, "Database not specified!"
+}
 
-if (!params.shortread_qc_mergepairs && params.run_malt ) log.warn "[nf-core/taxprofiler] MALT does not accept uncollapsed paired-reads. Pairs will be profiled as separate files."
 if (params.shortread_qc_includeunmerged && !params.shortread_qc_mergepairs) exit 1, "ERROR: [nf-core/taxprofiler] cannot include unmerged reads when merging is not turned on. Please specify --shortread_qc_mergepairs"
 
 if (params.shortread_complexityfilter_tool == 'fastp' && ( params.perform_shortread_qc == false || params.shortread_qc_tool != 'fastp' ))  exit 1, "ERROR: [nf-core/taxprofiler] cannot use fastp complexity filtering if preprocessing not turned on and/or tool is not fastp. Please specify --perform_shortread_qc and/or --shortread_qc_tool 'fastp'"
@@ -41,10 +54,9 @@ if (params.hostremoval_reference           ) { ch_reference = file(params.hostre
 if (params.shortread_hostremoval_index     ) { ch_shortread_reference_index = Channel.fromPath(params.shortread_hostremoval_index).map{[[], it]} } else { ch_shortread_reference_index = [] }
 if (params.longread_hostremoval_index      ) { ch_longread_reference_index  = file(params.longread_hostremoval_index     ) } else { ch_longread_reference_index  = [] }
 
-if (params.diamond_save_reads              ) log.warn "[nf-core/taxprofiler] DIAMOND only allows output of a single format. As --diamond_save_reads supplied, only aligned reads in SAM format will be produced, no taxonomic profiles will be available."
-
-if (params.run_malt && params.run_krona && !params.krona_taxonomy_directory) log.warn "[nf-core/taxprofiler] Krona can only be run on MALT output if path to Krona taxonomy database supplied to --krona_taxonomy_directory. Krona will not be executed in this run for MALT."
-if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: [nf-core/taxprofiler] You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
+if (params.profiler=='malt' && params.run_krona && !params.krona_taxonomy_directory) log.warn "[nf-core/taxprofiler] Krona can only be run on MALT output if path to Krona taxonomy database supplied to --krona_taxonomy_directory. Krona will not be executed in this run for MALT."
+//Not supporting sequential kraken2-bracken yet
+//if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: [nf-core/taxprofiler] You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,7 +68,7 @@ def mqcPlugins = Channel.fromPath("${baseDir}/assets/mqc_plugins/", checkIfExist
 ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+//ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,14 +80,13 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK                   } from '../subworkflows/local/input_check'
-
-include { DB_CHECK                      } from '../subworkflows/local/db_check'
 include { SHORTREAD_PREPROCESSING       } from '../subworkflows/local/shortread_preprocessing'
 include { LONGREAD_PREPROCESSING        } from '../subworkflows/local/longread_preprocessing'
 include { SHORTREAD_HOSTREMOVAL         } from '../subworkflows/local/shortread_hostremoval'
 include { LONGREAD_HOSTREMOVAL          } from '../subworkflows/local/longread_hostremoval'
 include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_complexityfiltering'
 include { PROFILING                     } from '../subworkflows/local/profiling'
+include { DIVERSITY                     } from '../subworkflows/local/diversity'
 include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 
@@ -88,11 +99,13 @@ include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardis
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { UNTAR                       } from '../modules/nf-core/untar/main'
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { FALCO                       } from '../modules/nf-core/falco/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { CAT_FASTQ                   } from '../modules/nf-core/cat/fastq/main'
+include { SUMMARIZE_DOWNLOADS         } from '../modules/local/summarize_downloads'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,6 +120,8 @@ workflow TAXPROFILER {
 
     ch_versions = Channel.empty()
     ch_multiqc_logo= Channel.fromPath("$projectDir/docs/images/nf-core-taxprofiler_logo_custom_light.png")
+    ch_multiqc_files = Channel.empty()
+    ch_output_file_paths = Channel.empty()
     adapterlist = params.shortread_qc_adapterlist ? file(params.shortread_qc_adapterlist) : []
 
     if ( params.shortread_qc_adapterlist ) {
@@ -118,14 +133,17 @@ workflow TAXPROFILER {
         SUBWORKFLOW: Read in samplesheet, validate and stage input files
     */
     INPUT_CHECK (
-        ch_input
+        ch_design
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    DB_CHECK (
-        ch_databases
-    )
-    ch_versions = ch_versions.mix(DB_CHECK.out.versions)
+    // Untar tar.gz database file
+    ch_db = Channel.from([[params.db_meta, file(params.db_path, checkIfExists: true)]])
+    if (params.db_path.endsWith(".tar.gz")) {
+        UNTAR (ch_db)
+        ch_versions = ch_versions.mix(UNTAR.out.versions.first())
+        ch_db = UNTAR.out.untar
+    }
 
     /*
         MODULE: Run FastQC
@@ -175,8 +193,14 @@ workflow TAXPROFILER {
     */
 
     if ( params.perform_shortread_hostremoval ) {
-        ch_shortreads_hostremoved = SHORTREAD_HOSTREMOVAL ( ch_shortreads_filtered, ch_reference, ch_shortread_reference_index ).reads
-        ch_versions = ch_versions.mix(SHORTREAD_HOSTREMOVAL.out.versions)
+        if ( !params.host_lineage ) {
+            ch_shortreads_hostremoved = SHORTREAD_HOSTREMOVAL ( ch_shortreads_filtered, ch_reference, ch_shortread_reference_index ).reads
+            ch_multiqc_files = ch_multiqc_files.mix(SHORTREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
+            ch_versions = ch_versions.mix(SHORTREAD_HOSTREMOVAL.out.versions)
+        } else {
+            log.warn "Host removal requested but profiler database already include host. Host removal not performed!"
+            ch_shortreads_hostremoved = ch_shortreads_filtered
+        }
     } else {
         ch_shortreads_hostremoved = ch_shortreads_filtered
     }
@@ -229,15 +253,20 @@ workflow TAXPROFILER {
     /*
         SUBWORKFLOW: PROFILING
     */
-
-    PROFILING ( ch_reads_runmerged, DB_CHECK.out.dbs, INPUT_CHECK.out.groups )
+    PROFILING ( ch_reads_runmerged, ch_db )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
+
+    /*
+        SUBWORKFLOW: DIVERSITY with Qiime2
+    */
+    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, PROFILING.out.qiime_readcount, INPUT_CHECK.out.groups )
+    ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
 
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
     */
     if ( params.run_krona ) {
-        VISUALIZATION_KRONA ( PROFILING.out.classifications, PROFILING.out.profiles, DB_CHECK.out.dbs )
+        VISUALIZATION_KRONA ( PROFILING.out.classifications, PROFILING.out.profiles, ch_db )
         ch_versions = ch_versions.mix( VISUALIZATION_KRONA.out.versions )
     }
 
@@ -245,7 +274,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: PROFILING STANDARDISATION
     */
     if ( params.run_profile_standardisation ) {
-        STANDARDISATION_PROFILES ( PROFILING.out.classifications, PROFILING.out.profiles, DB_CHECK.out.dbs, PROFILING.out.motus_version )
+        STANDARDISATION_PROFILES ( PROFILING.out.classifications, PROFILING.out.profiles, ch_db, PROFILING.out.motus_version )
         ch_versions = ch_versions.mix( STANDARDISATION_PROFILES.out.versions )
     }
 
@@ -261,12 +290,11 @@ workflow TAXPROFILER {
     workflow_summary    = WorkflowTaxprofiler.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
-    methods_description    = WorkflowTaxprofiler.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
-    ch_methods_description = Channel.value(methods_description)
+    //methods_description    = WorkflowTaxprofiler.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
+    //ch_methods_description = Channel.value(methods_description)
 
-    ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
+    //ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
     if ( params.preprocessing_qc_tool == 'falco' ) {
@@ -288,15 +316,12 @@ workflow TAXPROFILER {
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_COMPLEXITYFILTERING.out.mqc.collect{it[1]}.ifEmpty([]) )
     }
 
-    if (params.perform_shortread_hostremoval) {
-        ch_multiqc_files = ch_multiqc_files.mix(SHORTREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
-    }
-
     if (params.perform_longread_hostremoval) {
         ch_multiqc_files = ch_multiqc_files.mix(LONGREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
     }
 
     ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
 
     if ( params.run_profile_standardisation ) {
         ch_multiqc_files = ch_multiqc_files.mix( STANDARDISATION_PROFILES.out.mqc.collect{it[1]}.ifEmpty([]) )
@@ -310,6 +335,14 @@ workflow TAXPROFILER {
         mqcPlugins
     )
     multiqc_report = MULTIQC.out.report.toList()
+    report_path = MULTIQC.out.report.map { "${params.outdir}/multiqc/" + it.getName() }
+    ch_output_file_paths = ch_output_file_paths.mix(report_path)
+
+    output_paths = ch_output_file_paths
+                       .collectFile( name: "${params.outdir}/download_data/file_locations.txt", newLine: true )
+    
+    // Parse the list of files for downloading into a JSON file
+    SUMMARIZE_DOWNLOADS( output_paths, ch_design )
 }
 
 /*

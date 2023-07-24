@@ -1,4 +1,4 @@
-process QIIME_BIOMPREP {
+process METAPHLAN4_QIIMEPREP {
     label 'process_medium'
     
     conda "bioconda::biom-format=2.1.7=py27_0"

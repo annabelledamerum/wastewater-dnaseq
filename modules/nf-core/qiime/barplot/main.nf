@@ -1,5 +1,5 @@
 process QIIME_BARPLOT {
-    label 'process_medium'
+    label 'process_low'
     
     container 'quay.io/qiime2/core:2023.2'
     
@@ -8,16 +8,17 @@ process QIIME_BARPLOT {
     path(taxonomy)
 
     output:
-    path('*exported_QIIME_barplot/*')   , emit: barplot_export
+    path('*exported_QIIME_barplot/*')     , emit: barplot_export
     path('*exported_QIIME_barplot/*.csv') , emit: barplot_composition
-    path('allsamples_compbarplot.qzv')   
-    path "versions.yml"                        , emit: versions
-    
+    path('allsamples_compbarplot.qzv')    , emit: qzv
+    path "versions.yml"                   , emit: versions
 
     script:   
- 
     """
-    qiime taxa barplot --i-table $qza --i-taxonomy $taxonomy --o-visualization allsamples_compbarplot.qzv
+    qiime_taxmerge.py -t $taxonomy
+    qiime tools import --input-path allsamples_taxonomylist.tsv --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path allsamples_qiime_taxonomy.qza
+
+    qiime taxa barplot --i-table $qza --i-taxonomy allsamples_qiime_taxonomy.qza --o-visualization allsamples_compbarplot.qzv
     qiime tools export --input-path allsamples_compbarplot.qzv --output-path allsamples_exported_QIIME_barplot
     
     array=( \$( seq 1 7) )

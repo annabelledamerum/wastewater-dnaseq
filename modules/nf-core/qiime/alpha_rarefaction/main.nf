@@ -12,9 +12,9 @@ process QIIME_ALPHARAREFACTION {
     path(maxdepth_file)
 
     output:
-    path("alpha-rarefaction/*")                             , emit: rarefaction
-    path("alpha-rarefaction/*.csv")                         , optional:true, emit: rarefaction_csv
-    path "alpha-rarefaction/alpha-rarefaction.qzv"   , emit: alpha_rarefaction_qzv
+    path("alpha-rarefaction/*")     , emit: rarefaction
+    path("alpha-rarefaction/*.csv") , optional:true, emit: rarefaction_csv
+    path("alpha-rarefaction.qzv")   , emit: qzv
 
     script:
     """
@@ -32,8 +32,5 @@ process QIIME_ALPHARAREFACTION {
         --o-visualization alpha-rarefaction.qzv
     qiime tools export --input-path alpha-rarefaction.qzv  \
         --output-path alpha-rarefaction
-
-    # mv alpha-rarefaction/index.html  alpha-rarefaction/alpha-rarefaction_index.html
-    mv alpha-rarefaction.qzv alpha-rarefaction/alpha-rarefaction.qzv
     """
 }

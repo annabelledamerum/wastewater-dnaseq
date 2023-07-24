@@ -13,7 +13,7 @@ process QIIME_ALPHADIVERSITY {
     
     output:
     path("alpha_diversity/*.tsv"), optional:true, emit: alphadiversity_tsv
-    path("alpha_diversity/*.qzv") 
+    path("alpha_diversity/*.qzv"), emit: qzv 
 
     script:
     """
