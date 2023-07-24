@@ -4,7 +4,7 @@ report_comment: >
   <a href="https://nf-co.re/taxprofiler" target="_blank">documentation</a>.
 report_section_order:
   mpa_readstats:
-    before: bowtie2
+    after: composition_barplot
   kmer_composition:
     after: composition_barplot
   individ_alpha_barchart:
@@ -67,7 +67,6 @@ module_order:
   - diamond
   - malt
   - motus
-  - kmer_composition
   - composition_barplots
   - plot_heatmap
   - custom_content
