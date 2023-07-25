@@ -10,21 +10,21 @@ def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 WorkflowTaxprofiler.initialise(params, log)
 
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.genome,
+def checkPathParamList = [  
                             params.outdir, params.longread_hostremoval_index,
                             params.hostremoval_reference, params.shortread_hostremoval_index,
                             params.multiqc_config, params.shortread_qc_adapterlist,
                             params.krona_taxonomy_directory,
                             params.taxpasta_taxonomy_dir,
-                            params.multiqc_logo, params.multiqc_methods_description
+                            params.multiqc_logo//, params.multiqc_methods_description
                         ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
-if ( params.input ) {
-    ch_input              = file(params.input, checkIfExists: true)
+if ( params.design ) {
+    ch_design = file(params.design, checkIfExists: true)
 } else {
-    exit 1, "Input samplesheet not specified"
+    exit 1, "Design samplesheet not specified"
 }
 
 if (params.database) {
@@ -68,7 +68,7 @@ def mqcPlugins = Channel.fromPath("${baseDir}/assets/mqc_plugins/", checkIfExist
 ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+//ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,7 +80,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK                   } from '../subworkflows/local/input_check'
-
 include { SHORTREAD_PREPROCESSING       } from '../subworkflows/local/shortread_preprocessing'
 include { LONGREAD_PREPROCESSING        } from '../subworkflows/local/longread_preprocessing'
 include { SHORTREAD_HOSTREMOVAL         } from '../subworkflows/local/shortread_hostremoval'
@@ -106,6 +105,7 @@ include { FALCO                       } from '../modules/nf-core/falco/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { CAT_FASTQ                   } from '../modules/nf-core/cat/fastq/main'
+include { SUMMARIZE_DOWNLOADS         } from '../modules/local/summarize_downloads'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,6 +121,7 @@ workflow TAXPROFILER {
     ch_versions = Channel.empty()
     ch_multiqc_logo= Channel.fromPath("$projectDir/docs/images/nf-core-taxprofiler_logo_custom_light.png")
     ch_multiqc_files = Channel.empty()
+    ch_output_file_paths = Channel.empty()
     adapterlist = params.shortread_qc_adapterlist ? file(params.shortread_qc_adapterlist) : []
 
     if ( params.shortread_qc_adapterlist ) {
@@ -132,7 +133,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: Read in samplesheet, validate and stage input files
     */
     INPUT_CHECK (
-        ch_input
+        ch_design
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
@@ -260,6 +261,8 @@ workflow TAXPROFILER {
     */
     DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, PROFILING.out.qiime_readcount, INPUT_CHECK.out.groups )
     ch_versions = ch_versions.mix( DIVERSITY.out.versions )
+    ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
+
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
     */
@@ -288,11 +291,11 @@ workflow TAXPROFILER {
     workflow_summary    = WorkflowTaxprofiler.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
-    methods_description    = WorkflowTaxprofiler.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
-    ch_methods_description = Channel.value(methods_description)
+    //methods_description    = WorkflowTaxprofiler.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
+    //ch_methods_description = Channel.value(methods_description)
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
+    //ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
     if ( params.preprocessing_qc_tool == 'falco' ) {
@@ -333,6 +336,14 @@ workflow TAXPROFILER {
         mqcPlugins
     )
     multiqc_report = MULTIQC.out.report.toList()
+    report_path = MULTIQC.out.report.map { "${params.outdir}/multiqc/" + it.getName() }
+    ch_output_file_paths = ch_output_file_paths.mix(report_path)
+
+    output_paths = ch_output_file_paths
+                       .collectFile( name: "${params.outdir}/download_data/file_locations.txt", newLine: true )
+    
+    // Parse the list of files for downloading into a JSON file
+    SUMMARIZE_DOWNLOADS( output_paths, ch_design )
 }
 
 /*

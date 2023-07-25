@@ -1,4 +1,4 @@
-process QIIME_BETA {
+process QIIME_BETADIVERSITY {
     tag "${distance.baseName}"
     label 'process_low'
     container "quay.io/qiime2/core:2023.2"
@@ -12,8 +12,8 @@ process QIIME_BETA {
 
     output:
     path("beta_diversity/*"), emit: beta
-    path("*.qzv"), emit: qzv
-    path("*.tsv"), optional:true, emit: tsv
+    path("beta_diversity/*.qzv"), emit: qzv
+    path("beta_diversity/*.tsv"), optional:true, emit: tsv
     path "versions.yml", emit: versions
 
     script:
@@ -27,13 +27,12 @@ process QIIME_BETA {
     qiime tools export --input-path ${distance.baseName}-group.qzv \
         --output-path beta_diversity/${distance.baseName}-group
     #rename the output file name
-    mkdir beta_diversity/beta_qzv/
-    mv beta_diversity/${distance.baseName}-group/raw_data.tsv ${distance.baseName}-group.tsv
-    
+    mv beta_diversity/${distance.baseName}-group/raw_data.tsv beta_diversity/${distance.baseName}-group.tsv
+    mv ${distance.baseName}-group.qzv beta_diversity/    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
     END_VERSIONS
-
     """
 }

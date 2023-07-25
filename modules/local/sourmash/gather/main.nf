@@ -3,7 +3,7 @@ params.kmersize = 51
 
 process SOURMASH_GATHER {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_high_memory'
     container 'quay.io/biocontainers/sourmash:4.8.2--hdfd78af_0'
 
     input:

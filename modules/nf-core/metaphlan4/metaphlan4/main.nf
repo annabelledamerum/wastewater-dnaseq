@@ -26,15 +26,13 @@ process METAPHLAN4_METAPHLAN4 {
     def bowtie2_out = "$input_type" == "--input_type bowtie2out" || "$input_type" == "--input_type sam" ? '' : "--bowtie2out ${prefix}.bowtie2out.txt"
 
     """
-    BT2_DB=`find -L "${metaphlan_db}" -name "*rev.1.bt2l" -exec dirname {} \\;`
-
     metaphlan \\
         --nproc $task.cpus \\
         -t rel_ab_w_read_stats \\
         $input_type \\
         $input_data \\
         $bowtie2_out \\
-        --bowtie2db \$BT2_DB \\
+        --bowtie2db $metaphlan_db \\
         --output_file ${prefix}_profile.txt
 
     cat <<-END_VERSIONS > versions.yml
