@@ -186,7 +186,7 @@ class MultiqcModule(BaseMultiqcModule):
 
         self.add_section(
             name=" ",
-            description="Taxa composition plots illustrate the microbial composition at different taxonomy levels from phylum to species. The interactive figure below shows the microbial composition at species level. Additional composition barplots for other taxonomy levels can be accessed by clicking on the below tabs.",
+            description="Taxa composition plots illustrate the microbial composition at different taxonomy levels from kingdom to species. The interactive figure below shows the microbial composition at species level. Additional composition barplots for other taxonomy levels can be accessed by clicking on the below tabs.",
             plot=html)
 
     def plot_chart_html(self, cats):

@@ -16,6 +16,7 @@ process QIIME_DATAMERGE {
     path('filtered_samples_abscounts.txt')  , emit: filtered_samples_abscounts, optional: true
     path('readcount_maxsubset.txt')         , emit: readcount_maxsubset, optional: true
     path('absqza_lowqualityfiltered.txt')   , emit: samples_filtered, optional: true
+    path "versions.yml", emit: versions
    
     //All samples' qza with relative counts are filtered by read count and  merged for use in qiime composition barplot
     //All sample's qza with absolute counts are filtered by read count for use in group diversity comparisons
@@ -40,5 +41,12 @@ process QIIME_DATAMERGE {
 
         biom convert -i filteredsamples_relcounts_out/feature-table.biom -o filtered_samples_relcounts.txt --to-tsv
     fi
-    """
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+        biom: \$(biom --version | sed 's/biom, version //')
+    END_VERSIONS 
+
+   """
 }

@@ -470,14 +470,16 @@
                     "type": "integer",
                     "default": 51,
                     "enum": [51,31,21],
-                    "description": "Sourmash only: specify the database kmer size for sourmash assignment step. Generally, a larger kmer size provide better taxonomy resolution for microbial samples with good reference databases, such as human feces. Use 31 and 21 for samples that do not have good reference databases."
+                    "description": "Sourmash only: specify the database kmer size for sourmash assignment step. Generally, a larger kmer size provide better taxonomy resolution for microbial samples with good reference databases, such as human feces. Use 31 and 21 for samples that do not have good reference databases.",
+		    "advanced": true
                 },
                 "threshold_bp": {
                     "type": "integer",
                     "description": "Sourmash only: specify the basepair threshold below which Sourmash matches are no longer reported.",
                     "default": 50000,
                     "minimum": 1000,
-                    "maximum": 1000000
+                    "maximum": 1000000,
+		    "advanced": true
                 },
                 "run_khmer_trim_low_abund": {
                     "type": "boolean",

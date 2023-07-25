@@ -12,9 +12,10 @@ process QIIME_ALPHARAREFACTION {
     path(maxdepth_file)
 
     output:
-    path("alpha-rarefaction/*")     , emit: rarefaction
-    path("alpha-rarefaction/*.csv") , optional:true, emit: rarefaction_csv
+    path("alpha-rarefaction/*")                             , emit: rarefaction
+    path("alpha-rarefaction/*.csv")                         , optional:true, emit: rarefaction_csv
     path("alpha-rarefaction.qzv")   , emit: qzv
+    path "versions.yml", emit: versions
 
     script:
     """
@@ -32,5 +33,10 @@ process QIIME_ALPHARAREFACTION {
         --o-visualization alpha-rarefaction.qzv
     qiime tools export --input-path alpha-rarefaction.qzv  \
         --output-path alpha-rarefaction
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
     """
 }

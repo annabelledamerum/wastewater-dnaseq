@@ -27,7 +27,7 @@ process SOURMASH_QIIMEPREP {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        biom: \$(biom --version 2>&1 | awk '{print \$3}')
+        biom: \$(biom --version | sed 's/biom, version //')
     END_VERSIONS
     """
 }

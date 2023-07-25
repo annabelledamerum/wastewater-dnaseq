@@ -244,31 +244,21 @@ class NfcoreSchema {
     public static LinkedHashMap paramsSummaryMap(workflow, params, schema_filename='nextflow_schema.json') {
         // Get a selection of core Nextflow workflow options
         def Map workflow_summary = [:]
-        if (workflow.revision) {
-            workflow_summary['revision'] = workflow.revision
-        }
-        workflow_summary['runName']      = workflow.runName
-        if (workflow.containerEngine) {
-            workflow_summary['containerEngine'] = workflow.containerEngine
-        }
-        if (workflow.container) {
-            workflow_summary['container'] = workflow.container
-        }
-        workflow_summary['launchDir']    = workflow.launchDir
-        workflow_summary['workDir']      = workflow.workDir
-        workflow_summary['projectDir']   = workflow.projectDir
-        workflow_summary['userName']     = workflow.userName
-        workflow_summary['profile']      = workflow.profile
-        workflow_summary['configFiles']  = workflow.configFiles.join(', ')
-
         // Get pipeline parameters defined in JSON Schema
         def Map params_summary = [:]
+        String database = ""
+        def mqc_display = []
         def params_map = paramsLoad(getSchemaPath(workflow, schema_filename=schema_filename))
+        //if (params.get("database")  == "sourmash-zymo"){
+        //   mqc_display = ["database", "kmersize", "threshold_bp", "run_khmer_trim_low_abund", "lowread_filter"]
+        //} else{
+        //   mqc_display = ["database", "perform_shortread_qc", "shortread_qc_tool", "shortread_qc_minlength", "perform_shortread_complexityfilter", "shortread_complexityfilter_tool", "hostremoval_reference", "lowread_filter"]
+        //}
         for (group in params_map.keySet()) {
             def sub_params = new LinkedHashMap()
             def group_params = params_map.get(group)  // This gets the parameters of that particular group
             for (param in group_params.keySet()) {
-                if (params.containsKey(param)) {
+                if (params.containsKey(param)) { //&& mqc_display.contains(param)) { This code is a part of the parameter-specific diaplay format saved above
                     def params_value = params.get(param)
                     def schema_value = group_params.get(param).default
                     def param_type   = group_params.get(param).type
@@ -292,7 +282,7 @@ class NfcoreSchema {
                     }
 
                     // We have a default in the schema, and this isn't it
-                    if (schema_value != null && params_value != schema_value) {
+                    if (schema_value != null && schema_value != params_value && params_value != null) {
                         sub_params.put(param, params_value)
                     }
                     // No default in the schema, and this isn't empty

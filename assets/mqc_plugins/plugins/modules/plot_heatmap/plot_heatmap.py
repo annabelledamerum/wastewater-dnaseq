@@ -151,7 +151,7 @@ class MultiqcModule(BaseMultiqcModule):
         self.add_section(
             description= ("The taxonomy abundance heatmap with sample clustering is a quick way to help identify patterns of microbial distribution among samples.<br>"
             "The following heatmap shows the microbial composition of the samples at the species level with the most abundant species identified. Each row represents the abundance for each taxon, with the taxonomy ID shown on the right. Each column represents the each sample, with the sample ID shown at the bottom.<br>"
-            "Hierarchical clustering is performed on samples based on Euclidean method. Hierarchical clustering was also performed on the taxa so that taxa with similar distributions are grouped together. The heatmap shows the top 20 taxa of each group. <br>"
+            "Hierarchical clustering is performed on samples based on the Euclidean method. Hierarchical clustering was also performed on the taxa so that taxa with similar distributions are grouped together. The heatmap shows the top 20 taxa of each group. <br>"
             "Heatmaps at different taxonomic levels and with sample clustering can be found by clicking the button above the figure."
             ),
             plot = html

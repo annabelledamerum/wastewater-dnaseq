@@ -27,8 +27,10 @@ workflow DIVERSITY {
     ch_output_file_paths    = Channel.empty()
 
     QIIME_IMPORT ( qiime_profiles )
+    ch_versions     = ch_versions.mix( QIIME_IMPORT.out.versions )
 
     QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), qiime_readcounts )
+    ch_versions     = ch_versions.mix( QIIME_DATAMERGE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_DATAMERGE.out.filtered_samples_abscounts.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() },
         QIIME_DATAMERGE.out.filtered_samples_relcounts.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
@@ -47,21 +49,25 @@ workflow DIVERSITY {
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
 
     QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
+    ch_versions     = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
         )
 
     QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
+    ch_versions     = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/diversity_core/" + it.getName() }
         )
 
     QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
+    ch_versions     = ch_versions.mix( QIIME_ALPHADIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_ALPHADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/alpha_diversity/" + it.getName() }
-        )
+        ) 
 
     QIIME_BETADIVERSITY ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
+    ch_versions     = ch_versions.mix( QIIME_BETADIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BETADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_diversity/" + it.getName() }
         )

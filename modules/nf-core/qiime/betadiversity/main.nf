@@ -11,8 +11,10 @@ process QIIME_BETADIVERSITY {
     path(metadata)
 
     output:
+    path("beta_diversity/*"), emit: beta
     path("beta_diversity/*.qzv"), emit: qzv
     path("beta_diversity/*.tsv"), optional:true, emit: tsv
+    path "versions.yml", emit: versions
 
     script:
     """
@@ -26,6 +28,11 @@ process QIIME_BETADIVERSITY {
         --output-path beta_diversity/${distance.baseName}-group
     #rename the output file name
     mv beta_diversity/${distance.baseName}-group/raw_data.tsv beta_diversity/${distance.baseName}-group.tsv
-    mv ${distance.baseName}-group.qzv beta_diversity/
+    mv ${distance.baseName}-group.qzv beta_diversity/    
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
     """
 }

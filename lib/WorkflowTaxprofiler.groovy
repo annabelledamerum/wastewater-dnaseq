@@ -36,7 +36,7 @@ class WorkflowTaxprofiler {
         summary_section += "    </dl>\n"
 
         String yaml_file_text  = "id: '${workflow.manifest.name.replace('/','-')}-summary'\n"
-        yaml_file_text        += "description: ' - this information is collected when the pipeline is started. Only paremeters that differ from the default is shown'\n"
+        yaml_file_text        += "description: 'This section summarizes important parameters used in the pipeline. Only parameters that differ from the default are shown.'\n"
         yaml_file_text        += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
         yaml_file_text        += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
         yaml_file_text        += "plot_type: 'html'\n"

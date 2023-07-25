@@ -27,11 +27,11 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     mqc_data = {
         "id": "kmer_composition",
         "section_name": "Kmer composition (sourmash)",
-        "description": ("This plots depict the the composition of kmers identified (or not) by "
+        "description": ("This plot depicts the composition of kmers identified (or not) by "
                         "<a href='https://github.com/sourmash-bio/sourmash'>sourmash</a>. "
                         "It includes percentages of kmers that were identified as common host organisms, "
                         "common eukaryotic pathogens/parasites, and other microbes. Unidentified kmers "
-                        "are those do not have match with the database or those with a match but fail to reach "
+                        "are those that do not match with the database or those with a match but fail to reach "
                         "the base-pair threshold set during the sourmash step of the pipeline. Please refer to "
                         "plots in sections below for detailed compositions of other microbes. "
                         "sourmash only outputs percentages of kmers identified, the numbers of reads you see "

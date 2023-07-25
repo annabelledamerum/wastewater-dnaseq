@@ -12,6 +12,7 @@ process QIIME_DIVERSITYCORE {
     path('diversity_core/*_vector.qza')         , emit: vector
     path('diversity_core/*_distance_matrix.qza'), emit: distance
     path("diversity_core/*.qzv")                , emit: qzv
+    path "versions.yml", emit: versions
 
     script:   
     """
@@ -20,6 +21,11 @@ process QIIME_DIVERSITYCORE {
         --p-sampling-depth \$( < $readcount_maxsubset ) \
         --m-metadata-file $filtered_metadata \
         --output-dir diversity_core \
-        --p-n-jobs ${task.cpus} 
+        --p-n-jobs ${task.cpus}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
     """
 }
