@@ -32,8 +32,9 @@ rownames(metadata) <- metadata$sample
 #Create grouplist and remove replicates from the list
 no.replicates <- table(metadata$group)
 groups <- names(no.replicates)[no.replicates > 1]
-#If more than three samples and more than one group, continue with group analysis
-if (length(groups) >= 1 )
+groupcount <- names(no.replicates)
+#If there is at least one group with replicates and two groups in total, and more than 3 samples, continue with group analysis
+if (length(groups) >= 1 && length(groupcount)>=2 && length(metadata$sampleid) > 3 )
 {
     write.table(metadata, file="filtered_metadata.tsv", sep="\t", row.names=FALSE, quote=FALSE)
 }
