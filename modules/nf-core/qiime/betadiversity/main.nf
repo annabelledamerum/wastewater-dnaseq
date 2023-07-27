@@ -17,7 +17,7 @@ process QIIME_BETADIVERSITY {
     path "versions.yml", emit: versions
 
     script:
-    """
+    """ 
     qiime diversity beta-group-significance \
         --i-distance-matrix ${distance} \
         --m-metadata-file ${metadata} \
