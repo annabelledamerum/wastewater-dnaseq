@@ -10,7 +10,7 @@ import pandas as pd
 import random
 
 # Initialise the logger
-log = logging.getLogger(__name__)
+log = logging.getLogger("multiqc")
 
 class MultiqcModule(BaseMultiqcModule):
     def __init__(self):
@@ -40,7 +40,7 @@ class MultiqcModule(BaseMultiqcModule):
                 df = pd.read_csv(f['f'], index_col=0)
                 data_dict[f['fn']] = df
             else:
-                log.error("{} not recogized by composition barplot module".format(f['fn']))
+                log.warning("{} not recogized by composition barplot module".format(f['fn']))
 
         html_new = ""
         for fn, df in data_dict.items():
@@ -75,7 +75,7 @@ class MultiqcModule(BaseMultiqcModule):
                 # Sort rows by row sum, move 'Others' to the end
                 df_new = df_new.loc[df_new.sum(axis=1).sort_values(ascending=False).index, ]
                 df_new = pd.concat([df_new.loc[df_new.index != 'Others',], df_new.loc[df_new.index == 'Others',]])
-                
+
                 level_interface_min = min_interface[str(minval)]
                 level_interface_id = level_id + str(minval).replace(".", "-")
 
@@ -118,12 +118,12 @@ class MultiqcModule(BaseMultiqcModule):
                 'height': 1024
                 }
 
-                barplot_html = bargraph.plot(self.comp_data, cats, pconfig=config)
-                barplot_html = f"<div class='{class_name_after}' id='{level_id}'>" + barplot_html + "</div>"
+                barplot_html = bargraph.plot(self.comp_data[fn], cats, pconfig=config)
+                barplot_html = f"<div class='{class_name_after}' id='{level_interface_id}'>" + barplot_html + "</div>"
                 html_new += barplot_html
 
                 button += f"""
-                          <li><a type="button" thu-nga="#{level_id}" id="{level_interface_id}" onclick=handleClick(event) >{level_interface_min} </a> </li>
+                          <li><a type="button" thu-nga="#{level_interface_id}" id="{level_interface_id}" onclick=handleClick(event) >{level_interface_min} </a> </li>
                       """
 
             html = html + button_before + button + "</ul> </div>" 
@@ -149,16 +149,10 @@ class MultiqcModule(BaseMultiqcModule):
                     var curr = e.target.getAttribute('thu-nga');
                     var elems = document.querySelectorAll('.content-table');
                     for (var i = 0; i < elems.length; i++) {{
-                        // console.log(elems[i].id);
-                        // console.log(elems[i].id);
-                        // console.log(curr);
-                        // console.log(elems[i].id.slice(-1) === curr.slice(-1)) 
                         if (elems[i].id === curr.substring(1)) {{
                             elems[i].classList.add('active');
-                            // elems[i].style='display: block';
                         }} else {{
                             elems[i].classList.remove('active');
-                            // elems[i].style='display: none';
                         }}
                     }}
                     follow();
