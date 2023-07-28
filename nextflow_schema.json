@@ -26,7 +26,8 @@
                 "database": {
                     "type": "string",
                     "description": "Choose a database for taxonomic profiling. The database of choice will determine which profiler is used. For example, 'sourmash-zymo' will use sourmash.",
-                    "enum": ["sourmash-zymo", "metaphlan4-db"]
+                    "enum": ["sourmash-zymo", "metaphlan4-db"],
+                    "default": "sourmash-zymo"
                 },
                 "outdir": {
                     "type": "string",
