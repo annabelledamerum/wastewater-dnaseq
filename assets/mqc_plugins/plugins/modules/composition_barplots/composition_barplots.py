@@ -3,17 +3,15 @@
 from __future__ import print_function
 from collections import OrderedDict
 import logging
-from multiqc import config
-from multiqc.plots import bargraph, table
+from multiqc.plots import bargraph
 from multiqc.modules.base_module import BaseMultiqcModule
 import seaborn as sns
 import pandas as pd
 import random
-import numpy as np
 
 # Initialise the logger
-log = logging.getLogger(__name__)
-import pandas as pd
+log = logging.getLogger("multiqc")
+
 class MultiqcModule(BaseMultiqcModule):
     def __init__(self):
         # Initialise the parent object
@@ -22,79 +20,74 @@ class MultiqcModule(BaseMultiqcModule):
             anchor="composition_barplots"
         )
         self.comp_data = dict()
-        self.comp_keys = list()
-        taxonomy_level = {"level-7.csv":"Species","level-6.csv":"Genus","level-5.csv":"Family","level-4.csv":"Order","level-3.csv":"Class","level-2.csv":"Phylum", "level-1.csv":"Kingdom"}
-        level_order = ["level-1.csv", "level-2.csv","level-3.csv","level-4.csv","level-5.csv","level-6.csv","level-7.csv"]
+        taxonomy_level = OrderedDict({
+            "level-1.csv":"Kingdom",
+            "level-2.csv":"Phylum",
+            "level-3.csv":"Class",
+            "level-4.csv":"Order",
+            "level-5.csv":"Family",
+            "level-6.csv":"Genus",
+            "level-7.csv":"Species"
+        })
+        data_dict = OrderedDict([(k, None) for k in taxonomy_level.keys()])
+
         html = """<style> li:hover {cursor: pointer;}
                 </style>"""
-        button = ""
-        data_dict = {}
-
+        
+        # Read input files
         for f in self.find_log_files("composition_barplots", filehandles=True):
-            df = pd.read_csv(f['f'], sep=",")
-            # name = taxonomy_level[f['fn']]
-            data_dict[f['fn']] = df
-        final_dict = OrderedDict()
-
-        for name in level_order:
-            try:
-                final_dict[name] = data_dict[name]
-            except KeyError:
-                continue
-
-        order_list = ['d_', 'k_', 'p_', 'c_', 'o_', 'f_', 'g_', 's_']
-        click_id_1 = ""
-        click_id_2 = ""
+            if f['fn'] in data_dict:
+                df = pd.read_csv(f['f'], index_col=0)
+                data_dict[f['fn']] = df
+            else:
+                log.warning("{} not recogized by composition barplot module".format(f['fn']))
 
         html_new = ""
-        for s_name, df in final_dict.items():
-            type=list(df.columns[1:len(df.columns)])
-            df=df.sort_values(by=type, ascending=False, kind='stable', ignore_index=True)
-            df=df.set_index('#OTU ID', drop = True )
+        for fn, df in data_dict.items():
+            # Check if the input is percentage or fraction, if fraction convert to percent
+            # The column sum is not perfect 1 or 100 because of floating point
+            # Therefore we can only guess by its range
+            if df.sum().between(0.9,1.1).all():
+                log.debug("{} seems to have fractions instead of percentages. Converting to percentages.".format(fn))
+                df = df.mul(100)
 
-            min_values = [0.1, 0.05, 0.001, 0]
-            min_interface = {"0.1":"Grouping taxa < 10% into 'Others'",
-                             "0.05": "Grouping taxa < 5% into 'Others'",
-                             "0.001": "Grouping taxa < 0.1% into 'Others'",
+            min_values = [10, 5, 0.1, 0]
+            min_interface = {"10":"Grouping taxa < 10% into 'Others'",
+                             "5": "Grouping taxa < 5% into 'Others'",
+                             "0.1": "Grouping taxa < 0.1% into 'Others'",
                              "0": "No grouping"}
-            sample_name = df.columns
 
-            plotname = "_barplots"
-            level_id = s_name.lower()
-            level_id = taxonomy_level[level_id]
-            level_interface = level_id.lower().capitalize()
+            level_id = taxonomy_level[fn]
             level_interface_id = level_id.lower().capitalize()
 
             button_before = f"""
                         <div class="btn-group">
                             <a type="dropdown"  class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                {level_interface} ▼
+                                {level_id} ▼
                             </a>
                             <ul class="dropdown-menu dropdown-menu-right">
 
                         """
             button = ""
-            html_after = ""
-            for min in min_values:
-                for i in range(0,len(sample_name)):
-                    df_new=df.drop(df.index[df[sample_name[i]] < min])
-                    df_new.loc['Others'] = 100 - df_new.select_dtypes(np.number).sum()
+            for minval in min_values:
+                # Group taxa below minval
+                df_new = df.apply(self.group_taxa, minval=minval).fillna(0)
+                # Sort rows by row sum, move 'Others' to the end
+                df_new = df_new.loc[df_new.sum(axis=1).sort_values(ascending=False).index, ]
+                df_new = pd.concat([df_new.loc[df_new.index != 'Others',], df_new.loc[df_new.index == 'Others',]])
 
-                level_id = s_name.lower()
-                level_id = taxonomy_level[level_id]
-                level_interface_min = min_interface[str(min)]
-                level_id = level_id.lower() + str(min).replace(".", "-")
-                level_interface_id = level_id.lower().capitalize()
+                level_interface_min = min_interface[str(minval)]
+                level_interface_id = level_id + str(minval).replace(".", "-")
 
                 color = ['#a1c9f4','#b9f2f0','#ffb482','#cfcfcf','#fbafe4','#8de5a1','#029e73','#fab0e4','#949494','#ca9161','#d55e00','#d0bbff','#debb9b','#56b4e9','#0173b2','#de8f05','#ece133','#cc78bc','#ff9f9b', '#fffea3']
 
                 #Settings for colors
-                if len(df_new.index) > 20:
-                    color_21 = sns.color_palette("pastel", len(df_new.index)-20).as_hex()
+                if len(df_new) > 20:
+                    color_21 = sns.color_palette("pastel", len(df_new)-20).as_hex()
                     random.shuffle(color_21)
                     color = color + color_21
                 else:
-                    color = color[0:len(df_new.index)]
+                    color = color[0:len(df_new)]
                 df_color = pd.DataFrame(index=df_new.index)
                 df_color['color'] = color
 
@@ -102,17 +95,12 @@ class MultiqcModule(BaseMultiqcModule):
                 data = df_new.to_dict('series')
                 self.write_data_file(data, 'composition_barplots')
                 if len(data) > 0:
-                    if s_name in self.comp_data:
-                        log.debug("Duplicate sample name found! Overwriting: {}".   format(s_name))
-                    self.add_data_source(f, s_name)
-                    self.comp_data = data
-                if min==0 and level_interface=="Species":
-                    class_name_after = "content-table active"
-                    click_id_2 = level_interface_id
-                else:
-                    class_name_after = "content-table active"
-                    click_id_2 = level_interface_id
-
+                    if fn in self.comp_data:
+                        log.debug("Duplicate sample name found! Overwriting: {}".   format(fn))
+                    self.add_data_source(f, fn)
+                    self.comp_data[fn] = data
+                class_name_after = "content-table active"
+                click_id = level_interface_id
 
                 config = {
                 'id': 'Composition_barplots' + level_interface_id,
@@ -130,12 +118,12 @@ class MultiqcModule(BaseMultiqcModule):
                 'height': 1024
                 }
 
-                barplot_html = bargraph.plot(self.comp_data, cats, pconfig=config)
-                barplot_html = f"<div class='{class_name_after}' id='{level_id}'>" + barplot_html + "</div>"
+                barplot_html = bargraph.plot(self.comp_data[fn], cats, pconfig=config)
+                barplot_html = f"<div class='{class_name_after}' id='{level_interface_id}'>" + barplot_html + "</div>"
                 html_new += barplot_html
 
                 button += f"""
-                          <li><a type="button" thu-nga="#{level_id}" id="{level_interface_id}" onclick=handleClick(event) >{level_interface_min} </a> </li>
+                          <li><a type="button" thu-nga="#{level_interface_id}" id="{level_interface_id}" onclick=handleClick(event) >{level_interface_min} </a> </li>
                       """
 
             html = html + button_before + button + "</ul> </div>" 
@@ -161,26 +149,18 @@ class MultiqcModule(BaseMultiqcModule):
                     var curr = e.target.getAttribute('thu-nga');
                     var elems = document.querySelectorAll('.content-table');
                     for (var i = 0; i < elems.length; i++) {{
-                        // console.log(elems[i].id);
-                        // console.log(elems[i].id);
-                        // console.log(curr);
-                        // console.log(elems[i].id.slice(-1) === curr.slice(-1)) 
                         if (elems[i].id === curr.substring(1)) {{
                             elems[i].classList.add('active');
-                            // elems[i].style='display: block';
                         }} else {{
                             elems[i].classList.remove('active');
-                            // elems[i].style='display: none';
                         }}
                     }}
                     follow();
                 }};
                 follow();
             </script>
-        """.format(a=click_id_2)
+        """.format(a=click_id)
         html = html + html_new + script
-        script_2 = """
-        """
         if len(self.comp_data) == 0:
             raise UserWarning
 
@@ -188,11 +168,9 @@ class MultiqcModule(BaseMultiqcModule):
             name=" ",
             description="Taxa composition plots illustrate the microbial composition at different taxonomy levels from kingdom to species. The interactive figure below shows the microbial composition at species level. Additional composition barplots for other taxonomy levels can be accessed by clicking on the below tabs.",
             plot=html)
-
-    def plot_chart_html(self, cats):
-        config = {
-            'use_legend': True,
-            'cpswitch': False,                       # Show the 'Counts / Percentages' switch?
-            'cpswitch_c_active': False
-        }
-        return bargraph.plot(self.comp_data, cats, pconfig=config)
+        
+    def group_taxa(self, col, minval):
+        """Helper function to group taxa into Others when below minval for each sample"""
+        new_col = col[col>=minval]
+        new_col['Others'] = 100 - new_col.sum()
+        return new_col.round(3)
