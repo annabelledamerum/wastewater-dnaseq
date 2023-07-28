@@ -50,8 +50,6 @@ class MultiqcModule(BaseMultiqcModule):
             if df.sum().between(0.9,1.1).all():
                 log.debug("{} seems to have fractions instead of percentages. Converting to percentages.".format(fn))
                 df = df.mul(100)
-            # Sort rows by row sum
-            df = df.loc[df.sum(axis=1).sort_values(ascending=False).index, ]
 
             min_values = [10, 5, 0.1, 0]
             min_interface = {"10":"Grouping taxa < 10% into 'Others'",
@@ -74,6 +72,10 @@ class MultiqcModule(BaseMultiqcModule):
             for minval in min_values:
                 # Group taxa below minval
                 df_new = df.apply(self.group_taxa, minval=minval).fillna(0)
+                # Sort rows by row sum, move 'Others' to the end
+                df_new = df_new.loc[df_new.sum(axis=1).sort_values(ascending=False).index, ]
+                df_new = pd.concat([df_new.loc[df_new.index != 'Others',], df_new.loc[df_new.index == 'Others',]])
+                
                 level_interface_min = min_interface[str(minval)]
                 level_interface_id = level_id + str(minval).replace(".", "-")
 
