@@ -16,7 +16,6 @@ include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf
 include { METAPHLAN4_QIIMEPREP                          } from '../../modules/nf-core/metaphlan4/qiimeprep/main'
 include { METAPHLAN4_UNMAPPED                           } from '../../modules/nf-core/metaphlan4/unmapped/main'
 include { SOURMASH_QIIMEPREP                            } from '../../modules/local/sourmash/qiimeprep/main'
-include { SOURMASH_MERGEREADCOUNT                       } from '../../modules/local/sourmash/mergereadcount/main'
 include { KAIJU_KAIJU                                   } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf-core/kaiju/kaiju2table/main'
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'

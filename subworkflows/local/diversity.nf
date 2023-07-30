@@ -47,13 +47,13 @@ workflow DIVERSITY {
     QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_relfreq_tsv, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
 
-    QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_METADATAFILTER.out.min_total )
+    QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.min_total )
     ch_versions = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
         )
 
-    QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
+    QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_counts_collpased_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/diversity_core/" + it.getName() }

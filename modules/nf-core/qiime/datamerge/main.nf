@@ -1,8 +1,8 @@
 /* 
 Merge sample feature table qza
+Filter sample by no. reads
 Merge sample taxonomy and import to qiime
 Collapse at specified taxa
-Filter sample by no. reads
 Convert to relative abundance
 Output raw and filtered count tables
 */ 
@@ -17,9 +17,10 @@ process QIIME_DATAMERGE {
     path(taxonomy)
 
     output:
+    path('merged_filtered_counts.qza')             , emit: filtered_counts_qza
     path('merged_taxonomy.qza')                    , emit: taxonomy_qza
     path('merged_raw_counts_collapsed.tsv')        , emit: raw_counts_tsv
-    path('merged_filtered_counts_collapsed.qza')   , emit: filtered_counts_qza
+    path('merged_filtered_counts_collapsed.qza')   , emit: filtered_counts_collapsed_qza
     path('merged_filtered_counts_collapsed.tsv')   , emit: filtered_counts_tsv
     path('merged_filtered_rel_freq_collapsed.tsv') , emit: filtered_relfreq_tsv
     path('versions.yml')                           , emit: versions
@@ -30,6 +31,11 @@ process QIIME_DATAMERGE {
     qiime feature-table merge \
         --i-tables $abs_qza \
         --o-merged-table merged_raw_counts.qza
+
+    qiime feature-table filter-samples \
+        --i-table merged_raw_counts.qza \
+        --p-min-frequency ${params.lowread_filter} \
+        --o-filtered-table merged_filtered_counts.qza
     
     qiime_taxmerge.py $taxonomy
     qiime tools import \

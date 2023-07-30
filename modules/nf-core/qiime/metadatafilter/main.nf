@@ -6,7 +6,7 @@ process QIIME_METADATAFILTER {
 
     output:
     path('filtered_metadata.tsv') , emit: filtered_metadata, optional: true
-    stdout                        , emit: min_total
+    stdout                          emit: min_total
 
     script:   
     """
