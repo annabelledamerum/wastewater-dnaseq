@@ -38,14 +38,14 @@ def summarize_downloads(locations, design):
 
     # Define what to do with each type of files
     categories = {
-        'multiqc_report.html'           : ('Report', 'report'),
-        'filtered_samples_relcounts.txt': ('Filtered Relative Composition for All Samples(Relative)', 'all_samples'),
-        'filtered_samples_abscounts.txt': ('Filtered Relative Composition for All Samples(Absolute)', 'all_samples'),
-        'allsamples_compbarplot.qzv'    : ('Barplot Visualization', 'all_samples'),
-        'alpha-rarefaction.qzv'         : ('Alpha Rarefaction Visualization', 'all_samples'),
+        'multiqc_report.html'                 : ('Report', 'report'),
+        'merged_raw_counts_collapsed.tsv'     : ('Read Counts Table for All Taxa All Samples', 'all_samples'),
+        'merged_filtered_counts_collapsed.tsv': ('Read Counts Table for All Taxa Filtered Samples', 'all_samples'),
+        'allsamples_compbarplot.qzv'          : ('Barplot Visualization', 'all_samples'),
+        'alpha-rarefaction.qzv'               : ('Alpha Rarefaction Visualization', 'all_samples'),
         # diversity core
-        'bray_curtis_emperor.qzv'       : ('Distance Matrix Visualization by Bray-Curtis Distance', 'all_samples'),
-        'jaccard_emperor.qzv'           : ('Distance Matrix Visualization by Jaccard Distance', 'all_samples'),
+        'bray_curtis_emperor.qzv' : ('Distance Matrix Visualization by Bray-Curtis Distance', 'all_samples'),
+        'jaccard_emperor.qzv'     : ('Distance Matrix Visualization by Jaccard Distance', 'all_samples'),
         # alpha diversity
         'shannon_vector_alpha.qzv'           : ('Alpha Diversity Box Plot by Shannon Diversity Index', 'all_samples'), 
         'evenness_vector_alpha.qzv'          : ('Alpha Diversity Box Plot by Evenness', 'all_samples'), 

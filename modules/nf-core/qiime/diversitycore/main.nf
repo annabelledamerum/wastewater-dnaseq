@@ -5,20 +5,20 @@ process QIIME_DIVERSITYCORE {
      
     input:
     path(qza)
-    path(readcount_maxsubset)
+    val(min_total)
     path(filtered_metadata)
 
     output:
-    path('diversity_core/*_vector.qza')         , emit: vector
-    path('diversity_core/*_distance_matrix.qza'), emit: distance
-    path("diversity_core/*.qzv")                , emit: qzv
-    path "versions.yml", emit: versions
+    path('diversity_core/*_vector.qza')          , emit: vector
+    path('diversity_core/*_distance_matrix.qza') , emit: distance
+    path("diversity_core/*.qzv")                 , emit: qzv
+    path "versions.yml"                          , emit: versions
 
-    script:   
+    script:
     """
     qiime diversity core-metrics \
         --i-table $qza \
-        --p-sampling-depth \$( < $readcount_maxsubset ) \
+        --p-sampling-depth ${min_total.toInteger()} \
         --m-metadata-file $filtered_metadata \
         --output-dir diversity_core \
         --p-n-jobs ${task.cpus}

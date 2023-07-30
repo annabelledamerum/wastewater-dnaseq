@@ -44,6 +44,8 @@ class MultiqcModule(BaseMultiqcModule):
 
         html_new = ""
         for fn, df in data_dict.items():
+            if df is None:
+                continue
             # Check if the input is percentage or fraction, if fraction convert to percent
             # The column sum is not perfect 1 or 100 because of floating point
             # Therefore we can only guess by its range
