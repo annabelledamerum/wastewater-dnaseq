@@ -24,7 +24,7 @@ def get_min_total_counts(counts):
     # use first column as index
     data = pd.read_csv(counts, sep="\t", skiprows=1, index_col=0)
     # output to STDOUT
-    print(data.sum().min(), end="")
+    print(data.sum().min().astype(int), end="")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

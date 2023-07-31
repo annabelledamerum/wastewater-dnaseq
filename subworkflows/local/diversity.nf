@@ -53,7 +53,7 @@ workflow DIVERSITY {
         QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
         )
 
-    QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_counts_collpased_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
+    QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/diversity_core/" + it.getName() }
