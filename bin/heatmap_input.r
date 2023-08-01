@@ -18,7 +18,7 @@ top_taxa <- as.numeric(args[3])
 
 input <- read.csv(file = table, header=TRUE, sep="\t", check.names=FALSE, stringsAsFactors=FALSE, na.strings=c("","NA"))
 grouping <- read.csv(file = metadata, header=TRUE, sep="\t",check.names=FALSE, stringsAsFactors=FALSE)
-input <- tidyr::separate(input, "OTU ID", c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"), sep = "\\|")
+input <- tidyr::separate(input, "OTU ID", c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"), sep = ";")
 rownames(grouping) <- grouping[,1]
 grouping <- subset(grouping, select = c(2))
 names(grouping)[1] <- "group"

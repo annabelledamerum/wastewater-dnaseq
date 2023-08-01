@@ -472,7 +472,7 @@
                     "default": 51,
                     "enum": [51,31,21],
                     "description": "Sourmash only: specify the database kmer size for sourmash assignment step. Generally, a larger kmer size provide better taxonomy resolution for microbial samples with good reference databases, such as human feces. Use 31 and 21 for samples that do not have good reference databases.",
-		    "advanced": true
+		            "advanced": true
                 },
                 "threshold_bp": {
                     "type": "integer",
@@ -480,7 +480,7 @@
                     "default": 50000,
                     "minimum": 1000,
                     "maximum": 1000000,
-		    "advanced": true
+		            "advanced": true
                 },
                 "run_khmer_trim_low_abund": {
                     "type": "boolean",
@@ -514,7 +514,16 @@
                 "lowread_filter": {
                     "type": "integer",
                     "description": "Specify the minimum number of reads with taxonomy a sample must have to be included in alpha and beta diversity and heatmap analysis.",
-                    "default": 50000
+                    "default": 50000,
+                    "advanced": true
+                },
+                "taxonomy_collapse_level": {
+                    "type": "integer",
+                    "description": "Collapse taxonomy to this level for diversity analysis. Default 7 is species level.",
+                    "default": 7,
+                    "minimum": 1,
+                    "maximum": 7,
+                    "advanced": true
                 },
                 "skip_heatmap": {
                     "type": "boolean",

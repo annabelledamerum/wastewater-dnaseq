@@ -16,9 +16,8 @@ include { QIIME_ALPHAPLOT                               } from '../../modules/nf
 
 workflow DIVERSITY {
     take:
-    qiime_profiles // [ [ meta ], relative counts file, absolute counts file ]
+    qiime_profiles // [ [ meta ], absolute counts file ]
     qiime_taxonomy // 
-    qiime_readcounts
     groups // group_metadata.csv
 
     main:
@@ -27,47 +26,47 @@ workflow DIVERSITY {
     ch_output_file_paths    = Channel.empty()
 
     QIIME_IMPORT ( qiime_profiles )
-    ch_versions     = ch_versions.mix( QIIME_IMPORT.out.versions )
+    ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
 
-    QIIME_DATAMERGE( QIIME_IMPORT.out.relabun_merged_qza.collect(), QIIME_IMPORT.out.absabun_merged_qza.collect(), qiime_readcounts )
-    ch_versions     = ch_versions.mix( QIIME_DATAMERGE.out.versions )
+    QIIME_DATAMERGE(  QIIME_IMPORT.out.absabun_qza.collect(), qiime_taxonomy.collect() )
+    ch_versions = ch_versions.mix( QIIME_DATAMERGE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_DATAMERGE.out.filtered_samples_abscounts.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() },
-        QIIME_DATAMERGE.out.filtered_samples_relcounts.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
+        QIIME_DATAMERGE.out.raw_counts_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() },
+        QIIME_DATAMERGE.out.filtered_counts_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
         )
  
-    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_abs_qzamerged, qiime_taxonomy.collect())
-    ch_versions     = ch_versions.mix( QIIME_BARPLOT.out.versions )
+    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza )
+    ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime_composition_barplot/" + it.getName() }
         )
 
-    QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.samples_filtered )
+    QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_tsv )
         
-    QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_samples_relcounts, QIIME_METADATAFILTER.out.filtered_metadata )
+    QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_relfreq_tsv, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
 
-    QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset )
-    ch_versions     = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
+    QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.min_total )
+    ch_versions = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
         )
 
-    QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_abs_qzamerged, QIIME_DATAMERGE.out.readcount_maxsubset, QIIME_METADATAFILTER.out.filtered_metadata )
-    ch_versions     = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
+    QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
+    ch_versions = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/diversity_core/" + it.getName() }
         )
 
     QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
-    ch_versions     = ch_versions.mix( QIIME_ALPHADIVERSITY.out.versions )
+    ch_versions = ch_versions.mix( QIIME_ALPHADIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_ALPHADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/alpha_diversity/" + it.getName() }
         ) 
 
     QIIME_BETADIVERSITY ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
-    ch_versions     = ch_versions.mix( QIIME_BETADIVERSITY.out.versions )
+    ch_versions = ch_versions.mix( QIIME_BETADIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BETADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_diversity/" + it.getName() }
         )

@@ -5,10 +5,11 @@ process QIIME_METADATAFILTER {
     path( samples_filtered )
 
     output:
-    path('filtered_metadata.tsv')                          , emit: filtered_metadata, optional: true
+    path('filtered_metadata.tsv') , emit: filtered_metadata, optional: true
+    stdout                          emit: min_total
 
     script:   
     """
-    metadata_pairwise.r $group_metadata $samples_filtered
+    filter_metadata_find_min_counts.py -m $group_metadata -c $samples_filtered
     """
 }

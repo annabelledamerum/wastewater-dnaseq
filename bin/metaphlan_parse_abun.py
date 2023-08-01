@@ -2,8 +2,6 @@
 
 import argparse
 import pandas as pd
-import numpy as np
-import re
 
 def metaphlan_profileparse( mpa_profiletable, label ):
     
@@ -11,18 +9,13 @@ def metaphlan_profileparse( mpa_profiletable, label ):
     #Process Metaphlan4 input table
     #For relative abundance: remove all entries that are not on species level
     profile = pd.read_csv(mpa_profiletable, sep="\t")
-    relprofile = profile[["clade_name", "relative_abundance"]]
-    absprofile = profile[["clade_name", "estimated_number_of_reads_from_the_clade"]]
+    profile = profile[["clade_name", "estimated_number_of_reads_from_the_clade"]]
 
-    profiles = { '_relabun_parsed_mpaprofile.txt' : relprofile,
-                 '_absabun_parsed_mpaprofile.txt' : absprofile }
-
-    #For relative counts and absolute counts, clean all entries that are not on the sample level
-    for fileaddress, profile in profiles.items():
-        profile.columns = ["clade_name",label]
-        profile = profile[profile["clade_name"].str.contains("s__") == True]
-        profile = profile[profile["clade_name"].str.contains("t__") == False]
-        profile.to_csv((label+fileaddress), sep="\t", index=False)
+    #Clean all entries that are not on the sample level
+    profile.columns = ["clade_name",label]
+    profile = profile[profile["clade_name"].str.contains("s__") == True]
+    profile = profile[profile["clade_name"].str.contains("t__") == False]
+    profile.to_csv(label+"_absabun_parsed_mpaprofile.txt", sep="\t", index=False)
 
     #Formatting supplemental taxonomy table needed by qiime2
     #Column names MUST be "Feature ID", "Taxon"

@@ -89,16 +89,13 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     profile["lineage"] = profile["lineage"].map(add_prefix_to_lineage)
     profile = profile.rename(columns={'f_unique_weighted':name})
     # Collapsing rows together in case of duplicate clade name
-    profile = profile.groupby('lineage').sum()
-    profile.to_csv(name+'_relabun_parsed_mpaprofile.txt', sep="\t")
-    
+    profile = profile.groupby('lineage').sum()    
     # Calculate absolute abundance (approximate)
     profile = profile.mul(readcount)
-    profile.to_csv(name+'_absabun_parsed_mpaprofile.txt', sep="\t")
+    profile.to_csv(name+'_absabun_parsed_profile.txt', sep="\t")
 
-    # Create a taxonomy file
+    # Create a taxonomy file, in this case the lineage are already in qiime's taxonomy format
     profile['Taxon'] = profile.index
-    profile.index = profile.index.str.replace(";", "|", regex=False)
     profile = profile.drop(name, axis=1)
     profile.index.name = 'Feature ID'
     profile.to_csv(name+"_profile_taxonomy.txt", sep="\t")

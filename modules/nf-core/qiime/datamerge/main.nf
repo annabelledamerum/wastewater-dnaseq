@@ -1,4 +1,11 @@
-params.lowread_filter = 1000000
+/* 
+Merge sample feature table qza
+Filter sample by no. reads
+Merge sample taxonomy and import to qiime
+Collapse at specified taxa
+Convert to relative abundance
+Output raw and filtered count tables
+*/ 
 
 process QIIME_DATAMERGE {
     label 'process_low'
@@ -6,42 +13,67 @@ process QIIME_DATAMERGE {
     container 'quay.io/qiime2/core:2023.2'    
 
     input:
-    path(rel_qza)
     path(abs_qza)
-    path(aligned_read_totals)
+    path(taxonomy)
 
     output:
-    path('filtered_mergedabsqiime.qza')     , emit: filtered_abs_qzamerged, optional: true
-    path('filtered_samples_relcounts.txt')  , emit: filtered_samples_relcounts, optional: true
-    path('filtered_samples_abscounts.txt')  , emit: filtered_samples_abscounts, optional: true
-    path('readcount_maxsubset.txt')         , emit: readcount_maxsubset, optional: true
-    path('absqza_lowqualityfiltered.txt')   , emit: samples_filtered, optional: true
-    path "versions.yml", emit: versions
-   
-    //All samples' qza with relative counts are filtered by read count and  merged for use in qiime composition barplot
-    //All sample's qza with absolute counts are filtered by read count for use in group diversity comparisons
-    //TXT file with all abs sample names that were already filtered for low quality are changed for relative count files
-    //Filtered samples' qza with relative counts are merged for use in heatmap comparison
+    path('merged_filtered_counts.qza')             , emit: filtered_counts_qza
+    path('merged_taxonomy.qza')                    , emit: taxonomy_qza
+    path('merged_raw_counts_collapsed.tsv')        , emit: raw_counts_tsv
+    path('merged_filtered_counts_collapsed.qza')   , emit: filtered_counts_collapsed_qza
+    path('merged_filtered_counts_collapsed.tsv')   , emit: filtered_counts_tsv
+    path('merged_filtered_rel_freq_collapsed.tsv') , emit: filtered_relfreq_tsv
+    path('versions.yml')                           , emit: versions
+    path('*.qza')
 
     script:
     """
-    low_read_filter.py -q "$abs_qza" -r $aligned_read_totals -f $params.lowread_filter 
+    qiime feature-table merge \
+        --i-tables $abs_qza \
+        --o-merged-table merged_raw_counts.qza
 
-    if test -f \"absqza_lowqualityfiltered.txt\"; then
+    qiime feature-table filter-samples \
+        --i-table merged_raw_counts.qza \
+        --p-min-frequency ${params.lowread_filter} \
+        --o-filtered-table merged_filtered_counts.qza
+    
+    qiime_taxmerge.py $taxonomy
+    qiime tools import \
+        --input-path merged_taxonomy.tsv \
+        --type 'FeatureData[Taxonomy]' \
+        --input-format TSVTaxonomyFormat \
+        --output-path merged_taxonomy.qza
+    
+    qiime taxa collapse \
+        --i-table merged_raw_counts.qza \
+        --i-taxonomy merged_taxonomy.qza \
+        --p-level ${params.taxonomy_collapse_level} \
+        --o-collapsed-table merged_raw_counts_collapsed.qza
 
-        qiime feature-table merge --i-tables \$( < absqza_lowqualityfiltered.txt) --o-merged-table filtered_mergedabsqiime.qza
+    qiime tools export \
+        --input-path merged_raw_counts_collapsed.qza \
+        --output-path merged_raw_counts_collapsed_out
+    biom convert -i merged_raw_counts_collapsed_out/feature-table.biom -o merged_raw_counts_collapsed.tsv --to-tsv
 
-        qiime tools export --input-path filtered_mergedabsqiime.qza --output-path filtered_samples_abscounts_out/
+    qiime feature-table filter-samples \
+        --i-table merged_raw_counts_collapsed.qza \
+        --p-min-frequency ${params.lowread_filter} \
+        --o-filtered-table merged_filtered_counts_collapsed.qza
 
-        biom convert -i filtered_samples_abscounts_out/feature-table.biom -o filtered_samples_abscounts.txt --to-tsv
+    qiime tools export \
+        --input-path merged_filtered_counts_collapsed.qza \
+        --output-path merged_filtered_counts_collapsed_out
+    biom convert -i merged_filtered_counts_collapsed_out/feature-table.biom -o merged_filtered_counts_collapsed.tsv --to-tsv
 
-        qiime feature-table merge --i-tables \$(sed 's/_qiime_absfreq_table.qza/_qiime_relfreq_table.qza/g' absqza_lowqualityfiltered.txt) --o-merged-table filtered_mergedrelqiime.qza
+    qiime feature-table relative-frequency \
+        --i-table merged_filtered_counts_collapsed.qza \
+        --o-relative-frequency-table merged_filtered_rel_freq_collapsed.qza
 
-        qiime tools export --input-path filtered_mergedrelqiime.qza --output-path filteredsamples_relcounts_out/
-
-        biom convert -i filteredsamples_relcounts_out/feature-table.biom -o filtered_samples_relcounts.txt --to-tsv
-    fi
-
+    qiime tools export \
+        --input-path merged_filtered_rel_freq_collapsed.qza \
+        --output-path merged_filtered_rel_freq_collapsed_out
+    biom convert -i merged_filtered_rel_freq_collapsed_out/feature-table.biom -o merged_filtered_rel_freq_collapsed.tsv --to-tsv
+        
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')

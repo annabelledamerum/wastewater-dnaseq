@@ -6,7 +6,6 @@ process METAPHLAN4_UNMAPPED {
 
     output:
     path("mpa_readstats_mqc.json"), emit: json
-    path("*_alignedreads.csv"), emit: aligned_read_totals
 
     script:
     """

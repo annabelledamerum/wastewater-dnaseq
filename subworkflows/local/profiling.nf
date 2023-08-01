@@ -16,7 +16,6 @@ include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf
 include { METAPHLAN4_QIIMEPREP                          } from '../../modules/nf-core/metaphlan4/qiimeprep/main'
 include { METAPHLAN4_UNMAPPED                           } from '../../modules/nf-core/metaphlan4/unmapped/main'
 include { SOURMASH_QIIMEPREP                            } from '../../modules/local/sourmash/qiimeprep/main'
-include { SOURMASH_MERGEREADCOUNT                       } from '../../modules/local/sourmash/mergereadcount/main'
 include { KAIJU_KAIJU                                   } from '../../modules/nf-core/kaiju/kaiju/main'
 include { KAIJU_KAIJU2TABLE as KAIJU_KAIJU2TABLE_SINGLE } from '../../modules/nf-core/kaiju/kaiju2table/main'
 include { DIAMOND_BLASTX                                } from '../../modules/nf-core/diamond/blastx/main'
@@ -35,8 +34,6 @@ workflow PROFILING {
     ch_raw_profiles         = Channel.empty()
     ch_qiime_profiles       = Channel.empty()
     ch_taxonomy             = Channel.empty()
-    ch_readcount            = Channel.empty()
-
     
     //COMBINE READS WITH POSSIBLE DATABASES
     // e.g. output [DUMP: reads_plus_db] [['id':'2612', 'run_accession':'combined', 'instrument_platform':'ILLUMINA', 'single_end':1], <reads_path>/2612.merged.fastq.gz, ['tool':'malt', 'db_name':'mal95', 'db_params':'"-id 90"'], <db_path>/malt90]
@@ -261,7 +258,6 @@ workflow PROFILING {
 
         METAPHLAN4_UNMAPPED ( METAPHLAN4_QIIMEPREP.out.mpa_info.collect() )
         ch_multiqc_files = ch_multiqc_files.mix( METAPHLAN4_UNMAPPED.out.json.ifEmpty([]))
-        ch_readcount = ch_readcount.mix( METAPHLAN4_UNMAPPED.out.aligned_read_totals )
 
     }
 
@@ -301,9 +297,6 @@ workflow PROFILING {
         ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
         ch_qiime_profiles = ch_qiime_profiles.mix( SOURMASH_QIIMEPREP.out.biom )
         ch_taxonomy = ch_taxonomy.mix( SOURMASH_QIIMEPREP.out.taxonomy )
-        
-        SOURMASH_MERGEREADCOUNT( SOURMASH_QIIMEPREP.out.mqc.collect() )
-        ch_readcount = ch_readcount.mix( SOURMASH_MERGEREADCOUNT.out.allsamples_totalreads )
 
     }    
 
@@ -392,7 +385,6 @@ workflow PROFILING {
     profiles        = ch_raw_profiles    // channel: [ val(meta), [ reads ] ] - should be text files or biom
     qiime_profiles  = ch_qiime_profiles  // channel: [ val(meta), relative abundance profiles, absolute abundance profiles ]
     qiime_taxonomy  = ch_taxonomy
-    qiime_readcount = ch_readcount
     versions        = ch_versions          // channel: [ versions.yml ]
     motus_version   = params.profiler == "motus" ? MOTUS_PROFILE.out.versions.first() : Channel.empty()
     mqc             = ch_multiqc_files
