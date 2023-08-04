@@ -24,6 +24,10 @@ workflow DIVERSITY {
     ch_versions             = Channel.empty()
     ch_multiqc_files        = Channel.empty()
     ch_output_file_paths    = Channel.empty()
+    ch_tables               = Channel.empty()
+    ch_taxonomy             = Channel.empty()
+    ch_metadata             = Channel.empty()
+    ch_mintotal             = Channel.empty()
 
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
@@ -34,6 +38,8 @@ workflow DIVERSITY {
         QIIME_DATAMERGE.out.raw_counts_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() },
         QIIME_DATAMERGE.out.filtered_counts_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
         )
+    ch_tables = ch_tables.mix( QIIME_DATAMERGE.out.filtered_counts_qza )
+    ch_taxonomy = ch_taxonomy.mix( QIIME_DATAMERGE.out.taxonomy_qza )
  
     QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza )
     ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
@@ -43,6 +49,8 @@ workflow DIVERSITY {
         )
 
     QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_tsv )
+    ch_metadata = ch_metadata.mix( QIIME_METADATAFILTER.out.filtered_metadata )
+    ch_mintotal = ch_mintotal.mix( QIIME_METADATAFILTER.out.min_total )
         
     QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_relfreq_tsv, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
@@ -81,4 +89,8 @@ workflow DIVERSITY {
     versions        = ch_versions          // channel: [ versions.yml ]
     mqc             = ch_multiqc_files
     output_paths    = ch_output_file_paths
+    tables          = ch_tables
+    taxonomy        = ch_taxonomy
+    metadata        = ch_metadata
+    min_total       = ch_mintotal
 }

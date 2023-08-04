@@ -87,8 +87,10 @@ include { LONGREAD_HOSTREMOVAL          } from '../subworkflows/local/longread_h
 include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_complexityfiltering'
 include { PROFILING                     } from '../subworkflows/local/profiling'
 include { DIVERSITY                     } from '../subworkflows/local/diversity'
+include { REFMERGE_DIVERSITY            } from '../subworkflows/local/refmerge_diversity'
 include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
+include { REFMERGE_DIVERSITY            } from '../subworkflows/local/refmerge_diversity'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -106,6 +108,8 @@ include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 include { CAT_FASTQ                   } from '../modules/nf-core/cat/fastq/main'
 include { SUMMARIZE_DOWNLOADS         } from '../modules/local/summarize_downloads'
+include { REFMERGE_TAXAMERGE          } from '../modules/local/refmerge/taxamerge/main'
+include { REFMERGE_MERGEMETA          } from '../modules/local/refmerge/mergemeta/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -264,6 +268,79 @@ workflow TAXPROFILER {
     ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
 
     /*
+        SUBWORKFLOW: DIVERSITY with reference database
+    */
+    if ( params.aladdin_ref_dataset && params.qiime_ref_taxonomy ){
+        if ( params.aladdin_ref_db && params.qiime_ref_taxonomy && !params.aladdin_ref_db.containsKey(params.aladdin_ref_dataset) ) {
+            exit 1, "The reference dataset '${params.aladdin_ref_dataset}' is not available in the Aladdin reference database."
+        }
+        if ( !params.aladdin_ref_db[params.aladdin_ref_dataset]['taxonomy'].containsKey(params.qiime_ref_taxonomy) ) {
+            exit 1, "The qiime reference database '${params.qiime_ref_taxonomy}' is not compatible with the Aladdin reference database '${params.aladdin_ref_dataset}'."
+        } 
+
+        ref_meta = params.aladdin_ref_db[params.aladdin_ref_dataset]['metadata'] ?: false
+        ref_table = params.aladdin_ref_db[params.aladdin_ref_dataset]['table'] ?: false
+        ref_tax = params.aladdin_ref_db[params.aladdin_ref_dataset]['taxonomy'][params.qiime_ref_taxonomy].qza ?: false
+        //Ingest sample diversity
+        ch_metadata = DIVERSITY.out.metadata
+        //Ingest ref metadata
+        ch_ref_meta = Channel
+        .fromPath("${ref_meta}", checkIfExists: true)
+        .ifEmpty { exit 1, "Aladdin reference metadata not found: ${ref_meta}" }
+        //Ingest ref QIIME2_CLASSIFY taxonomy information (user0 taxa is ch_tax)
+        ch_ref_tax = Channel
+        .fromPath("${ref_tax}", checkIfExists: true)
+        .ifEmpty { exit 1, "Aladdin reference taxonomy not found: ${ref_tax}" }
+        //Ingest ref taxa-excluded ASV table
+        ch_ref_table = Channel
+        .fromPath("${ref_table}", checkIfExists: true)
+        .ifEmpty { exit 1, "Aladdin reference ASV table not found: ${ref_table}" }
+        // Ingest minimum total count from QIIME_METADATFILTER
+        ch_mintotal = DIVERSITY.out.min_total
+
+        REFMERGE_TAXAMERGE( DIVERSITY.out.tables,
+                            DIVERSITY.out.taxonomy,
+                            ch_ref_table, 
+                            ch_ref_tax, 
+                            params.refmerge_collapse_level, 
+                            params.min_frequency, 
+                            params.min_samples )
+
+        ch_merged_table = REFMERGE_TAXAMERGE.out.merged
+        ch_merged_stats = REFMERGE_TAXAMERGE.out.tsv
+        //Merge user and ref metadata
+        if ( ch_metadata && ch_ref_meta ) {
+            REFMERGE_MERGEMETA( ch_metadata, ch_ref_meta)
+            ch_merged_metadata = REFMERGE_MERGEMETA.out.metadata
+        }
+        //Calculate merged diversity metrics and generate plot data
+        if ( ch_merged_metadata && (!params.skip_alpha_rarefaction))  {
+            REFMERGE_DIVERSITY(
+                ch_merged_metadata,
+                ch_merged_table,
+                ch_merged_stats,
+                ch_mintotal
+            )
+            refmerge_alpha_rarefaction_locations = REFMERGE_DIVERSITY.out.alpha_rarefaction.map { "${params.outdir}/qiime2/refmerged/alpha-rarefaction/" + it.getName() }
+            refmerge_diversity_core_locations    = REFMERGE_DIVERSITY.out.diversity_core_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversitycore/" + it.getName()}
+            //refmerge_diversity_core_outlier      = REFMERGE_DIVERSITY.out.sample_removed_summary.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/" + it.getName()}
+            //refmerge_betaord_qzv_locations       = REFMERGE_DIVERSITY.out.betaord_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/beta_diversity/betaord_qzv/" + it.getName()}
+            //refmerge_alpha_qzv_locations         = REFMERGE_DIVERSITY.out.alpha_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/alpha_diversity/" + it.getName()}
+            //refmerge_beta_qzv_locations          = REFMERGE_DIVERSITY.out.beta_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/beta_diversity/beta_qzv/" + it.getName()}
+            ch_output_file_paths
+                .mix(
+                    refmerge_alpha_rarefaction_locations,
+                    refmerge_diversity_core_locations,
+                    //refmerge_diversity_core_outlier,
+                    //refmerge_betaord_qzv_locations,
+                    //refmerge_alpha_qzv_locations,
+                    //refmerge_beta_qzv_locations,
+                    )
+                .set{ ch_output_file_paths }
+        }
+        
+    }
+    /*
         SUBWORKFLOW: VISUALIZATION_KRONA
     */
     if ( params.run_krona ) {
@@ -327,6 +404,12 @@ workflow TAXPROFILER {
     if ( params.run_profile_standardisation ) {
         ch_multiqc_files = ch_multiqc_files.mix( STANDARDISATION_PROFILES.out.mqc.collect{it[1]}.ifEmpty([]) )
     }
+
+    //if (include_reference) {
+     //   ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.beta_diversity.collect().ifEmpty([]))
+     //   ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_PLOT_DIVERSITY_MULTIQC.out.mqc_plot.collect().ifEmpty([]))  
+        // ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.alpha_mqc_plot.collect().ifEmpty([]))
+    //}
 
     MULTIQC (
         ch_multiqc_files.collect(),
