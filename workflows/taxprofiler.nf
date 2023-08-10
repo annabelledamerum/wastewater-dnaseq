@@ -270,6 +270,7 @@ workflow TAXPROFILER {
     /*
         SUBWORKFLOW: DIVERSITY with reference database
     */
+    include_reference = false
     if ( params.aladdin_ref_dataset && params.qiime_ref_taxonomy ){
         if ( params.aladdin_ref_db && params.qiime_ref_taxonomy && !params.aladdin_ref_db.containsKey(params.aladdin_ref_dataset) ) {
             exit 1, "The reference dataset '${params.aladdin_ref_dataset}' is not available in the Aladdin reference database."
@@ -281,6 +282,7 @@ workflow TAXPROFILER {
         ref_meta = params.aladdin_ref_db[params.aladdin_ref_dataset]['metadata'] ?: false
         ref_table = params.aladdin_ref_db[params.aladdin_ref_dataset]['table'] ?: false
         ref_tax = params.aladdin_ref_db[params.aladdin_ref_dataset]['taxonomy'][params.qiime_ref_taxonomy].qza ?: false
+        include_reference = true
         //Ingest sample diversity
         ch_metadata = DIVERSITY.out.metadata
         //Ingest ref metadata
@@ -325,16 +327,16 @@ workflow TAXPROFILER {
             refmerge_diversity_core_locations    = REFMERGE_DIVERSITY.out.diversity_core_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversitycore/" + it.getName()}
             //refmerge_diversity_core_outlier      = REFMERGE_DIVERSITY.out.sample_removed_summary.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/" + it.getName()}
             //refmerge_betaord_qzv_locations       = REFMERGE_DIVERSITY.out.betaord_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/beta_diversity/betaord_qzv/" + it.getName()}
-            //refmerge_alpha_qzv_locations         = REFMERGE_DIVERSITY.out.alpha_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/alpha_diversity/" + it.getName()}
-            //refmerge_beta_qzv_locations          = REFMERGE_DIVERSITY.out.beta_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/beta_diversity/beta_qzv/" + it.getName()}
+            refmerge_alpha_qzv_locations         = REFMERGE_DIVERSITY.out.alpha_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/alpha_diversity/" + it.getName()}
+            refmerge_beta_qzv_locations          = REFMERGE_DIVERSITY.out.beta_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversity/beta_diversity/beta_qzv/" + it.getName()}
             ch_output_file_paths
                 .mix(
                     refmerge_alpha_rarefaction_locations,
                     refmerge_diversity_core_locations,
                     //refmerge_diversity_core_outlier,
                     //refmerge_betaord_qzv_locations,
-                    //refmerge_alpha_qzv_locations,
-                    //refmerge_beta_qzv_locations,
+                    refmerge_alpha_qzv_locations,
+                    refmerge_beta_qzv_locations,
                     )
                 .set{ ch_output_file_paths }
         }
@@ -405,11 +407,11 @@ workflow TAXPROFILER {
         ch_multiqc_files = ch_multiqc_files.mix( STANDARDISATION_PROFILES.out.mqc.collect{it[1]}.ifEmpty([]) )
     }
 
-    //if (include_reference) {
-     //   ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.beta_diversity.collect().ifEmpty([]))
-     //   ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_PLOT_DIVERSITY_MULTIQC.out.mqc_plot.collect().ifEmpty([]))  
+    if (include_reference) {
+        ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.beta_diversity.collect().ifEmpty([]))
+        //ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_PLOT_DIVERSITY_MULTIQC.out.mqc_plot.collect().ifEmpty([]))  
         // ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.alpha_mqc_plot.collect().ifEmpty([]))
-    //}
+    }
 
     MULTIQC (
         ch_multiqc_files.collect(),
