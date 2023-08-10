@@ -321,7 +321,7 @@ workflow TAXPROFILER {
                 ch_merged_metadata,
                 ch_merged_table,
                 ch_merged_stats,
-                ch_mintotal
+                ch_mintotal,
             )
             refmerge_alpha_rarefaction_locations = REFMERGE_DIVERSITY.out.alpha_rarefaction.map { "${params.outdir}/qiime2/refmerged/alpha-rarefaction/" + it.getName() }
             refmerge_diversity_core_locations    = REFMERGE_DIVERSITY.out.diversity_core_vis.flatten().map{"${params.outdir}/qiime2/refmerged/diversitycore/" + it.getName()}
@@ -409,7 +409,7 @@ workflow TAXPROFILER {
 
     if (include_reference) {
         ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.beta_diversity.collect().ifEmpty([]))
-        //ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_PLOT_DIVERSITY_MULTIQC.out.mqc_plot.collect().ifEmpty([]))  
+        ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.alpha_diversity.collect().ifEmpty([]))  
         // ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.alpha_mqc_plot.collect().ifEmpty([]))
     }
 

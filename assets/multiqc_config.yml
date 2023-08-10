@@ -10,10 +10,16 @@ report_section_order:
   individ_alpha_barchart:
     after: Diversity_Analysis
   Alpha_Rarefaction: 
-    order: -997
+    order: -994
   Alpha_Diversity:
+    order: -995
+  beta_Diversity:
+    order: -996
+  comparative_alpha_rarefaction:
+    order: -997
+  comparative_alpha_diversity:
     order: -998
-  Beta_Diversity:
+  comparative_beta_diversity:
     order: -999
   "nf-core-taxprofiler-methods-description":
     order: -1000
@@ -49,6 +55,30 @@ custom_data:
     parent_name: "Diversity Analysis"
     section_name: "Beta Diversity"
     description: "Beta diversity is a measurement of microbial diversity differences between samples. The figure below is the 3-dimensional principle coordinate analysis (PCoA) plot created using the matrix of paired-wise distance between samples calculated by the Weighted unifrac, Unweighted unifrac, Bray-Curtis, and Jaccard dissimilarity. Interactive 3-dimensional plots of beta-diversity with different matrices can be accessed by clicking the dropdown menus below. Each dot on the beta diversity plot represents the whole microbial composition profile. Samples with similar microbial composition profiles are closer to each other, while samples with different profiles are farther away from each other."
+
+  comparative_alpha_rarefaction:
+    anchor: "comparative_alpha_rarefaction"
+    parent_id: "Comparative_Diversity_Analysis"
+    parent_name: "Comparative Diversity Analysis"
+    parent_description: "In this section, a comparative diversity analysis has been conducted using the selected reference dataset. All diversity analyses have been recomputed to include the reference dataset, so results may appear differently than in the <a href='#Diversity_Analysis'>Diversity Analysis</a> section. Please note that comparisons across different studies should be interpreted with caution, as many different factors from sample collection, DNA isolation, library preparation and sequencing can impact the results obtained."
+    section_name: "Alpha Rarefaction"
+    description: "This section shows an interactive alpha rarefaction plot, which is the alpha diversity (species richness) as a function of the sampling depth (sequencing read counts), drawn from user and reference data. Reference data can be distinguished from your own data by the prefix `Ref_` added to group names, displayed in the legend to the right of the plot. Curves computed by different metrics can be found by clicking on the dropdown menu to the left of the plot."
+
+  comparative_alpha_diversity:
+    anchor: "comparative_alpha_diversity"
+    parent_id: "Comparative_Diversity_Analysis"
+    parent_name: "Comparative Diversity Analysis"
+    parent_description: "In this section, a comparative diversity analysis has been conducted using the selected reference dataset. All diversity analyses have been recomputed to include the reference dataset, so results may appear differently than in the <a href='#Diversity_Analysis'>Diversity Analysis</a> section. Please note that comparisons across different studies should be interpreted with caution, as many different factors from sample collection, DNA isolation, library preparation and sequencing can impact the results obtained."
+    section_name: "Alpha Diversity"
+    description: "This section displays the alpha diversity of user and reference data, determined by the `Observed features` and `Shannon` diversity index metrics. Click on the icon for each group in the legend to hide or reveal samples."
+
+  comparative_beta_diversity:
+    anchor: "comparative_beta_diversity"
+    parent_id: "Comparative_Diversity_Analysis"
+    parent_name: "Comparative Diversity Analysis"
+    parent_description: "In this section, a comparative diversity analysis has been conducted using the selected reference dataset. All diversity analyses have been recomputed to include the reference dataset, so results may appear differently than in the <a href='#Diversity_Analysis'>Diversity Analysis</a> section. Please note that comparisons across different studies should be interpreted with caution, as many different factors from sample collection, DNA isolation, library preparation and sequencing can impact the results obtained."
+    section_name: "Beta Diversity"
+    description: "This section displays the beta diversity of user and reference data, determined by the `Bray-Curtis` and `Jaccard` metrics. Click on the icon for each group in the legend to hide or reveal samples."
 
 module_order:
   - fastqc
