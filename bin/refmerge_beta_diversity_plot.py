@@ -67,7 +67,7 @@ for name, df in input_dict.items():
     ]
     samples = metadata['sampleid'].values.tolist()
     df = df.merge(metadata, left_on='SubjectID1', right_on='sampleid')
-    df['ref'] = df['group'].str.contains(pat='REF')
+    df['ref'] = df['group'].str.contains(pat='Ref_')
     df.sort_values(by=['ref', 'group'],inplace=True)
     df.drop('ref', axis=1, inplace=True)
     category_name = "group"    
