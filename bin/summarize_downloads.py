@@ -39,7 +39,6 @@ def summarize_downloads(locations, design):
     # Define what to do with each type of files
     categories = {
         'multiqc_report.html'                 : ('Report', 'report'),
-        'merged_raw_counts_collapsed.tsv'     : ('Read Counts Table for All Taxa All Samples', 'all_samples'),
         'merged_filtered_counts_collapsed.tsv': ('Read Counts Table for All Taxa Filtered Samples', 'all_samples'),
         'allsamples_compbarplot.qzv'          : ('Barplot Visualization', 'all_samples'),
         'alpha-rarefaction.qzv'               : ('Alpha Rarefaction Visualization', 'all_samples'),
