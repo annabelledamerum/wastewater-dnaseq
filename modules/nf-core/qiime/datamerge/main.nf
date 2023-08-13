@@ -6,7 +6,7 @@ Collapse to intended taxonomy level -> filtered collapsed qza, used in diversity
 Export to tsv -> used metadata filtering and delivered to customer
 */ 
 
-process QIIME_MERGEFILTER {
+process QIIME_DATAMERGE {
     label 'process_low'
 
     container 'quay.io/qiime2/core:2023.2'    
