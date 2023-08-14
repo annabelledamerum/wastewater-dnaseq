@@ -89,11 +89,11 @@ module_order:
 
 sp:
   Alpha_Diversity:
-    fn: "*_Diversity_mqc.html"
+    fn: "alpha_diversity_mqc.html"
   beta_diversity:
     fn: "beta_diversity_mqc.html"
   Alpha_Rarefaction:
-    fn: "Alpha_Rarefaction_mqc.html"
+    fn: "alpha_rarefaction_mqc.html"
   comparative_beta_diversity:
     fn: "comparative_beta_diversity_mqc.html"
   comparative_alpha_rarefaction:

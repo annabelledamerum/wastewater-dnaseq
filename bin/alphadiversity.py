@@ -15,7 +15,6 @@ usage = "alpha_diversity_plot.py <vector>"
 vector = sys.argv[1]
 def alpha_diversity_plot(shannon, evenness, observed_features, output_file):
     # shannon             = "shannon_vector.tsv"
-    # faith_pd            = "faith_pd_vector.tsv"
     # evenness            = "evenness_vector.tsv"
     # observed_features   = "observed_features_vector.tsv"
 
@@ -50,10 +49,12 @@ def alpha_diversity_plot(shannon, evenness, observed_features, output_file):
     buttons = []
     i = 0
     for type, df in df_dict.items():
+        df['ref'] = df['group'].str.contains(pat='Ref_')
+        df.sort_values(by=['ref', 'group'],inplace=True)
+        df.drop('ref', axis=1, inplace=True)
         col=df.columns[0]
         df[col] = df[col].apply(str)
         n=len(df.groupby(df[col]))
-        df.sort_values(col,inplace=True)
         for t in range(n):
             fig=px.box(color = df[col],
                               y = df.Value.to_list(),
@@ -93,3 +94,4 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", "-o", type=str, help="Folder to store output files")
     args = parser.parse_args()
     alpha_diversity_plot(args.shannon, args.evenness, args.observed_features, args.output_file)
+

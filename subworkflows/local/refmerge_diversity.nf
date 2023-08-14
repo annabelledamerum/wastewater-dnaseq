@@ -9,8 +9,12 @@ include { QIIME_BETADIVERSITY as REFMERGE_BETADIVERSITY } from '../../modules/nf
 //include { QIIME2_DIVERSITY_ADONIS as REFMERGE_DIVERSITY_ADONIS } from '../../modules/local/qiime2_diversity_adonis'
 //include { QIIME2_DIVERSITY_BETAORD as REFMERGE_DIVERSITY_BETAORD } from '../../modules/local/qiime2_diversity_betaord'
 // include { REFMERGE_PLOT_DIVERSITY_MULTIQC } from '../../modules/local/refmerge_plot_diversity_multiqc'
-include { REFMERGE_BETAPLOT } from '../../modules/local/refmerge/betaplot/main'
-include { REFMERGE_ALPHAPLOT } from '../../modules/local/refmerge/alphaplot/main'
+include { QIIME_BETAPLOT as REFMERGE_BETAPLOT } from '../../modules/nf-core/qiime/betaplot/main' addParams(
+    diversity_fileoutput: true
+)
+include { QIIME_ALPHAPLOT as REFMERGE_ALPHAPLOT } from '../../modules/nf-core/qiime/alphaplot/main' addParams(
+    diversity_fileoutput: true
+)
 
 workflow REFMERGE_DIVERSITY {
     take:
