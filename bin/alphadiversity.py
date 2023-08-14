@@ -49,7 +49,7 @@ def alpha_diversity_plot(shannon, evenness, observed_features, output_file):
     buttons = []
     i = 0
     for type, df in df_dict.items():
-        df['ref'] = df['group'].str.contains(pat='Ref_')
+        df['ref'] = df['group'].str.contains(pat='Ref-')
         df.sort_values(by=['ref', 'group'],inplace=True)
         df.drop('ref', axis=1, inplace=True)
         col=df.columns[0]
