@@ -5,6 +5,7 @@
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
 include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
+include { QIIME_FILTER_SINGLETON_SAMPLE                 } from '../../modules/nf-core/qiime/filter_singleton_sample/main'
 include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
@@ -24,10 +25,6 @@ workflow DIVERSITY {
     ch_versions             = Channel.empty()
     ch_multiqc_files        = Channel.empty()
     ch_output_file_paths    = Channel.empty()
-    ch_tables               = Channel.empty()
-    ch_taxonomy             = Channel.empty()
-    ch_metadata             = Channel.empty()
-    ch_mintotal             = Channel.empty()
 
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
@@ -35,11 +32,8 @@ workflow DIVERSITY {
     QIIME_DATAMERGE(  QIIME_IMPORT.out.absabun_qza.collect(), qiime_taxonomy.collect() )
     ch_versions = ch_versions.mix( QIIME_DATAMERGE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_DATAMERGE.out.raw_counts_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() },
-        QIIME_DATAMERGE.out.filtered_counts_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
+        QIIME_DATAMERGE.out.filtered_counts_collapsed_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
         )
-    ch_tables = ch_tables.mix( QIIME_DATAMERGE.out.filtered_counts_qza )
-    ch_taxonomy = ch_taxonomy.mix( QIIME_DATAMERGE.out.taxonomy_qza )
  
     QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza )
     ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
@@ -49,19 +43,20 @@ workflow DIVERSITY {
         )
 
     QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_tsv )
-    ch_metadata = ch_metadata.mix( QIIME_METADATAFILTER.out.filtered_metadata )
-    ch_mintotal = ch_mintotal.mix( QIIME_METADATAFILTER.out.min_total )
+
+    QIIME_FILTER_SINGLETON_SAMPLE( QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.filtered_metadata )
+    ch_versions = ch_versions.mix( QIIME_FILTER_SINGLETON_SAMPLE.out.versions )
         
-    QIIME_HEATMAP( QIIME_DATAMERGE.out.filtered_relfreq_tsv, QIIME_METADATAFILTER.out.filtered_metadata )
+    QIIME_HEATMAP( QIIME_FILTER_SINGLETON_SAMPLE.out.rel_tsv, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
 
-    QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.min_total )
+    QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.min_total )
     ch_versions = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
         )
 
-    QIIME_DIVERSITYCORE( QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
+    QIIME_DIVERSITYCORE( QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/diversity_core/" + it.getName() }
@@ -89,8 +84,8 @@ workflow DIVERSITY {
     versions        = ch_versions          // channel: [ versions.yml ]
     mqc             = ch_multiqc_files
     output_paths    = ch_output_file_paths
-    tables          = ch_tables
-    taxonomy        = ch_taxonomy
-    metadata        = ch_metadata
-    min_total       = ch_mintotal
+    tables          = QIIME_DATAMERGE.out.filtered_counts_qza
+    taxonomy        = QIIME_DATAMERGE.out.taxonomy_qza
+    metadata        = QIIME_METADATAFILTER.out.filtered_metadata
+    min_total       = QIIME_METADATAFILTER.out.min_total
 }

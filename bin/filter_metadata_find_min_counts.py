@@ -3,7 +3,7 @@
 import argparse
 import pandas as pd
 
-def filter_metadata(metadata, counts, output):
+def filter_metadata_find_min(metadata, counts, output):
     # input_metadata file is a TSV file with two columns 
     # it can have duplicates because multiple sequencing runs for one sample
     input_metadata = pd.read_csv(metadata, sep="\t").drop_duplicates()
@@ -12,18 +12,20 @@ def filter_metadata(metadata, counts, output):
     data = pd.read_csv(counts, sep="\t", skiprows=1, index_col=0)
     # only keep samples that are in the counts file
     input_metadata = input_metadata.loc[input_metadata["sampleid"].isin(data.columns),]
-    # if there is at least one group with replicates and two groups in total,
-    # and more than 3 samples, continue with group analysis
-    if ( (input_metadata.groupby("group")["sampleid"].nunique()>1).any() and 
-         input_metadata["group"].nunique() > 1 and 
-         len(input_metadata) > 3 ):
+    # get the number of replicates per group
+    replication = input_metadata.groupby("group")["sampleid"].nunique()
+    replication.name = "replicates"
+    input_metadata = input_metadata.merge(replication, on="group")
+    # drop samples without replicates
+    input_metadata = input_metadata.loc[input_metadata["replicates"]>1,]
+    # if there are at least two groups left, continue with group analysis
+    if input_metadata["group"].nunique() > 1:
+        input_metadata = input_metadata.drop("replicates", axis=1)
         input_metadata.to_csv(output, sep="\t", index=False)
 
-def get_min_total_counts(counts):
-    # counts table has an extra comment line at the top
-    # use first column as index
-    data = pd.read_csv(counts, sep="\t", skiprows=1, index_col=0)
-    # output to STDOUT
+    # filter singleton samples from counts table as well
+    data = data.loc[:, data.columns.isin(input_metadata["sampleid"])]
+    # output the min total count to STDOUT
     print(data.sum().min().astype(int), end="")
 
 if __name__ == "__main__":
@@ -35,5 +37,4 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", dest="output", default="filtered_metadata.tsv",
                         help="Output metadata file name")
     args = parser.parse_args()
-    filter_metadata(args.metadata, args.counts, args.output)
-    get_min_total_counts(args.counts)
+    filter_metadata_find_min(args.metadata, args.counts, args.output)
