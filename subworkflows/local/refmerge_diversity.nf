@@ -2,67 +2,52 @@
     Diversity indices with QIIME2
  */
 
-include { QIIME_ALPHARAREFACTION as REFMERGE_ALPHARAREFACTION } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
-include { QIIME_DIVERSITYCORE as REFMERGE_DIVERSITYCORE } from '../../modules/nf-core/qiime/diversitycore/main'
-include { QIIME_ALPHADIVERSITY as REFMERGE_ALPHADIVERSITY } from '../../modules/nf-core/qiime/alphadiversity/main'
-include { QIIME_BETADIVERSITY as REFMERGE_BETADIVERSITY } from '../../modules/nf-core/qiime/betadiversity/main'
-//include { QIIME2_DIVERSITY_ADONIS as REFMERGE_DIVERSITY_ADONIS } from '../../modules/local/qiime2_diversity_adonis'
-//include { QIIME2_DIVERSITY_BETAORD as REFMERGE_DIVERSITY_BETAORD } from '../../modules/local/qiime2_diversity_betaord'
-// include { REFMERGE_PLOT_DIVERSITY_MULTIQC } from '../../modules/local/refmerge_plot_diversity_multiqc'
-include { QIIME_BETAPLOT as REFMERGE_BETAPLOT } from '../../modules/nf-core/qiime/betaplot/main' addParams(
+include { QIIME_FILTER_SINGLETON_SAMPLE as REFMERGE_FILTER_SINGLETON } from '../../modules/nf-core/qiime/filter_singleton_sample/main'
+include { REFMERGE_TAXAMERGE                                         } from '../../modules/local/refmerge/taxamerge/main'
+include { REFMERGE_MERGEMETA                                         } from '../../modules/local/refmerge/mergemeta/main'
+include { QIIME_ALPHARAREFACTION as REFMERGE_ALPHARAREFACTION        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
+include { QIIME_DIVERSITYCORE as REFMERGE_DIVERSITYCORE              } from '../../modules/nf-core/qiime/diversitycore/main'
+include { QIIME_ALPHADIVERSITY as REFMERGE_ALPHADIVERSITY            } from '../../modules/nf-core/qiime/alphadiversity/main'
+include { QIIME_BETADIVERSITY as REFMERGE_BETADIVERSITY              } from '../../modules/nf-core/qiime/betadiversity/main'
+include { QIIME_BETAPLOT as REFMERGE_BETAPLOT                        } from '../../modules/nf-core/qiime/betaplot/main' addParams(
     diversity_fileoutput: true
 )
-include { QIIME_ALPHAPLOT as REFMERGE_ALPHAPLOT } from '../../modules/nf-core/qiime/alphaplot/main' addParams(
+include { QIIME_ALPHAPLOT as REFMERGE_ALPHAPLOT                      } from '../../modules/nf-core/qiime/alphaplot/main' addParams(
     diversity_fileoutput: true
 )
 
 workflow REFMERGE_DIVERSITY {
     take:
-    ch_metadata
-    ch_asv
-    ch_stats
-    ch_mintotal
+    user_table
+    user_taxonomy
+    user_metadata
+    ref_table
+    ref_taxonomy
+    ref_metadata
 
     main:
+    ch_multiqc_files = Channel.empty()
 
-    //Alpha-rarefaction
-    REFMERGE_ALPHARAREFACTION ( ch_metadata, ch_asv, ch_mintotal )
+    REFMERGE_FILTER_SINGLETON( user_table, user_metadata )
 
-    //Calculate diversity indices
-    REFMERGE_DIVERSITYCORE ( ch_asv, ch_mintotal, ch_metadata )
+    REFMERGE_TAXAMERGE( REFMERGE_FILTER_SINGLETON.out.abs_qza, user_taxonomy, ref_table, ref_taxonomy )
 
-    //alpha_diversity ( ch_metadata, DIVERSITY_CORE.out.qza, ch_metacolumn_all )
-    REFMERGE_ALPHADIVERSITY ( REFMERGE_DIVERSITYCORE.out.vector.flatten(), ch_metadata.collect() )
-    //beta_diversity ( ch_metadata, DIVERSITY_CORE.out.qza, ch_metacolumn_pairwise )
-    REFMERGE_BETADIVERSITY ( REFMERGE_DIVERSITYCORE.out.distance.flatten(), ch_metadata.collect() )
-    //beta_diversity_ordination ( ch_metadata, DIVERSITY_CORE.out.qza )
-    //ch_metadata
-        //.combine( REFMERGE_DIVERSITY_CORE.out.pcoa.flatten() )
-        //.set{ ch_to_diversity_betaord }
-    //REFMERGE_DIVERSITY_BETAORD ( ch_to_diversity_betaord )
+    REFMERGE_MERGEMETA( user_metadata, ref_metadata)
 
-    REFMERGE_BETAPLOT (
-        ch_metadata.collect(),
-        REFMERGE_BETADIVERSITY.out.tsv.collect(),
-    )
+    REFMERGE_ALPHARAREFACTION ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total )
 
-    REFMERGE_ALPHAPLOT (
-        ch_metadata.collect(),
-        REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]),
-        REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([])
-    )
+    REFMERGE_DIVERSITYCORE ( REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total, REFMERGE_MERGEMETA.out.metadata.collect() )
 
-    
+    REFMERGE_ALPHADIVERSITY ( REFMERGE_DIVERSITYCORE.out.vector.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
 
-emit:
-//alpha_diversity_plot    = REFMERGE_ALPHADIVERSITY.out.metadata_tsv.collect().ifEmpty([])
-rarefaction_plot        = REFMERGE_ALPHARAREFACTION.out.rarefaction_csv
-beta_diversity          = REFMERGE_BETAPLOT.out.report.collect()
-alpha_diversity         = REFMERGE_ALPHAPLOT.out.mqc_plot.collect()
-alpha_rarefaction       = REFMERGE_ALPHARAREFACTION.out.qzv
-diversity_core_vis      = REFMERGE_DIVERSITYCORE.out.qzv.collect().ifEmpty([])
-//sample_removed_summary  = REFMERGE_DIVERSITYCORE.out.sample_removed.collect().ifEmpty([])
-//betaord_vis             = REFMERGE_DIVERSITY_BETAORD.out.qzv.collect().ifEmpty([])
-alpha_vis               = REFMERGE_ALPHADIVERSITY.out.qzv.collect().ifEmpty([])
-beta_vis                = REFMERGE_BETADIVERSITY.out.qzv.collect().ifEmpty([])
+    REFMERGE_BETADIVERSITY ( REFMERGE_DIVERSITYCORE.out.distance.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
+
+    REFMERGE_ALPHAPLOT ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
+
+    REFMERGE_BETAPLOT ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_BETADIVERSITY.out.tsv.collect() )
+    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_BETAPLOT.out.report.collect().ifEmpty([]) )
+ 
+    emit:
+    mqc = ch_multiqc_files
 }

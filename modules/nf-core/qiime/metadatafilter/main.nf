@@ -6,6 +6,7 @@ process QIIME_METADATAFILTER {
 
     output:
     path('filtered_metadata.tsv') , emit: filtered_metadata, optional: true
+    path('ref_comp_metadata.tsv') , emit: ref_comp_metadata, optional: true
     stdout                          emit: min_total
 
     script:   

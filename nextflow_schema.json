@@ -517,6 +517,20 @@
                     "default": 50000,
                     "advanced": true
                 },
+                "min_frequency": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Remove taxa with fewer than this many total reads among all samples (default: 1, meaning filter is disabled).",
+                    "minimum": 1,
+                    "advanced": true
+                },
+                "min_samples": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Remove taxa that appear in fewer than this many samples (default: 1, meaning filter is disabled).",
+                    "minimum": 1,
+                    "advanced": true
+                },
                 "taxonomy_collapse_level": {
                     "type": "integer",
                     "description": "Collapse taxonomy to this level for diversity analysis. Default 7 is species level.",

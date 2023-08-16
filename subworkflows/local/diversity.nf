@@ -86,6 +86,5 @@ workflow DIVERSITY {
     output_paths    = ch_output_file_paths
     tables          = QIIME_DATAMERGE.out.filtered_counts_qza
     taxonomy        = QIIME_DATAMERGE.out.taxonomy_qza
-    metadata        = QIIME_METADATAFILTER.out.filtered_metadata
-    min_total       = QIIME_METADATAFILTER.out.min_total
+    metadata        = QIIME_METADATAFILTER.out.ref_comp_metadata
 }

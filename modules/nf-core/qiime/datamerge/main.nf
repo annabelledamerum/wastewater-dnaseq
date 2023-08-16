@@ -32,6 +32,12 @@ process QIIME_DATAMERGE {
     qiime feature-table filter-samples \
         --i-table merged_raw_counts.qza \
         --p-min-frequency ${params.lowread_filter} \
+        --o-filtered-table merged_counts_filter-samples.qza
+    
+    qiime feature-table filter-features \
+        --i-table merged_counts_filter-samples.qza \
+        --p-min-frequency ${params.min_frequency} \
+        --p-min-samples ${params.min_samples} \
         --o-filtered-table merged_filtered_counts.qza
 
     qiime_taxmerge.py $taxonomy
