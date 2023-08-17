@@ -1,7 +1,6 @@
 process REFMERGE_TAXAMERGE {
     label 'process_low'
 
-    conda (params.enable_conda ? { exit 1 "QIIME2 has no conda package" } : null)
     container "quay.io/qiime2/core:2023.2"
 
     input:
@@ -13,12 +12,10 @@ process REFMERGE_TAXAMERGE {
     output:
     path("refmerged_filtered-table.qza") , emit: merged
     path("refmerge_filtered-table.tsv")  , emit: tsv
-    stdout                                 emit: min_total
+    path("min_total.txt")                , emit: min_total
 
     script:
     """
-    export XDG_CONFIG_HOME="\${PWD}/HOME"
-
     # collapse user and ref taxa table to genus level, respectively
     qiime taxa collapse \
         --i-table user_table.qza \
@@ -44,7 +41,8 @@ process REFMERGE_TAXAMERGE {
         --o-filtered-table refmerged_filtered-table.qza
     
     # produce raw count table in biom format "table/feature-table.biom"
-    qiime tools export --input-path refmerged_filtered-table.qza  \
+    qiime tools export \
+        --input-path refmerged_filtered-table.qza  \
         --output-path table
     
     # produce raw count table
@@ -54,6 +52,6 @@ process REFMERGE_TAXAMERGE {
     cp table/feature-table.tsv refmerge_filtered-table.tsv
 
     # get min total counts
-    get_min_total_counts.py refmerge_filtered-table.tsv
+    get_min_total_counts.py -c refmerge_filtered-table.tsv -o min_total.txt
     """
 }

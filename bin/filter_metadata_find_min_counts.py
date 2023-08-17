@@ -31,7 +31,6 @@ def filter_metadata_find_min(metadata, counts, output, ref_comp_output):
             input_metadata.to_csv(ref_comp_output, sep="\t", index=False)
             # if there are at least two groups left, continue with group analysis
             if input_metadata["group"].nunique() > 1:
-                input_metadata = input_metadata.drop("replicates", axis=1)
                 input_metadata.to_csv(output, sep="\t", index=False)
         else:
             # If there are no replicates, just use "user-samples" as group label for reference data comparisons

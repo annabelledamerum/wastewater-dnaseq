@@ -34,9 +34,9 @@ workflow REFMERGE_DIVERSITY {
 
     REFMERGE_MERGEMETA( user_metadata, ref_metadata)
 
-    REFMERGE_ALPHARAREFACTION ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total )
+    REFMERGE_ALPHARAREFACTION ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total.map{it.getText()} )
 
-    REFMERGE_DIVERSITYCORE ( REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total, REFMERGE_MERGEMETA.out.metadata.collect() )
+    REFMERGE_DIVERSITYCORE ( REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total.map{it.getText()}, REFMERGE_MERGEMETA.out.metadata.collect() )
 
     REFMERGE_ALPHADIVERSITY ( REFMERGE_DIVERSITYCORE.out.vector.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
 

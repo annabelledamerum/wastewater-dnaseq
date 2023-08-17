@@ -42,7 +42,7 @@ workflow DIVERSITY {
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime_composition_barplot/" + it.getName() }
         )
 
-    QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_tsv )
+    QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_collapsed_tsv )
 
     QIIME_FILTER_SINGLETON_SAMPLE( QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_FILTER_SINGLETON_SAMPLE.out.versions )
