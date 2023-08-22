@@ -27,6 +27,7 @@ workflow REFMERGE_DIVERSITY {
 
     main:
     ch_multiqc_files = Channel.empty()
+    ch_output_file_paths = Channel.empty()
 
     REFMERGE_FILTER_SINGLETON( user_table, user_metadata )
 
@@ -35,19 +36,32 @@ workflow REFMERGE_DIVERSITY {
     REFMERGE_MERGEMETA( user_metadata, ref_metadata)
 
     REFMERGE_ALPHARAREFACTION ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total.map{it.getText()} )
+    ch_output_file_paths = ch_output_file_paths.mix(
+        REFMERGE_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/refmerged/alpha-rarefaction/" + it.getName() }
+        )
 
     REFMERGE_DIVERSITYCORE ( REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total.map{it.getText()}, REFMERGE_MERGEMETA.out.metadata.collect() )
+    ch_output_file_paths = ch_output_file_paths.mix(
+        REFMERGE_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/refmerged/diversity_core/" + it.getName() }
+        )
 
     REFMERGE_ALPHADIVERSITY ( REFMERGE_DIVERSITYCORE.out.vector.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
+    ch_output_file_paths = ch_output_file_paths.mix(
+        REFMERGE_ALPHADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/refmerged/alpha_diversity/" + it.getName() }
+        )
 
     REFMERGE_BETADIVERSITY ( REFMERGE_DIVERSITYCORE.out.distance.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
+    ch_output_file_paths = ch_output_file_paths.mix(
+        REFMERGE_BETADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_diversity/" + it.getName() }
+        )
 
-    REFMERGE_ALPHAPLOT ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
+    REFMERGE_ALPHAPLOT ( REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
     ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
 
-    REFMERGE_BETAPLOT ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_BETADIVERSITY.out.tsv.collect() )
+    REFMERGE_BETAPLOT ( REFMERGE_BETADIVERSITY.out.tsv.collect() )
     ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_BETAPLOT.out.report.collect().ifEmpty([]) )
  
     emit:
     mqc = ch_multiqc_files
+    output_paths = ch_output_file_paths
 }

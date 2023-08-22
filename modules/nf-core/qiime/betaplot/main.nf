@@ -7,7 +7,6 @@ process QIIME_BETAPLOT {
     !skip_betadiversity
 
     input:
-    path metadata
     path tsv
 
     output:
