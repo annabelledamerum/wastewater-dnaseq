@@ -55,11 +55,11 @@ workflow REFMERGE_DIVERSITY {
         REFMERGE_BETADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_diversity/" + it.getName() }
         )
 
-    REFMERGE_ALPHAPLOT ( REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
-    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
+    REFMERGE_ALPHAPLOT ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_ALPHAPLOT.out.mqc_plot.collect() )
 
     REFMERGE_BETAPLOT ( REFMERGE_BETADIVERSITY.out.tsv.collect() )
-    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_BETAPLOT.out.report.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_BETAPLOT.out.report.collect() )
  
     emit:
     mqc = ch_multiqc_files

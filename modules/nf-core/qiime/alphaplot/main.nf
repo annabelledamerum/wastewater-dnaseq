@@ -5,6 +5,7 @@ process QIIME_ALPHAPLOT {
     !params.skip_alphadiversity || !params.skip_alpha_rarefaction
     
     input:
+    path metadata
     path alpha_diversity_plot
     path rarefaction_plot
 

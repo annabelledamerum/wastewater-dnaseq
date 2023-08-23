@@ -37,7 +37,7 @@ workflow DIVERSITY {
  
     QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza, groups )
     ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime_composition_barplot/" + it.getName() }
         )
@@ -48,7 +48,7 @@ workflow DIVERSITY {
     ch_versions = ch_versions.mix( QIIME_FILTER_SINGLETON_SAMPLE.out.versions )
         
     QIIME_HEATMAP( QIIME_FILTER_SINGLETON_SAMPLE.out.rel_tsv, QIIME_METADATAFILTER.out.filtered_metadata )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect().ifEmpty([]) ) 
+    ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect()) 
 
     QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.min_total )
     ch_versions = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
@@ -74,11 +74,11 @@ workflow DIVERSITY {
         QIIME_BETADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_diversity/" + it.getName() }
         )
 
-    QIIME_ALPHAPLOT( QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect().ifEmpty([]) )
+    QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect() )
 
     QIIME_BETAPLOT( QIIME_BETADIVERSITY.out.tsv.collect() )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect().ifEmpty([]) )
+    ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect() )
 
     emit:
     versions        = ch_versions          // channel: [ versions.yml ]
