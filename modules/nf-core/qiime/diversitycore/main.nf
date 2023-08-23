@@ -11,6 +11,7 @@ process QIIME_DIVERSITYCORE {
     output:
     path('diversity_core/*_vector.qza')          , emit: vector
     path('diversity_core/*_distance_matrix.qza') , emit: distance
+    path('diversity_core/*_pcoa_results.qza')     , emit: pcoa
     path("diversity_core/*.qzv")                 , emit: qzv
     path "versions.yml"                          , emit: versions
 

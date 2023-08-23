@@ -1,5 +1,5 @@
 process QIIME_BETADIVERSITY {
-    tag "${distance.baseName}"
+    tag "${pcoa.baseName}"
     label 'process_low'
     container "quay.io/qiime2/core:2023.2"
 
@@ -7,28 +7,20 @@ process QIIME_BETADIVERSITY {
     !params.skip_betadiversity
 
     input:
-    path(distance)
+    path(pcoa)
     path(metadata)
 
     output:
-    path("beta_diversity/*"), emit: beta
-    path("beta_diversity/*.qzv"), emit: qzv
-    path("beta_diversity/*.tsv"), optional:true, emit: tsv
+    path("*pcoa_results.tsv"), optional:true, emit: tsv
     path "versions.yml", emit: versions
 
     script:
     """ 
-    qiime diversity beta-group-significance \
-        --i-distance-matrix ${distance} \
-        --m-metadata-file ${metadata} \
-        --m-metadata-column "group" \
-        --o-visualization ${distance.baseName}-group.qzv \
-        --p-pairwise
-    qiime tools export --input-path ${distance.baseName}-group.qzv \
-        --output-path beta_diversity/${distance.baseName}-group
+    qiime tools export --input-path ${pcoa.baseName}.qza \
+        --output-path beta_diversity/${pcoa.baseName}
     #rename the output file name
-    mv beta_diversity/${distance.baseName}-group/raw_data.tsv beta_diversity/${distance.baseName}-group.tsv
-    mv ${distance.baseName}-group.qzv beta_diversity/    
+    
+    pcoa_ordination_totsv.py -p beta_diversity/${pcoa.baseName}/ordination.txt -c "${pcoa.baseName}" -m $metadata
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

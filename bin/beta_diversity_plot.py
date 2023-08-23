@@ -17,15 +17,15 @@ condition = sys.argv[1]
 metadata = sys.argv[2]
 #Setting input file name for 4 matrices
 
-bray            = "bray_curtis_distance_matrix-"        + condition+ ".tsv"
-jaccard         = "jaccard_distance_matrix-"            + condition+ ".tsv"
+bray            = "bray_curtis_pcoa_results.tsv"
+jaccard         = "jaccard_pcoa_results.tsv"
 
 #Set the output file name
-out_file_name        = "beta_diversity_plot_"           + condition+ ".html"
+out_file_name        = "beta_diversity_plot-groups.html"
 
 #Set the input file
-df_bray         = pd.read_csv(bray          , sep="\t", skiprows=0, index_col=0)
-df_jaccard      = pd.read_csv(jaccard       , sep="\t", skiprows=0, index_col=0)
+df_bray         = pd.read_csv(bray          , sep="\t", header = None)
+df_jaccard      = pd.read_csv(jaccard       , sep="\t", header = None)
 
 metadata        = pd.read_csv(metadata      , sep="\t")
 
@@ -39,20 +39,6 @@ buttons =[]
 n = 0
 
 for name, df in input_dict.items():
-    cat = sorted(set(df['SubjectID1']).union(df['SubjectID2']))
-    df=(df.assign(SubjectID1=pd.Categorical(df['SubjectID1'],
-                                        categories=cat,
-                                        ordered=True),
-                SubjectID2=pd.Categorical(df['SubjectID2'],
-                                        categories=cat,
-                                        ordered=True)                   
-                )
-        .pivot_table(index='SubjectID1',
-                        columns='SubjectID2',
-                        values='Distance',
-                        dropna=False, fill_value=0)
-        .pipe(lambda x: x+x.values.T)
-        )
     default_colors = [
         "#7cb5ec",
         "#434348",
@@ -65,12 +51,14 @@ for name, df in input_dict.items():
         "#f45b5b",
         "#91e8e1",
     ]
-    samples = metadata['sampleid'].values.tolist()
-    df = df.merge(metadata, left_on='SubjectID1', right_on='sampleid')
+    df=df.iloc[:,0:4]
+    df.columns = ["sampleid", "PC1", "PC2", "PC3"]
+    df = df.merge(metadata, on='sampleid', how="inner")
     df['ref'] = df['group'].str.contains(pat='Ref-')
     df.sort_values(by=['ref', 'group'],inplace=True)
     df.drop('ref', axis=1, inplace=True)
-    category_name = "group"    
+    print(df)
+    category_name = "group"
     n_cols = len(df[category_name].unique())
     args = [False] * len(input_dict)*(n_cols)
     args[n*n_cols: (n+1)*n_cols] = [True]*n_cols
@@ -78,9 +66,12 @@ for name, df in input_dict.items():
             method = "update",
             args=[{"visible": list(args)}])
     buttons.append(button)
-    pca = PCA()
+
+    arr = df[["PC1", "PC2", "PC3"]].to_numpy()
+
     for i in range(n_cols):
-        fig = px.scatter_3d(pca.fit_transform(df[samples]),
+        fig = px.scatter_3d(arr,
+                    hover_name=df['sampleid'],
                     x=0, y=1, z=2,
                     color=df['group'],
                     color_discrete_sequence=default_colors)
