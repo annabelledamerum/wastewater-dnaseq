@@ -57,7 +57,6 @@ for name, df in input_dict.items():
     df['ref'] = df['group'].str.contains(pat='Ref-')
     df.sort_values(by=['ref', 'group'],inplace=True)
     df.drop('ref', axis=1, inplace=True)
-    print(df)
     category_name = "group"
     n_cols = len(df[category_name].unique())
     args = [False] * len(input_dict)*(n_cols)
