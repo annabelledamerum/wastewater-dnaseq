@@ -77,7 +77,7 @@ workflow DIVERSITY {
     QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect() )
 
-    QIIME_BETAPLOT( QIIME_BETADIVERSITY.out.tsv.collect() )
+    QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETADIVERSITY.out.tsv.collect() )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect() )
 
     emit:
