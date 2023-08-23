@@ -26,7 +26,7 @@ def plot_alpha_rarefaction(categories, output_file):
         plot_data = melted_data.groupby(['depth','group','iter']).agg({'metric':'median'})
         # Sort rows, round to 2 decimals
         plot_data = plot_data.reset_index()
-        plot_data['ref'] = plot_data['group'].str.contains(pat='Ref_')
+        plot_data['ref'] = plot_data['group'].str.contains(pat='Ref-')
         plot_data = plot_data.sort_values(['ref','group','depth'])
         plot_data['metric'] = plot_data['metric'].round(2)
         # Record how many groups are in the data

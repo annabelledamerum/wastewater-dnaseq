@@ -87,6 +87,7 @@ include { LONGREAD_HOSTREMOVAL          } from '../subworkflows/local/longread_h
 include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_complexityfiltering'
 include { PROFILING                     } from '../subworkflows/local/profiling'
 include { DIVERSITY                     } from '../subworkflows/local/diversity'
+include { REFMERGE_DIVERSITY            } from '../subworkflows/local/refmerge_diversity'
 include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 
@@ -263,6 +264,41 @@ workflow TAXPROFILER {
     ch_versions = ch_versions.mix( DIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
 
+    /*
+        SUBWORKFLOW: DIVERSITY with reference database
+    */
+    if ( params.aladdin_ref_dataset ){
+        if ( !params.aladdin_ref_db.containsKey(params.aladdin_ref_dataset) ) {
+            exit 1, "The reference dataset '${params.aladdin_ref_dataset}' is not available in the Aladdin reference database."
+        }
+        if ( !params.aladdin_ref_db[params.aladdin_ref_dataset]['data'].containsKey(params.database) ) {
+            exit 1, "The Aladdin reference dataset '${params.aladdin_ref_dataset}' is not compatible with chosen datbase '${params.database}'."
+        } 
+
+        ref_meta = params.aladdin_ref_db[params.aladdin_ref_dataset]['metadata'] ?: false
+        ref_table = params.aladdin_ref_db[params.aladdin_ref_dataset]['data'][params.database].table ?: false
+        ref_tax = params.aladdin_ref_db[params.aladdin_ref_dataset]['data'][params.database].taxonomy ?: false
+        ch_ref_meta = Channel
+        .fromPath("${ref_meta}", checkIfExists: true)
+        .ifEmpty { exit 1, "Aladdin reference metadata not found: ${ref_meta}" }
+        ch_ref_tax = Channel
+        .fromPath("${ref_tax}", checkIfExists: true)
+        .ifEmpty { exit 1, "Aladdin reference taxonomy not found: ${ref_tax}" }
+        ch_ref_table = Channel
+        .fromPath("${ref_table}", checkIfExists: true)
+        .ifEmpty { exit 1, "Aladdin reference counts table not found: ${ref_table}" }
+
+        REFMERGE_DIVERSITY(
+            DIVERSITY.out.tables,
+            DIVERSITY.out.taxonomy,
+            DIVERSITY.out.metadata,
+            ch_ref_table,
+            ch_ref_tax,
+            ch_ref_meta
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.mqc.collect().ifEmpty([]))
+        ch_output_file_paths = ch_output_file_paths.mix(REFMERGE_DIVERSITY.out.output_paths)
+    }
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
     */
