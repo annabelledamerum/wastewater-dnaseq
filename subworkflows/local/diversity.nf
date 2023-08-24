@@ -11,10 +11,8 @@ include { QIIME_DIVERSITYCORE                           } from '../../modules/nf
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
 include { QIIME_HEATMAP                                 } from '../../modules/nf-core/qiime/heatmap/main'
 include { QIIME_ALPHADIVERSITY                          } from '../../modules/nf-core/qiime/alphadiversity/main'
-include { QIIME_BETADIVERSITY                           } from '../../modules/nf-core/qiime/betadiversity/main'
 include { QIIME_BETAGROUPCOMPARE                        } from '../../modules/nf-core/qiime/beta_groupcompare/main'
-include { QIIME_BETAPLOT                                } from '../../modules/nf-core/qiime/betaplot/main'
-include { QIIME_ALPHAPLOT                               } from '../../modules/nf-core/qiime/alphaplot/main'
+include { QIIME_PLOT_MULTIQC                            } from '../../modules/nf-core/qiime/plot_multiqc/main'
 
 workflow DIVERSITY {
     take:
@@ -69,20 +67,19 @@ workflow DIVERSITY {
         QIIME_ALPHADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/alpha_diversity/" + it.getName() }
         ) 
 
-    QIIME_BETADIVERSITY( QIIME_DIVERSITYCORE.out.pcoa.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
-    ch_versions = ch_versions.mix( QIIME_BETADIVERSITY.out.versions )
-
     QIIME_BETAGROUPCOMPARE ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
     ch_versions = ch_versions.mix( QIIME_BETAGROUPCOMPARE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_group_comparison/" + it.getName() }
         )
 
-    QIIME_ALPHAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_ALPHAPLOT.out.mqc_plot.collect() )
-
-    QIIME_BETAPLOT( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_BETADIVERSITY.out.tsv.collect() )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_BETAPLOT.out.report.collect() )
+    QIIME_PLOT_MULTIQC( 
+        QIIME_METADATAFILTER.out.filtered_metadata,
+        QIIME_DIVERSITYCORE.out.pcoa.ifEmpty([]),
+        QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), 
+        QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]),
+        false )
+    ch_multiqc_files = ch_multiqc_files.mix( QIIME_PLOT_MULTIQC.out.mqc_plot.collect() )
 
     emit:
     versions        = ch_versions          // channel: [ versions.yml ]

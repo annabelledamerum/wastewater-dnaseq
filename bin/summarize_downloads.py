@@ -69,8 +69,8 @@ def summarize_downloads(locations, design):
                 if fn.endswith(key):
                     file_type, scope = values
                     if "/refmerged/" in path:
-                        file_type = file_type + " with Aladdin Reference Dataset"
-                        info_key = "Aladdin-compare-" + fn
+                        file_type = file_type + " with Reference Dataset"
+                        info_key = "Reference-compare-" + fn
                     else:
                         info_key = fn
                     info['file_type'] = file_type
