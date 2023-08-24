@@ -297,6 +297,7 @@ workflow TAXPROFILER {
             ch_ref_meta
         )
         ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.mqc.collect().ifEmpty([]))
+        ch_output_file_paths = ch_output_file_paths.mix(REFMERGE_DIVERSITY.out.output_paths)
     }
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
