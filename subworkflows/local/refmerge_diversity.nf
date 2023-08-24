@@ -6,7 +6,6 @@ include { QIIME_FILTER_SINGLETON_SAMPLE as REFMERGE_FILTER_SINGLETON } from '../
 include { REFMERGE_TAXAMERGE                                         } from '../../modules/local/refmerge/taxamerge/main'
 include { REFMERGE_MERGEMETA                                         } from '../../modules/local/refmerge/mergemeta/main'
 include { QIIME_ALPHARAREFACTION as REFMERGE_ALPHARAREFACTION        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
-include { QIIME_BETADIVERSITY as REFMERGE_BETADIVERSITY              } from '../../modules/nf-core/qiime/betadiversity/main'
 include { QIIME_DIVERSITYCORE as REFMERGE_DIVERSITYCORE              } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_ALPHADIVERSITY as REFMERGE_ALPHADIVERSITY            } from '../../modules/nf-core/qiime/alphadiversity/main'
 include { QIIME_BETAGROUPCOMPARE as REFMERGE_BETAGROUPCOMPARE        } from '../../modules/nf-core/qiime/beta_groupcompare/main'
@@ -48,7 +47,7 @@ workflow REFMERGE_DIVERSITY {
 
     REFMERGE_BETAGROUPCOMPARE ( REFMERGE_DIVERSITYCORE.out.distance.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_group_comparison/" + it.getName() }
+        REFMERGE_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_group_comparison/" + it.getName() }
         )
 
     REFMERGE_PLOT_MULTIQC( 
@@ -57,7 +56,7 @@ workflow REFMERGE_DIVERSITY {
         REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), 
         REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]),
         true )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_PLOT_MULTIQC.out.mqc_plot.collect() )
+    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_PLOT_MULTIQC.out.mqc_plot )
 
     emit:
     mqc = ch_multiqc_files

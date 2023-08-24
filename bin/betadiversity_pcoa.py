@@ -20,10 +20,10 @@ def extract_pcoa(fn, samples):
                 correct_section = False
             if correct_section:
                 if line.startswith(samples):
-                    coordinates.append(line)
+                    coordinates += line
     data = pd.read_csv(StringIO(coordinates), sep="\t")
     data = data.iloc[:, 0:4]
-    data.columns = ["sampleID", "PC1", "PC2", "PC3"]
+    data.columns = ["sampleid", "PC1", "PC2", "PC3"]
     return data
 
 def pcoa_plot(ordinations, metadata, output):
@@ -54,24 +54,24 @@ def pcoa_plot(ordinations, metadata, output):
         'weighted_unifrac_pcoa_ordination.txt': 'Weighted Unifrac',
         'unweighted_unifrac_pcoa_ordination.txt': 'Unweighted Unifrac'
         }
-    name = index_name[fn]
     
     # Get all sample IDs to help parse the ordination txt file
     meta = pd.read_csv(metadata, sep="\t")
-    samples = tuple(meta["sampleID"].tolist())
+    samples = tuple(meta["sampleid"].tolist())
 
     for i, fn in enumerate(ordinations):
         # Get the coordinates from oridination txt file
         data = extract_pcoa(fn, samples)
         # Add metadata to it
-        data = data.merge(meta, on="sampleID", how="inner")
+        data = data.merge(meta, on="sampleid", how="inner")
         # Put Aladdin reference data to front
-        data['ref'] = data['Treatment'].str.contains(pat='Ref-')
-        data = data.sort_values(by=['ref', 'Treatment'])
+        data['ref'] = data['group'].str.contains(pat='Ref-')
+        data = data.sort_values(by=['ref', 'group'])
         data = data.drop('ref', axis=1)
 
         # Construct the plot
-        n_cols = data['Treatment'].nunique()
+        name = index_name[fn]
+        n_cols = data['group'].nunique()
         args = [False] * len(ordinations) * n_cols
         args[i*n_cols: (i+1)*n_cols] = [True] * n_cols
         button = dict(
@@ -85,9 +85,9 @@ def pcoa_plot(ordinations, metadata, output):
         for j in range(n_cols):
             fig = px.scatter_3d(
                 arr,
-                hover_name=data['sampleID'],
+                hover_name=data['sampleid'],
                 x=0, y=1, z=2,
-                color=data['Treatment'],
+                color=data['group'],
                 color_discrete_sequence=default_colors
                 )
             trace = fig.update_traces(
@@ -126,7 +126,7 @@ def pcoa_plot(ordinations, metadata, output):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Make a plotly plot of PCoA results from Qiime2")
-    parser.add_argument(dest="ordinations", type=str, nargs="+", required=True, help="PCoA ordination files from Qiime export")
+    parser.add_argument(dest="ordinations", type=str, nargs="+", help="PCoA ordination files from Qiime export")
     parser.add_argument("-m", "--metadata", dest="metadata", type=str, required=True, help="Metadata file")
     parser.add_argument("-o", "--output", dest="output", default="beta_diversity_mqc.html", help="Output file name")
     args = parser.parse_args()

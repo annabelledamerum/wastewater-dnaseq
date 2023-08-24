@@ -27,9 +27,9 @@ process QIIME_DIVERSITYCORE {
     for i in 'bray_curtis' 'jaccard'
     do
         qiime tools export \
-            --input-path diversity_core/\$i_pcoa_results.qza \
+            --input-path diversity_core/\${i}_pcoa_results.qza \
             --output-path pcoa_export
-        mv pcoa_export/ordination.txt diversity_core/\$i_pcoa_ordination.txt
+        mv pcoa_export/ordination.txt diversity_core/\${i}_pcoa_ordination.txt
     done
 
     cat <<-END_VERSIONS > versions.yml
