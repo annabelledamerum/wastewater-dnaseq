@@ -21,7 +21,7 @@ def extract_pcoa(fn, samples):
             if correct_section:
                 if line.startswith(samples):
                     coordinates += line
-    data = pd.read_csv(StringIO(coordinates), sep="\t")
+    data = pd.read_csv(StringIO(coordinates), sep="\t", header=None)
     data = data.iloc[:, 0:4]
     data.columns = ["sampleid", "PC1", "PC2", "PC3"]
     return data
