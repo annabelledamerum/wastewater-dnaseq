@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
 import sys
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from sklearn.decomposition import PCA
@@ -10,6 +10,10 @@ import plotly.io as pio
 
 pio.templates.default = "plotly_white"
 usage = """beta_diversity_plot.py <condition> <metadata>"""
+
+def addjitter(arr):
+    stdev = .01*(max(arr)-min(arr))
+    return arr + np.random.randn(len(arr))*stdev
 
 #--- Check and read arguments ---#
 
@@ -66,11 +70,26 @@ for name, df in input_dict.items():
             args=[{"visible": list(args)}])
     buttons.append(button)
 
-    arr = df[["PC1", "PC2", "PC3"]].to_numpy()
+    #Adding jitter to PCs
+    sampleinfo = df[["sampleid", "group"]]
+    df = df[["PC1", "PC2", "PC3"]]
+    #df must be rounded for accurate identification of duplicate rows
+    df = round(df, ndigits=6)
+    jitterarray = df.copy()
+    for coords in ["PC1", "PC2", "PC3"]:
+        jitterarray[coords] = addjitter(df[coords])
+
+    isdup = df.duplicated(subset = ["PC1", "PC2", "PC3"], keep= False)
+    for coords in ["PC1", "PC2", "PC3"]:
+        for element, num in zip(isdup, isdup.index):
+            if element:
+                df[coords][num] = jitterarray[coords][num]
+    df[["sampleid", "group"]] = sampleinfo
+    arr = df.to_numpy()
 
     for i in range(n_cols):
         fig = px.scatter_3d(arr,
-                    hover_name=df['sampleid'],
+                    hover_name= df["sampleid"],
                     x=0, y=1, z=2,
                     color=df['group'],
                     color_discrete_sequence=default_colors)
