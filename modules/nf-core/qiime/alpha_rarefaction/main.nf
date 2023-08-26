@@ -9,28 +9,30 @@ process QIIME_ALPHARAREFACTION {
     input:
     path(metadata)
     path(table)
-    path(maxdepth_file)
+    val(min_total)
 
     output:
     path("alpha-rarefaction/*")     , emit: rarefaction
     path("alpha-rarefaction/*.csv") , optional:true, emit: rarefaction_csv
     path("alpha-rarefaction.qzv")   , emit: qzv
+    path "versions.yml"             , emit: versions
 
     script:
+    def maxdepth = min_total.toInteger() < 250000 ? min_total.toInteger() : 250000
     """
-    #check values
-    maxdepth=\$( < $maxdepth_file )
-    if [ \"\$maxdepth\" -gt \"250000\" ]; then maxdepth=\"250000\"; fi
-    maxsteps=\"50\"
-
     qiime diversity alpha-rarefaction  \
-        --i-table ${table}  \
-        --p-max-depth \$maxdepth  \
-        --m-metadata-file ${metadata}  \
-        --p-steps \$maxsteps  \
+        --i-table $table  \
+        --p-max-depth $maxdepth  \
+        --m-metadata-file $metadata  \
+        --p-steps 50  \
         --p-iterations 5 \
         --o-visualization alpha-rarefaction.qzv
     qiime tools export --input-path alpha-rarefaction.qzv  \
         --output-path alpha-rarefaction
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
+    END_VERSIONS
     """
 }

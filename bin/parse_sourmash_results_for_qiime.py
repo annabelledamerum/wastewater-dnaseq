@@ -27,11 +27,11 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     mqc_data = {
         "id": "kmer_composition",
         "section_name": "Kmer composition (sourmash)",
-        "description": ("This plots depict the the composition of kmers identified (or not) by "
+        "description": ("This plot depicts the composition of kmers identified (or not) by "
                         "<a href='https://github.com/sourmash-bio/sourmash'>sourmash</a>. "
                         "It includes percentages of kmers that were identified as common host organisms, "
                         "common eukaryotic pathogens/parasites, and other microbes. Unidentified kmers "
-                        "are those do not have match with the database or those with a match but fail to reach "
+                        "are those that do not match with the database or those with a match but fail to reach "
                         "the base-pair threshold set during the sourmash step of the pipeline. Please refer to "
                         "plots in sections below for detailed compositions of other microbes. "
                         "sourmash only outputs percentages of kmers identified, the numbers of reads you see "
@@ -89,16 +89,13 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     profile["lineage"] = profile["lineage"].map(add_prefix_to_lineage)
     profile = profile.rename(columns={'f_unique_weighted':name})
     # Collapsing rows together in case of duplicate clade name
-    profile = profile.groupby('lineage').sum()
-    profile.to_csv(name+'_relabun_parsed_mpaprofile.txt', sep="\t")
-    
+    profile = profile.groupby('lineage').sum()    
     # Calculate absolute abundance (approximate)
     profile = profile.mul(readcount)
-    profile.to_csv(name+'_absabun_parsed_mpaprofile.txt', sep="\t")
+    profile.to_csv(name+'_absabun_parsed_profile.txt', sep="\t")
 
-    # Create a taxonomy file
+    # Create a taxonomy file, in this case the lineage are already in qiime's taxonomy format
     profile['Taxon'] = profile.index
-    profile.index = profile.index.str.replace(";", "|", regex=False)
     profile = profile.drop(name, axis=1)
     profile.index.name = 'Feature ID'
     profile.to_csv(name+"_profile_taxonomy.txt", sep="\t")

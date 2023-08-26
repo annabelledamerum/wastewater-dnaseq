@@ -38,21 +38,20 @@ def summarize_downloads(locations, design):
 
     # Define what to do with each type of files
     categories = {
-        'multiqc_report.html'           : ('Report', 'report'),
-        'filtered_samples_relcounts.txt': ('Filtered Relative Composition for All Samples(Relative)', 'all_samples'),
-        'filtered_samples_abscounts.txt': ('Filtered Relative Composition for All Samples(Absolute)', 'all_samples'),
-        'allsamples_compbarplot.qzv'    : ('Barplot Visualization', 'all_samples'),
-        'alpha-rarefaction.qzv'         : ('Alpha Rarefaction Visualization', 'all_samples'),
+        'multiqc_report.html'                 : ('Report', 'report'),
+        'merged_filtered_counts_collapsed.tsv': ('Read Counts Table for All Taxa Filtered Samples', 'all_samples'),
+        'allsamples_compbarplot.qzv'          : ('Barplot Visualization', 'all_samples'),
+        'alpha-rarefaction.qzv'               : ('Alpha Rarefaction Visualization', 'all_samples'),
         # diversity core
-        'bray_curtis_emperor.qzv'       : ('Distance Matrix Visualization by Bray-Curtis Distance', 'all_samples'),
-        'jaccard_emperor.qzv'           : ('Distance Matrix Visualization by Jaccard Distance', 'all_samples'),
+        'bray_curtis_emperor.qzv' : ('PCoA Visualization by Bray-Curtis Distance', 'all_samples'),
+        'jaccard_emperor.qzv'     : ('PCoA Visualization by Jaccard Distance', 'all_samples'),
         # alpha diversity
         'shannon_vector_alpha.qzv'           : ('Alpha Diversity Box Plot by Shannon Diversity Index', 'all_samples'), 
         'evenness_vector_alpha.qzv'          : ('Alpha Diversity Box Plot by Evenness', 'all_samples'), 
         'observed_features_vector_alpha.qzv' : ('Alpha Diversity Box Plot by Observed Features', 'all_samples'), 
         # beta diversity
-        'jaccard_distance_matrix-group.qzv'    : ('Principal Coordinate Plot of Beta Diversity by Jaccard Distance', 'all_samples'), 
-        'bray_curtis_distance_matrix-group.qzv': ('Principal Coordinate Plot of Beta Diversity by Bray-Curtis Distance', 'all_samples'), 
+        'jaccard_distance_matrix-group.qzv'    : ('Beta Diversity Comparison between Groups by Jaccard Distance', 'all_samples'), 
+        'bray_curtis_distance_matrix-group.qzv': ('Beta Diversity Comparison between Groups by Bray-Curtis Distance', 'all_samples'), 
     }
 
     # Read the file locations
@@ -69,6 +68,11 @@ def summarize_downloads(locations, design):
                 # if key is suffix
                 if fn.endswith(key):
                     file_type, scope = values
+                    if "/refmerged/" in path:
+                        file_type = file_type + " with Reference Dataset"
+                        info_key = "Reference-compare-" + fn
+                    else:
+                        info_key = fn
                     info['file_type'] = file_type
                     info['scope'] = scope
                     if scope in ['samples', 'comparisons']:
@@ -89,7 +93,7 @@ def summarize_downloads(locations, design):
                                     break
                             else:
                                 logger.error("Could not find group names in comparison file {}".format(fn))
-                    file_info[fn] = info
+                    file_info[info_key] = info
                     break
             else:
                 logger.error("File {} did not match any expected patterns".format(fn))

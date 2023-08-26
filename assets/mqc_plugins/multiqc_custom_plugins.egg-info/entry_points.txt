@@ -1,8 +1,0 @@
-[multiqc.hooks.v1]
-execution_start = plugins.utils.hooks:execution_start
-
-[multiqc.modules.v1]
-composition_barplots = plugins.modules.composition_barplots:MultiqcModule
-
-[multiqc.templates.v1]
-default = multiqc.templates.default

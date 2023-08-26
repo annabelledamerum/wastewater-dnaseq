@@ -22,6 +22,10 @@ process MULTIQC {
     def config = multiqc_config ? "--config $multiqc_config" : ''
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
     """
+    cd multiqc_custom_plugins
+    python setup.py develop
+    cd ..
+
     multiqc \\
         --force \\
         $args \\

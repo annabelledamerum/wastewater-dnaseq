@@ -7,10 +7,12 @@ import re
 
 def qiimebarplot_tomultiqc(table, levelnum):
     f = pd.read_csv(table, sep=",")
-    #Drop first unecessary column
     f=f.transpose()
+    #Drop first unecessary row
     f.columns = f.iloc[0]
     f = f.iloc[1:,:]
+    #remove group row for purposes of generating barplot
+    f = f.iloc[:-1,:]
     #set column count to percentage
     for col in f.columns:
         f[col] = (f[col]/f[col].sum())*100

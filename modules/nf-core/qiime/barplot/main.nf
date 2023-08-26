@@ -4,8 +4,9 @@ process QIIME_BARPLOT {
     container 'quay.io/qiime2/core:2023.2'
     
     input:
-    path(qza)
+    path(counts)
     path(taxonomy)
+    path(metadata)
 
     output:
     path('*exported_QIIME_barplot/*')     , emit: barplot_export
@@ -15,13 +16,10 @@ process QIIME_BARPLOT {
 
     script:   
     """
-    qiime_taxmerge.py -t $taxonomy
-    qiime tools import --input-path allsamples_taxonomylist.tsv --type 'FeatureData[Taxonomy]' --input-format TSVTaxonomyFormat --output-path allsamples_qiime_taxonomy.qza
-
-    qiime taxa barplot --i-table $qza --i-taxonomy allsamples_qiime_taxonomy.qza --o-visualization allsamples_compbarplot.qzv
+    qiime taxa barplot --i-table $counts --i-taxonomy $taxonomy --m-metadata-file $metadata --o-visualization allsamples_compbarplot.qzv
     qiime tools export --input-path allsamples_compbarplot.qzv --output-path allsamples_exported_QIIME_barplot
     
-    array=( \$( seq 1 7) )
+    array=( \$( seq 1 ${params.taxonomy_collapse_level}) )
 
     for i in \${array[@]}
     do
