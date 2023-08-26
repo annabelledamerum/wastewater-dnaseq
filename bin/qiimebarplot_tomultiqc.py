@@ -11,7 +11,7 @@ def qiimebarplot_tomultiqc(table, levelnum):
     f=f.transpose()
     f.columns = f.iloc[0]
     f = f.iloc[1:,:]
-    #remove group column for purposes of generating barplot
+    #remove group row for purposes of generating barplot
     f = f.iloc[:-1,:]
     #set column count to percentage
     for col in f.columns:
