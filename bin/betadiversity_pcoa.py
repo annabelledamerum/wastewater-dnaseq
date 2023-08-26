@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import re
+import numpy as np
 import pandas as pd
 import argparse
 from io import StringIO
@@ -25,6 +26,11 @@ def extract_pcoa(fn, samples):
     data = data.iloc[:, 0:4]
     data.columns = ["sampleid", "PC1", "PC2", "PC3"]
     return data
+
+def addjitter(arr):
+        stdev = .01*(max(arr)-min(arr))
+        return arr + np.random.randn(len(arr))*stdev
+
 
 def pcoa_plot(ordinations, metadata, output):
 
@@ -80,6 +86,21 @@ def pcoa_plot(ordinations, metadata, output):
             args = [{"visible": list(args)}]
             )
         buttons.append(button)
+
+        sampleinfo = data[["sampleid", "group"]]
+        data = data[["PC1", "PC2", "PC3"]]
+        #df must be rounded for accurate identification of duplicate rows
+        data = round(data, ndigits=6)
+        jitterarray = data.copy()
+        for coords in ["PC1", "PC2", "PC3"]:
+            jitterarray[coords] = addjitter(data[coords])
+
+        isdup = data.duplicated(subset = ["PC1", "PC2", "PC3"], keep= False)
+        for coords in ["PC1", "PC2", "PC3"]:
+            for element, num in zip(isdup, isdup.index):
+                if element:
+                    data[coords][num] = jitterarray[coords][num]
+        data[["sampleid", "group"]] = sampleinfo
 
         arr = data[["PC1", "PC2", "PC3"]].to_numpy()
         for j in range(n_cols):
