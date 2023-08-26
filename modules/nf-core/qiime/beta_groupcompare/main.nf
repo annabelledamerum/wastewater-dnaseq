@@ -1,4 +1,4 @@
-process QIIME_BETADIVERSITY {
+process QIIME_BETAGROUPCOMPARE {
     tag "${distance.baseName}"
     label 'process_low'
     container "quay.io/qiime2/core:2023.2"

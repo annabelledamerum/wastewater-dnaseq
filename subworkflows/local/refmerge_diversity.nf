@@ -8,13 +8,8 @@ include { REFMERGE_MERGEMETA                                         } from '../
 include { QIIME_ALPHARAREFACTION as REFMERGE_ALPHARAREFACTION        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
 include { QIIME_DIVERSITYCORE as REFMERGE_DIVERSITYCORE              } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_ALPHADIVERSITY as REFMERGE_ALPHADIVERSITY            } from '../../modules/nf-core/qiime/alphadiversity/main'
-include { QIIME_BETADIVERSITY as REFMERGE_BETADIVERSITY              } from '../../modules/nf-core/qiime/betadiversity/main'
-include { QIIME_BETAPLOT as REFMERGE_BETAPLOT                        } from '../../modules/nf-core/qiime/betaplot/main' addParams(
-    diversity_fileoutput: true
-)
-include { QIIME_ALPHAPLOT as REFMERGE_ALPHAPLOT                      } from '../../modules/nf-core/qiime/alphaplot/main' addParams(
-    diversity_fileoutput: true
-)
+include { QIIME_BETAGROUPCOMPARE as REFMERGE_BETAGROUPCOMPARE        } from '../../modules/nf-core/qiime/beta_groupcompare/main'
+include { QIIME_PLOT_MULTIQC as REFMERGE_PLOT_MULTIQC                } from '../../modules/nf-core/qiime/plot_multiqc/main'
 
 workflow REFMERGE_DIVERSITY {
     take:
@@ -50,17 +45,19 @@ workflow REFMERGE_DIVERSITY {
         REFMERGE_ALPHADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/refmerged/alpha_diversity/" + it.getName() }
         )
 
-    REFMERGE_BETADIVERSITY ( REFMERGE_DIVERSITYCORE.out.distance.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
+    REFMERGE_BETAGROUPCOMPARE ( REFMERGE_DIVERSITYCORE.out.distance.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
-        REFMERGE_BETADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_diversity/" + it.getName() }
+        REFMERGE_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_group_comparison/" + it.getName() }
         )
 
-    REFMERGE_ALPHAPLOT ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]) )
-    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_ALPHAPLOT.out.mqc_plot.collect() )
+    REFMERGE_PLOT_MULTIQC( 
+        REFMERGE_MERGEMETA.out.metadata,
+        REFMERGE_DIVERSITYCORE.out.pcoa.ifEmpty([]),
+        REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), 
+        REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]),
+        true )
+    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_PLOT_MULTIQC.out.mqc_plot )
 
-    REFMERGE_BETAPLOT ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_BETADIVERSITY.out.tsv.collect() )
-    ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_BETAPLOT.out.report.collect() )
- 
     emit:
     mqc = ch_multiqc_files
     output_paths = ch_output_file_paths
