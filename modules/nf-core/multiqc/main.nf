@@ -31,13 +31,6 @@ process MULTIQC {
         $args \\
         $config \\
         $extra_config \\
-        -m composition_barplots \\
-        -m fastqc \\
-        -m fastp \\
-        -m bowtie2 \\
-        -m bbduk \\
-        -m plot_heatmap \\
-        -m custom_content \\
         .
 
     cat <<-END_VERSIONS > versions.yml

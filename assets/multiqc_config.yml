@@ -115,9 +115,9 @@ top_modules:
   - "fastqc":
       name: "FastQC / Falco (pre-Trimming)"
       path_filters:
-        - '*_raw_1_fastqc.zip'
+        - '*_raw_R1*fastqc*'
       path_filters_exclude:
-        - "*processed*"
+        - "*_processed_R*fastqc*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
   - "fastp"
   - "adapterRemoval"
@@ -126,9 +126,9 @@ top_modules:
   - "fastqc":
       name: "FastQC / Falco (post-Trimming)"
       path_filters:
-        - '*_processed_1_fastqc.zip'
+        - '*_processed_R1*fastqc*'
       path_filters_exclude:
-        - "*raw*"
+        - "*_raw_R*fastqc*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
   - "bbduk"
   - "prinseqplusplus"
@@ -354,12 +354,21 @@ extra_fn_clean_exts:
   - ".settings"
   - ".bbduk"
   - ".unmapped"
-  - "_filtered"
-  - type: remove
-    pattern: "_falco"
-  - "_processed"
-  - "_raw"
-  - "_1"
+  - type: regex
+    pattern: "_filtered.log$"
+    module: filtlong
+  - type: truncate
+    pattern: "_raw_R1.fastq.gz"
+    module: fastqc
+  - type: truncate
+    pattern: "_processed_R1.fastq.gz"
+    module: fastqc
+  - type: truncate
+    pattern: "_raw_R1_fastqc"
+    module: fastqc
+  - type: truncate
+    pattern: "_processed_R1.fastqc"
+    module: fastqc
 
 section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."
