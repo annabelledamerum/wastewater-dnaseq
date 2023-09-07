@@ -367,8 +367,11 @@ extra_fn_clean_exts:
     pattern: "_raw_R1_fastqc"
     module: fastqc
   - type: truncate
-    pattern: "_processed_R1.fastqc"
+    pattern: "_processed_R1_fastqc"
     module: fastqc
+  - type: truncate
+    pattern: "_R1.fastp.fastq"
+    module: bbduk
 
 section_comments:
   general_stats: "By default, all read count columns are displayed as millions (M) of reads."
