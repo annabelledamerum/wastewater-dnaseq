@@ -114,6 +114,7 @@ ignore_images: false
 top_modules:
   - "fastqc":
       name: "FastQC / Falco (pre-Trimming)"
+      anchor: "fastqc_raw"
       path_filters:
         - '*_raw_R1*fastqc*'
       path_filters_exclude:
@@ -125,6 +126,7 @@ top_modules:
       extra: "ℹ️: if you get the error message 'Error - was not able to plot data.' this means that porechop did not detect any adapters and therefore no statistics generated."
   - "fastqc":
       name: "FastQC / Falco (post-Trimming)"
+      anchor: "fastqc_trimmed"
       path_filters:
         - '*_processed_R1*fastqc*'
       path_filters_exclude:
@@ -359,16 +361,16 @@ extra_fn_clean_exts:
     module: filtlong
   - type: truncate
     pattern: "_raw_R1.fastq.gz"
-    module: fastqc
+    module: fastqc_raw
   - type: truncate
     pattern: "_processed_R1.fastq.gz"
-    module: fastqc
+    module: fastqc_trimmed
   - type: truncate
     pattern: "_raw_R1_fastqc"
-    module: fastqc
+    module: fastqc_raw
   - type: truncate
     pattern: "_processed_R1_fastqc"
-    module: fastqc
+    module: fastqc_trimmed
   - type: truncate
     pattern: "_R1.fastp.fastq"
     module: bbduk
