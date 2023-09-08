@@ -13,9 +13,7 @@ process QIIME_FILTER_SINGLETON_SAMPLE {
 
     output:
     path('abs_feature_table_for_diversity.qza'), emit: abs_qza
-    path('rel_feature_table_for_diversity.tsv'), emit: rel_tsv
     path('versions.yml')                       , emit: versions
-    path('*.qza')
 
     script:
     """
@@ -24,15 +22,6 @@ process QIIME_FILTER_SINGLETON_SAMPLE {
         --m-metadata-file $metadata \
         --p-no-exclude-ids \
         --o-filtered-table abs_feature_table_for_diversity.qza
-
-    qiime feature-table relative-frequency \
-        --i-table abs_feature_table_for_diversity.qza \
-        --o-relative-frequency-table rel_feature_table_for_diversity.qza
-
-    qiime tools export \
-        --input-path rel_feature_table_for_diversity.qza \
-        --output-path rel_feature_table_for_diversity_out
-    biom convert -i rel_feature_table_for_diversity_out/feature-table.biom -o rel_feature_table_for_diversity.tsv --to-tsv
         
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

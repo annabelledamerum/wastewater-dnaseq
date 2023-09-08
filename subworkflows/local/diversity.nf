@@ -9,7 +9,7 @@ include { QIIME_FILTER_SINGLETON_SAMPLE                 } from '../../modules/nf
 include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
-include { QIIME_HEATMAP                                 } from '../../modules/nf-core/qiime/heatmap/main'
+include { HEATMAP_INPUT                                 } from '../../modules/local/heatmap_input'
 include { QIIME_ALPHADIVERSITY                          } from '../../modules/nf-core/qiime/alphadiversity/main'
 include { QIIME_BETAGROUPCOMPARE                        } from '../../modules/nf-core/qiime/beta_groupcompare/main'
 include { QIIME_PLOT_MULTIQC                            } from '../../modules/nf-core/qiime/plot_multiqc/main'
@@ -46,8 +46,8 @@ workflow DIVERSITY {
     QIIME_FILTER_SINGLETON_SAMPLE( QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_FILTER_SINGLETON_SAMPLE.out.versions )
         
-    QIIME_HEATMAP( QIIME_FILTER_SINGLETON_SAMPLE.out.rel_tsv, QIIME_METADATAFILTER.out.filtered_metadata )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_HEATMAP.out.taxo_heatmap.collect()) 
+    HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), QIIME_METADATAFILTER.out.filtered_metadata, params.top_taxa )
+    ch_multiqc_files = ch_multiqc_files.mix( HEATMAP_INPUT.out.taxo_heatmap.collect()) 
 
     QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.min_total )
     ch_versions = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
