@@ -42,7 +42,8 @@ def make_heatmap_input(reltax_tables, metadata, top_n):
         try:
             level, index = levels[table]
         except:
-            raise ValueError("{} not recoginzed as one of the relative abundance table!".format(table))
+            print("{} not recoginzed as one of the relative abundance table!".format(table))
+            continue
         data = pd.read_csv(table)
         # Conver to fractions
         num_cols = data.select_dtypes(include=np.number).columns
