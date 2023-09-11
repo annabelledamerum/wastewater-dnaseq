@@ -8,6 +8,7 @@ from multiqc.modules.base_module import BaseMultiqcModule
 import seaborn as sns
 import pandas as pd
 import random
+import os
 
 # Initialise the logger
 log = logging.getLogger("multiqc")
@@ -19,6 +20,9 @@ class MultiqcModule(BaseMultiqcModule):
             name="Composition Barplots",
             anchor="composition_barplots"
         )
+        self.css = {
+            "assets/style.css": os.path.join(os.path.dirname(__file__), "..", "style.css")
+        }
         self.comp_data = dict()
         taxonomy_level = OrderedDict({
             "level-1.csv":"Kingdom",

@@ -1,13 +1,11 @@
-FROM nfcore/base:2.1
+FROM python:3.8-slim
 
-COPY environment.yml /
+RUN apt-get update && apt install -y procps g++ && apt-get clean
 
-RUN conda env create -f /environment.yml && conda clean -a
+WORKDIR /opt/analysis
 
-COPY assets/mqc_plugins /opt/mqc_plugins
+COPY environment.yml /opt/analysis/environment.yml
 
-SHELL ["/bin/bash", "--login", "-c"]
+RUN pip install --no-cache-dir -r environment.yml
 
-RUN conda activate zymobiomics_shotgun && cd /opt/mqc_plugins && python setup.py install
-
-ENV PATH /opt/conda/envs/zymobiomics_shotgun/bin:$PATH
+CMD ["bash"]

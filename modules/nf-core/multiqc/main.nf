@@ -1,5 +1,5 @@
 process MULTIQC {
-    label 'process_single'
+    cache false
 
     input:
     path  multiqc_files, stageAs: "?/*"
