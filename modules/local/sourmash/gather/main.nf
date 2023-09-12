@@ -8,7 +8,7 @@ process SOURMASH_GATHER {
 
     input:
     tuple val(meta), path(sketch), path(sketch_log)
-    path "sourmash_database"
+    path "sourmash_database/*"
 
     output:
     tuple val(meta), path('*with-lineages.csv'), emit: gather
