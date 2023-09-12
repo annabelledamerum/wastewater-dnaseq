@@ -1,38 +1,23 @@
 #!/usr/bin/env python
 import logging
 
-from multiqc.utils import report, config
+from multiqc.utils import config
 
 log = logging.getLogger('multiqc')
 
 
 def before_config():
  # Use the zymo template by default
-    log.info('Load MultiQC report template: zymo')
+    log.info('Load MultiQC report template: aladdin')
     config.template = 'aladdin'
 
 
 def execution_start():
     log.info("Load custom plugin search patterns")
     search_patterns = {
-        #'methyldackel': {
-        #    'fn': '*_methyldackel.txt'
-        #},
-        #'correlation': {
-        #    'fn': '*_correlation.txt'
-        #},
-        # 'download': {
-        #     'fn': '*_summary.txt'
-        # },
         'plot_heatmap': {
             'fn': '*taxo_heatmap.csv'
         },
-        #'ancombc_heatmap': {
-        #    'fn': '*_toptaxon_heatmap.tsv'
-        #},
-        #'ancombc_lfc': {
-        #    'fn': '*_top20.tsv'
-        #},
         'composition_barplots': {
             'fn': '*level-*.csv'
         }

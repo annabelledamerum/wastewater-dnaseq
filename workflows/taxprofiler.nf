@@ -153,9 +153,11 @@ workflow TAXPROFILER {
 
     if ( params.preprocessing_qc_tool == 'falco' ) {
         FALCO ( ch_input_for_fastqc )
+        ch_multiqc_files = ch_multiqc_files.mix(FALCO.out.txt.collect{it[1]}.ifEmpty([]))
         ch_versions = ch_versions.mix(FALCO.out.versions.first())
     } else {
         FASTQC ( ch_input_for_fastqc )
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
         ch_versions = ch_versions.mix(FASTQC.out.versions.first())
     }
     /*
@@ -164,6 +166,7 @@ workflow TAXPROFILER {
 
     if ( params.perform_shortread_qc ) {
         ch_shortreads_preprocessed = SHORTREAD_PREPROCESSING ( INPUT_CHECK.out.fastq, adapterlist ).reads
+        ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_PREPROCESSING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_PREPROCESSING.out.versions )
     } else {
         ch_shortreads_preprocessed = INPUT_CHECK.out.fastq
@@ -172,6 +175,7 @@ workflow TAXPROFILER {
     if ( params.perform_longread_qc ) {
         ch_longreads_preprocessed = LONGREAD_PREPROCESSING ( INPUT_CHECK.out.nanopore ).reads
                                         .map { it -> [ it[0], [it[1]] ] }
+        ch_multiqc_files = ch_multiqc_files.mix( LONGREAD_PREPROCESSING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( LONGREAD_PREPROCESSING.out.versions )
     } else {
         ch_longreads_preprocessed = INPUT_CHECK.out.nanopore
@@ -184,6 +188,7 @@ workflow TAXPROFILER {
     // fastp complexity filtering is activated via modules.conf in shortread_preprocessing
     if ( params.perform_shortread_complexityfilter && params.shortread_complexityfilter_tool != 'fastp' ) {
         ch_shortreads_filtered = SHORTREAD_COMPLEXITYFILTERING ( ch_shortreads_preprocessed ).reads
+        ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_COMPLEXITYFILTERING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_COMPLEXITYFILTERING.out.versions )
     } else {
         ch_shortreads_filtered = ch_shortreads_preprocessed
@@ -208,6 +213,7 @@ workflow TAXPROFILER {
 
     if ( params.perform_longread_hostremoval ) {
         ch_longreads_hostremoved = LONGREAD_HOSTREMOVAL ( ch_longreads_preprocessed, ch_reference, ch_longread_reference_index ).reads
+        ch_multiqc_files = ch_multiqc_files.mix(LONGREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
         ch_versions = ch_versions.mix(LONGREAD_HOSTREMOVAL.out.versions)
     } else {
         ch_longreads_hostremoved = ch_longreads_preprocessed
@@ -255,12 +261,14 @@ workflow TAXPROFILER {
         SUBWORKFLOW: PROFILING
     */
     PROFILING ( ch_reads_runmerged, ch_db )
+    ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
 
     /*
         SUBWORKFLOW: DIVERSITY with Qiime2
     */
     DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, INPUT_CHECK.out.groups )
+    ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( DIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
 
@@ -312,6 +320,7 @@ workflow TAXPROFILER {
     */
     if ( params.run_profile_standardisation ) {
         STANDARDISATION_PROFILES ( PROFILING.out.classifications, PROFILING.out.profiles, ch_db, PROFILING.out.motus_version )
+        ch_multiqc_files = ch_multiqc_files.mix( STANDARDISATION_PROFILES.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( STANDARDISATION_PROFILES.out.versions )
     }
 
@@ -323,7 +332,6 @@ workflow TAXPROFILER {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-
     workflow_summary    = WorkflowTaxprofiler.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
@@ -333,36 +341,6 @@ workflow TAXPROFILER {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     //ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-
-    if ( params.preprocessing_qc_tool == 'falco' ) {
-        ch_multiqc_files = ch_multiqc_files.mix(FALCO.out.txt.collect{it[1]}.ifEmpty([]))
-    } else {
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
-    }
-
-
-    if (params.perform_shortread_qc) {
-        ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_PREPROCESSING.out.mqc.collect{it[1]}.ifEmpty([]) )
-    }
-
-    if (params.perform_longread_qc) {
-        ch_multiqc_files = ch_multiqc_files.mix( LONGREAD_PREPROCESSING.out.mqc.collect{it[1]}.ifEmpty([]) )
-    }
-
-    if (params.perform_shortread_complexityfilter && params.shortread_complexityfilter_tool != 'fastp'){
-        ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_COMPLEXITYFILTERING.out.mqc.collect{it[1]}.ifEmpty([]) )
-    }
-
-    if (params.perform_longread_hostremoval) {
-        ch_multiqc_files = ch_multiqc_files.mix(LONGREAD_HOSTREMOVAL.out.mqc.collect{it[1]}.ifEmpty([]))
-    }
-
-    ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
-    ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
-
-    if ( params.run_profile_standardisation ) {
-        ch_multiqc_files = ch_multiqc_files.mix( STANDARDISATION_PROFILES.out.mqc.collect{it[1]}.ifEmpty([]) )
-    }
 
     MULTIQC (
         ch_multiqc_files.collect(),

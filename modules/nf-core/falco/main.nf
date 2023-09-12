@@ -22,9 +22,10 @@ process FALCO {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    if ( reads.toList().size() == 1 ) {
+    if ( meta.single_end ) {
         """
-        falco $args --threads $task.cpus ${reads} -D ${prefix}_data.txt -S ${prefix}_summary.txt -R ${prefix}_report.html
+        [ ! -f  ${prefix}_R1.fastq.gz ] && ln -s ${reads[0]} ${prefix}_R1.fastq.gz
+        falco $args --threads $task.cpus ${prefix}_R1.fastq.gz -D ${prefix}_R1.fastq.gz_fastqc_data.txt -S ${prefix}_summary.txt -R ${prefix}_report.html
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
@@ -33,9 +34,9 @@ process FALCO {
         """
     } else {
         """
-        [ ! -f  ${prefix}_1.fastq.gz ] && ln -s ${reads[0]} ${prefix}_1.fastq.gz
-        [ ! -f  ${prefix}_2.fastq.gz ] && ln -s ${reads[1]} ${prefix}_2.fastq.gz
-        falco $args --threads $task.cpus ${prefix}_1.fastq.gz ${prefix}_2.fastq.gz
+        [ ! -f  ${prefix}_R1.fastq.gz ] && ln -s ${reads[0]} ${prefix}_R1.fastq.gz
+        [ ! -f  ${prefix}_R2.fastq.gz ] && ln -s ${reads[1]} ${prefix}_R2.fastq.gz
+        falco $args --threads $task.cpus ${prefix}_R1.fastq.gz ${prefix}_R2.fastq.gz
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
