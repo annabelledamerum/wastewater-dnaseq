@@ -18,7 +18,7 @@ process QIIME_ALPHARAREFACTION {
     path "versions.yml"             , emit: versions
 
     script:
-    def maxdepth = min_total.toInteger() < 250000 ? min_total.toInteger() : 250000
+    def maxdepth = min_total.toInteger() < 250000 ? min_total.toInteger() : 250000 
     """
     qiime diversity alpha-rarefaction  \
         --i-table $table  \
