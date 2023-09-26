@@ -78,7 +78,8 @@ workflow DIVERSITY {
         QIIME_DIVERSITYCORE.out.pcoa.ifEmpty([]),
         QIIME_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), 
         QIIME_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]),
-        false )
+        false,
+        params.skip_alpha_rarefaction )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_PLOT_MULTIQC.out.mqc_plot.collect() )
 
     emit:

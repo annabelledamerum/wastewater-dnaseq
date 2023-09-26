@@ -6,6 +6,7 @@ process QIIME_PLOT_MULTIQC {
     path alpha_diversity_plot
     path rarefaction_plot
     val ref_comparison
+    val rarefaction_skip
 
     output:
     path "*_mqc.*", emit: mqc_plot
@@ -15,7 +16,7 @@ process QIIME_PLOT_MULTIQC {
     rareoutput  = ref_comparison ? "comparative_alpha_rarefaction_mqc.html" : "alpha_rarefaction_mqc.html"
     betaoutput = ref_comparison ? "-o comparative_beta_diversity_mqc.html" : ""
     alpha_diversity_plot = params.skip_alphadiversity ? '' : "alphadiversity.py --observed_features observed_features_vector.tsv --shannon shannon_vector.tsv --evenness evenness_vector.tsv --output_file $alphaoutput"
-    alphararefaction_plot = params.skip_alpha_rarefaction ? '' : "alphararefaction.py -o observed_features.csv -s shannon.csv -w $rareoutput" 
+    alphararefaction_plot = rarefaction_skip ? '' : "alphararefaction.py -o observed_features.csv -s shannon.csv -w $rareoutput" 
     individ_alpha_diversity = params.skip_individalpha ? '' : 'display_qiimealpha_mqc.py -a shannon_vector.tsv' 
     beta_pcoa_plot = params.skip_betadiversity ? '' : "betadiversity_pcoa.py $pcoa -m $metadata $betaoutput"
     """
