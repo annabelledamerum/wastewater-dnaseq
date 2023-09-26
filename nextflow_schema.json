@@ -829,6 +829,12 @@
                     "description": "Show all params when using `--help`",
                     "hidden": true,
                     "help_text": "By default, parameters set as _hidden_ in the schema are not shown on the command line when a user runs with `--help`. Specifying this option will tell the pipeline to show all parameters."
+                },
+                "ignore_failed_samples": {
+                    "type": "boolean",
+                    "description": "Whether to ignore samples that fail QC and taxonomy profiling steps and carry on with good samples. Default True. Set to False to force the pipeline to abort when any samples fails.",
+                    "default": true,
+                    "hidden": true
                 }
             }
         },

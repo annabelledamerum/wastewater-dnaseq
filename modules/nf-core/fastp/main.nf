@@ -30,6 +30,7 @@ process FASTP {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def adapter_list = adapter_fasta ? "--adapter_fasta ${adapter_fasta}" : ""
     def fail_fastq = save_trimmed_fail && meta.single_end ? "--failed_out ${prefix}.fail.fastq.gz" : save_trimmed_fail && !meta.single_end ? "--unpaired1 ${prefix}_1.fail.fastq.gz --unpaired2 ${prefix}_2.fail.fastq.gz" : ''
+    def min_length = (params.profiler=="sourmash" && params.kmersize>params.shortread_qc_minlength) ? "--length_required ${params.kmersize}" : "--length_required ${params.shortread_qc_minlength}"
     // Added soft-links to original fastqs for consistent naming in MultiQC
     // Use single ended for interleaved. Add --interleaved_in in config.
     if ( task.ext.args?.contains('--interleaved_in') ) {
@@ -44,6 +45,7 @@ process FASTP {
             --html ${prefix}.fastp.html \\
             $adapter_list \\
             $fail_fastq \\
+            $min_length \\
             $args \\
             2> ${prefix}.fastp.log \\
         | gzip -c > ${prefix}.fastp.fastq.gz
@@ -66,6 +68,7 @@ process FASTP {
             --html ${prefix}.fastp.html \\
             $adapter_list \\
             $fail_fastq \\
+            $min_length \\
             $args \\
             2> ${prefix}.fastp.log
 
@@ -88,6 +91,7 @@ process FASTP {
             --html ${prefix}.fastp.html \\
             $adapter_list \\
             $fail_fastq \\
+            $min_length \\
             $merge_fastq \\
             --thread $task.cpus \\
             --detect_adapter_for_pe \\
