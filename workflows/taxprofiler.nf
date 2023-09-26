@@ -122,6 +122,7 @@ workflow TAXPROFILER {
     ch_versions = Channel.empty()
     ch_multiqc_logo= Channel.fromPath("$projectDir/docs/images/nf-core-taxprofiler_logo_custom_light.png")
     ch_multiqc_files = Channel.empty()
+    ch_warnings = Channel.empty()
     ch_output_file_paths = Channel.empty()
     adapterlist = params.shortread_qc_adapterlist ? file(params.shortread_qc_adapterlist) : []
 
@@ -168,6 +169,7 @@ workflow TAXPROFILER {
         ch_shortreads_preprocessed = SHORTREAD_PREPROCESSING ( INPUT_CHECK.out.fastq, adapterlist ).reads
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_PREPROCESSING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_PREPROCESSING.out.versions )
+        ch_warnings = ch_warnings.mix( SHORTREAD_PREPROCESSING.out.warning )
     } else {
         ch_shortreads_preprocessed = INPUT_CHECK.out.fastq
     }
@@ -342,12 +344,21 @@ workflow TAXPROFILER {
     //ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
+    ch_warnings
+        .collect()
+        .map {
+            it.join('<br>').replace('\n','<br>')
+        }
+        .ifEmpty('')
+        .set { ch_warnings }
+
     MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
-        mqcPlugins
+        mqcPlugins,
+        ch_warnings
     )
     multiqc_report = MULTIQC.out.report.toList()
     report_path = MULTIQC.out.report.map { "${params.outdir}/multiqc/" + it.getName() }
