@@ -27,6 +27,7 @@ process ADAPTERREMOVAL {
     script:
     def args = task.ext.args ?: ''
     def list = adapterlist ? "--adapter-list ${adapterlist}" : ""
+    def min_length = (params.profiler=="sourmash" && params.kmersize>params.shortread_qc_minlength) ? "--minlength ${params.kmersize}" : "--minlength ${params.shortread_qc_minlength}"
     prefix = task.ext.prefix ?: "${meta.id}"
 
     if (meta.single_end) {
@@ -35,6 +36,7 @@ process ADAPTERREMOVAL {
             --file1 $reads \\
             $args \\
             $list \\
+            $min_length \\
             --basename ${prefix} \\
             --threads ${task.cpus} \\
             --seed 42 \\
@@ -62,6 +64,7 @@ process ADAPTERREMOVAL {
             --file2 ${reads[1]} \\
             $args \\
             $list \\
+            $min_length \\
             --basename ${prefix} \\
             --threads $task.cpus \\
             --seed 42 \\
