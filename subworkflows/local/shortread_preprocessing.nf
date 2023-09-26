@@ -38,7 +38,7 @@ workflow SHORTREAD_PREPROCESSING {
         }
         .set { ch_filtered_reads }
     ch_filtered_reads.passed.set { ch_processed_reads }
-    ch_trimmed_reads_result.failed
+    ch_filtered_reads.failed
         .map { meta, reads -> [ meta.id ] }
         .collect()
         .map {
