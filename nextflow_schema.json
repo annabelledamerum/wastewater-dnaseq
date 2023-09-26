@@ -861,6 +861,18 @@
                     "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 }
             }
+        },
+        "reference_dataset_comparison_options": {
+            "title": "Reference dataset comparison options",
+            "type": "object",
+            "description": "Compare user samples with reference dataset. This will generate additional visualisations in the report.",
+            "properties": {
+                "aladdin_ref_dataset": {
+                    "type": "string",
+                    "description": "Choose an appropriate reference dataset to compare against. See pipeline repo for details on the reference datasets.",
+                    "enum": ["Aladdin-healthy_gut"]
+                }
+            }
         }
     },
     "allOf": [
@@ -899,6 +911,9 @@
         },
         {
             "$ref": "#/definitions/reference_genome_options"
+        },
+        {
+            "$ref": "#/definitions/reference_dataset_comparison_options"
         }
     ]
 }
