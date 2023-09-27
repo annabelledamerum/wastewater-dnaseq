@@ -380,6 +380,22 @@ workflow PROFILING {
 
     }
 
+    // Find samples that failed profiling and output a warning
+    ch_reads
+        .join(ch_qiime_profiles)
+        .filter { !it[2] }
+        .map { it[0].id }
+        .collect()
+        .map {
+            "The following samples failed taxonomy profiling steps:\n${it.join("; ")}\nA common cause for this is lack of significant match against the database."
+        }
+        .set {ch_warning_message }
+    ch_warning_message
+        .subscribe {
+            log.error "$it"
+            params.ignore_failed_samples ? { log.warn "Ignoring failed samples and continue!" } : System.exit(1)
+        }
+
     emit:
     classifications = ch_raw_classifications
     profiles        = ch_raw_profiles    // channel: [ val(meta), [ reads ] ] - should be text files or biom
@@ -388,4 +404,5 @@ workflow PROFILING {
     versions        = ch_versions          // channel: [ versions.yml ]
     motus_version   = params.profiler == "motus" ? MOTUS_PROFILE.out.versions.first() : Channel.empty()
     mqc             = ch_multiqc_files
+    warning         = ch_warning_message
 }

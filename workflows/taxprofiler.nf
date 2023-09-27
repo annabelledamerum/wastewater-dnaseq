@@ -265,6 +265,7 @@ workflow TAXPROFILER {
     PROFILING ( ch_reads_runmerged, ch_db )
     ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
+    ch_warnings = ch_warnings.mix( PROFILING.out.warning )
 
     /*
         SUBWORKFLOW: DIVERSITY with Qiime2
