@@ -381,8 +381,8 @@ workflow PROFILING {
     }
 
     // Find samples that failed profiling and output a warning
-    ch_reads
-        .join(ch_qiime_profiles)
+    reads
+        .join(ch_qiime_profiles, remainder:true)
         .filter { !it[2] }
         .map { it[0].id }
         .collect()
