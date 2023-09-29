@@ -28,7 +28,7 @@ class WorkflowTaxprofiler {
                 def group_params = summary.get(group)  // This gets the parameters of that particular group
                 if (group_params) {
                     for (param in group_params.keySet()) {
-                        summary_section += "        <dt>$param</dt><dd><samp>${group_params[param]==null?'<span style=\"color:#999999;\">N/A</a>':groups_params[param]}</samp></dd>\n"
+                        summary_section += "        <dt>$param</dt><dd><samp>${group_params[param]==null?'<span style=\"color:#999999;\">N/A</a>':group_params[param]}</samp></dd>\n"
                     }
                 }
             }
