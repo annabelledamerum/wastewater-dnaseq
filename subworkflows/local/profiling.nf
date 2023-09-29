@@ -382,10 +382,10 @@ workflow PROFILING {
 
     // Find samples that failed profiling and output a warning
     ch_qiime_profiles
-        .map { it[0].id, it[1] }
+        .map { [it[0].id, it[1]] }
         .set { ch_profiling_pass }
     reads
-        .map { it[0].id, it[1] }
+        .map { [it[0].id, it[1]] }
         .join(ch_profiling_pass, remainder:true)
         .filter { !it[2] }
         .map { it[0] }
