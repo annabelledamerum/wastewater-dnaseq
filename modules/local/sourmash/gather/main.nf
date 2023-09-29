@@ -5,6 +5,9 @@ process SOURMASH_GATHER {
     tag "$meta.id"
     label 'process_high_memory'
     container 'quay.io/biocontainers/sourmash:4.8.2--hdfd78af_0'
+    if (params.ignore_failed_samples) {
+        errorStrategy { task.attempt>1 ? 'ignore' : 'retry' }
+    }
 
     input:
     tuple val(meta), path(sketch), path(sketch_log)
