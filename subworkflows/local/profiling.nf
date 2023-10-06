@@ -276,7 +276,7 @@ workflow PROFILING {
         host_lineage = params.host_lineage ? Channel.fromPath(params.host_lineage) : Channel.empty()
         // Temporary place holder for host lineage file until reconfiguration of database into a config file
 
-        if (params.run_khmer_trim_low_abund) {
+        if (params.sourmash_trim_low_abund) {
             KHMER_TRIM_LOW_ABUND ( ch_input_for_sourmash.reads )
             ch_input_for_sourmash_sketch = KHMER_TRIM_LOW_ABUND.out.reads
             ch_versions = ch_versions.mix( KHMER_TRIM_LOW_ABUND.out.versions.first() )

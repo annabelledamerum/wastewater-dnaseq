@@ -25,7 +25,7 @@
                 },
                 "database": {
                     "type": "string",
-                    "description": "Choose a database for taxonomic profiling. The database of choice will determine which profiler is used. For example, 'sourmash-zymo' will use sourmash.",
+                    "description": "Select the reference database and the tool you would like to use for taxonomic profiling. Your choice will dictate the ranking and nomenclature of the taxonomy profile. We provide several popular reference databases to choose from, but recommend the sourmash-compatible database from Zymo Research.",
                     "enum": ["sourmash-zymo", "metaphlan4-db"],
                     "default": "sourmash-zymo"
                 },
@@ -83,20 +83,12 @@
             "description": "Options for adapter clipping, quality trimming, pair-merging, and complexity filtering",
             "default": "",
             "properties": {
-                "perform_shortread_qc": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-toggle-on",
-                    "description": "Turns on short read quality control steps (adapter clipping, complexity filtering etc.)",
-                    "help_text": "Turns on short read quality control steps (adapter clipping, complexity filtering etc.)\n\nThis subworkflow can perform:\n\n- Adapter removal\n- Read quality trimming\n- Read pair merging\n- Length filtering\n- Complexity filtering\n\nEither with fastp or AdapterRemoval.\n\nRemoving adapters (if present) is recommend to reduce false-postive hits that may occur from 'dirty' or 'contaminated' reference genomes in a profiling database that contain accidentially incorporated adapter sequences. Note that some, but not all, tools support paired-end alignment (utilising information about the insert covered by the pairs). However read pair merging in some cases can be recommend to increase read length (such as in aDNA). Length filtering, and/or complexity can speed up alignment by reducing the number of short unspecific reads that need to be aligned.",
-                    "default": true,
-                    "advanced": true
-                },
                 "shortread_qc_tool": {
                     "type": "string",
                     "default": "fastp",
-                    "enum": ["fastp", "adapterremoval"],
+                    "enum": ["fastp", "adapterremoval", "DO_NOT_RUN"],
                     "fa_icon": "fas fa-tools",
-                    "description": "Specify which tool to use for short-read QC",
+                    "description": "Specify which tool to use for short-read quality control. This will remove adapters, trim low quality bases, remove reads that are too short, etc. Choose 'DO_NOT_RUN' if you don't want this step performed. Default: fastp",
                     "advanced": true
                 },
                 "shortread_qc_skipadaptertrim": {
@@ -145,24 +137,16 @@
                     "type": "integer",
                     "default": 15,
                     "fa_icon": "fas fa-ruler-horizontal",
-                    "description": "Specify the minimum length of reads to be retained",
+                    "description": "Minimum read length to retain during short read QC. Reads shorter than this will be discarded. Default: 15bp",
                     "help_text": "Specifying a mimum read length filtering can speed up profiling by reducing the number of short unspecific reads that need to be match/aligned to the database.\n\n> Modifies tool parameter(s):\n> - removed from reads `--length_required`\n> - AdapterRemoval: `--minlength`",
                     "advanced": true
-                },
-                "perform_shortread_complexityfilter": {
-                    "type": "boolean",
-                    "fa_icon": "fas fa-toggle-on",
-                    "description": "Turns on nucleotide sequence complexity filtering, this removes low complexity reads that often do not provide useful taxonomic information",
-                    "help_text": "Turns on sequencing complexity filtering. Complexity filtering can be useful to increase run-time by removing unspecific read sequences that do not provide any informative taxon ID.",
-                    "advanced": true,
-                    "default": true
                 },
                 "shortread_complexityfilter_tool": {
                     "type": "string",
                     "default": "bbduk",
-                    "enum": ["bbduk", "prinseqplusplus", "fastp"],
+                    "enum": ["bbduk", "prinseqplusplus", "fastp", "DO_NOT_RUN"],
                     "fa_icon": "fas fa-hammer",
-                    "description": "Specify which tool to use for complexity filtering",
+                    "description": "Specify which tool to use for complexity filtering. This will remove low complexity or highly repetitive sequences that are often not informative. Choose 'DO_NOT_RUN' if you don't want this step performed. Default: bbduk",
                     "advanced": true
                 },
                 "shortread_complexityfilter_entropy": {
@@ -467,25 +451,26 @@
                     "help_text": "Turns on saving of MALT output in an additional MEGAN summary file (`.megan`) that can be loaded into the MEGAN metagenomic exploration tool.\n\nNote: this file is generated not directly from MALT but rather then MEGAN utility script `rma2info`.\n\n> Modifies tool parameter(s):\n> - rma2info: `-es`",
                     "hidden": true
                 },
-                "kmersize": {
+                "sourmash_kmersize": {
                     "type": "integer",
                     "default": 51,
                     "enum": [51,31,21],
-                    "description": "Sourmash only: specify the database kmer size for sourmash assignment step. Generally, a larger kmer size provide better taxonomy resolution for microbial samples with good reference databases, such as human feces. Use 31 and 21 for samples that do not have good reference databases.",
+                    "description": "Sourmash breaks reads down into k-mers which are compared against database for taxonomic assignment. A length of 51 is very robust and allows for good taxonomic resolution down to species level while keeping false positives to a minimum, but is very stringent. Smaller k-mer sizes like 31 can be more sensitive at the genus level but may allow for more false positive calls. We recommend 51 for most projects, however if your samples likely contain poorly annotated genomes, smaller k-mers may provide more useful results.",
 		            "advanced": true
                 },
-                "threshold_bp": {
+                "sourmash_threshold_bp": {
                     "type": "integer",
-                    "description": "Sourmash only: specify the basepair threshold below which Sourmash matches are no longer reported.",
+                    "description": "Sourmash will only report a match to a genome in the database when the estimated overlap between sample and the reference is at least this many base pairs. Choose a smaller number to increase sensitivity to low abundant species. Default is 50,000bp.",
                     "default": 50000,
                     "minimum": 1000,
                     "maximum": 1000000,
 		            "advanced": true
                 },
-                "run_khmer_trim_low_abund": {
+                "sourmash_trim_low_abund": {
                     "type": "boolean",
-                    "description": "Sourmash only: Run khmer's trim_low_abund.py to trim and remove low abundance kmers.",
-                    "default": false
+                    "description": "Runs trim-low-abund.py from the khmer software package, which removes low abundance, potentially erroneous kmers from data before taxonomy assignment. Only applies when sourmash databases were selected.",
+                    "default": false,
+                    "advanced": true
                 },
                 "motus_use_relative_abundance": {
                     "type": "boolean",
@@ -513,27 +498,28 @@
             "properties": {
                 "lowread_filter": {
                     "type": "integer",
-                    "description": "Specify the minimum number of reads with taxonomy a sample must have to be included in alpha and beta diversity and heatmap analysis.",
+                    "description": "Applies a read count filter for samples before downstream analysis. Samples must have at least this many reads with assigned taxonomy to be included in analyses such as alpha and beta diversity. Default is 50,000.",
                     "default": 50000,
+                    "minimum": 0,
                     "advanced": true
                 },
                 "min_frequency": {
                     "type": "integer",
                     "default": 1,
-                    "description": "Remove taxa with fewer than this many total reads among all samples (default: 1, meaning filter is disabled).",
+                    "description": "Removes taxa with fewer than this many total reads assigned among all samples. Default setting of 1 means this filter is disabled, and all taxa will be kept.",
                     "minimum": 1,
                     "advanced": true
                 },
                 "min_samples": {
                     "type": "integer",
                     "default": 1,
-                    "description": "Remove taxa that appear in fewer than this many samples (default: 1, meaning filter is disabled).",
+                    "description": "Remove taxa that were detected in fewer than this many samples. Default setting of 1 means this filter is disabled, and all taxa will be kept.",
                     "minimum": 1,
                     "advanced": true
                 },
                 "taxonomy_collapse_level": {
                     "type": "integer",
-                    "description": "Collapse taxonomy to this level for diversity analysis. Default 7 is species level.",
+                    "description": "There are seven levels of taxonomy rankings: kingdom[1], phylum[2], class[3], order[4], family[5], genus[6], and species[7]. Diversity analyses will be conducted at the level chosen here. Default is 7, species level.",
                     "default": 7,
                     "minimum": 1,
                     "maximum": 7,

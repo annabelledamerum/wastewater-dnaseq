@@ -27,7 +27,7 @@ process ADAPTERREMOVAL {
     script:
     def args = task.ext.args ?: ''
     def list = adapterlist ? "--adapter-list ${adapterlist}" : ""
-    def min_length = (params.profiler=="sourmash" && params.kmersize>params.shortread_qc_minlength) ? "--minlength ${params.kmersize}" : "--minlength ${params.shortread_qc_minlength}"
+    def min_length = (params.profiler=="sourmash" && params.sourmash_kmersize>params.shortread_qc_minlength) ? "--minlength ${params.sourmash_kmersize}" : "--minlength ${params.shortread_qc_minlength}"
     prefix = task.ext.prefix ?: "${meta.id}"
 
     if (meta.single_end) {

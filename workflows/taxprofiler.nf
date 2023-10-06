@@ -45,7 +45,7 @@ if (params.database) {
 
 if (params.shortread_qc_includeunmerged && !params.shortread_qc_mergepairs) exit 1, "ERROR: [nf-core/taxprofiler] cannot include unmerged reads when merging is not turned on. Please specify --shortread_qc_mergepairs"
 
-if (params.shortread_complexityfilter_tool == 'fastp' && ( params.perform_shortread_qc == false || params.shortread_qc_tool != 'fastp' ))  exit 1, "ERROR: [nf-core/taxprofiler] cannot use fastp complexity filtering if preprocessing not turned on and/or tool is not fastp. Please specify --perform_shortread_qc and/or --shortread_qc_tool 'fastp'"
+if (params.shortread_complexityfilter_tool == 'fastp' && params.shortread_qc_tool != 'fastp' )  exit 1, "ERROR: [nf-core/taxprofiler] cannot use fastp complexity filtering if preprocessing tool is not fastp. Please specify --shortread_qc_tool 'fastp'"
 
 if (params.perform_shortread_hostremoval && !params.hostremoval_reference) { exit 1, "ERROR: [nf-core/taxprofiler] --shortread_hostremoval requested but no --hostremoval_reference FASTA supplied. Check input." }
 if (!params.hostremoval_reference && params.shortread_hostremoval_index) { exit 1, "ERROR: [nf-core/taxprofiler] --shortread_hostremoval_index provided but no --hostremoval_reference FASTA supplied. Check input." }
@@ -165,7 +165,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: PERFORM PREPROCESSING
     */
 
-    if ( params.perform_shortread_qc ) {
+    if ( params.shortread_qc_tool != 'DO_NOT_RUN') {
         ch_shortreads_preprocessed = SHORTREAD_PREPROCESSING ( INPUT_CHECK.out.fastq, adapterlist ).reads
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_PREPROCESSING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_PREPROCESSING.out.versions )
@@ -188,7 +188,7 @@ workflow TAXPROFILER {
     */
 
     // fastp complexity filtering is activated via modules.conf in shortread_preprocessing
-    if ( params.perform_shortread_complexityfilter && params.shortread_complexityfilter_tool != 'fastp' ) {
+    if ( params.shortread_complexityfilter_tool != 'DO_NOT_RUN' && params.shortread_complexityfilter_tool != 'fastp' ) {
         ch_shortreads_filtered = SHORTREAD_COMPLEXITYFILTERING ( ch_shortreads_preprocessed ).reads
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_COMPLEXITYFILTERING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_COMPLEXITYFILTERING.out.versions )
