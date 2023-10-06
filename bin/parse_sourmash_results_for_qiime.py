@@ -48,6 +48,24 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
         "data": { name : dict() }
     }
 
+    # Initialize dict for general stats table
+    mqc_gs_data = {
+        "id": "kmer_composition_gs",
+        "plot_type": "generalstats",
+        "pconfig": {
+            "identified_kmers": {
+                "title": "% kmers w/ taxonomy",
+                "namespace": "sourmash",
+                "description": "% kmers with assigned taxonomy by sourmash",
+                "max": 100,
+                "min": 0,
+                "scale": "RdYlGn",
+                "format": "{:.2f}%"
+            }
+        },
+        "data": { name: dict() }
+    }
+
     # Read the sketch log to get number of sequences
     pattern = r"calculated \d+ signature for (\d+) sequences taken from \d+ files"
     with open(sketch_log) as fh:
@@ -68,6 +86,7 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     # Calculate total no. reads of microbes and unidenfied kmers
     mqc_data["data"][name]["Microbes"] = round(profile["f_unique_weighted"].sum()*readcount, 2)
     mqc_data["data"][name]["Unidentified"] = round(readcount-mqc_data["data"][name]["Microbes"], 2)
+    mqc_gs_data["data"][name]["identified_kmers"] = profile["f_unique_weighted"].sum()*100
 
     # Read host lineage file to get a list of host genome accessions and species names
     if host_lineage:
@@ -103,6 +122,8 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     # Output mqc results
     with open(name+"_sourmash_stats_mqc.json", "w") as fh:
         json.dump(mqc_data, fh, indent=4)
+    with open(name+"_sourmash_gs_mqc.json", "w") as fh:
+        json.dump(mqc_gs_data, fh, indent=4)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""Parse sourmash gather results to be compatible with Qiime for taxonomy analysis""")

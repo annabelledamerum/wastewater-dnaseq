@@ -7,6 +7,25 @@ import re
 import json
 
 def display_unmapped_mpareads(infofiles):
+
+    # Initialize dict for general stats table
+    mqc_gs_data = {
+        "id": "metaphlan4_gs",
+        "plot_type": "generalstats",
+        "pconfig": {
+            "identified_reads": {
+                "title": "% reads w/ taxonomy",
+                "namespace": "metaphlan4",
+                "description": "% reads with assigned taxonomy by metaphlan4",
+                "max": 100,
+                "min": 0,
+                "scale": "RdYlGn",
+                "format": "{:.2f}%"
+            }
+        },
+        "data": { }
+    }
+
     mpa_readstats = pd.DataFrame()
 
     for sample in infofiles:
@@ -22,6 +41,7 @@ def display_unmapped_mpareads(infofiles):
             reads_unaligned = int(reads_processed) - int(reads_aligned)
         aligned_unaligned = pd.DataFrame([[reads_aligned, reads_unaligned]], index=[samplename], columns=["aligned", "unaligned"])
         mpa_readstats = pd.concat([mpa_readstats, aligned_unaligned], axis = 0)
+        mqc_gs_data["data"][samplename] = { "identified_reads": float(reads_aligned)/int(reads_processed)*100 }
 
     mpa_readstats_json = mpa_readstats.to_json(orient="index")
     mpa_readstats_parsed = json.loads(mpa_readstats_json)
@@ -52,6 +72,8 @@ def display_unmapped_mpareads(infofiles):
     mpa_readstats_multiqc['data'] = mpa_readstats_parsed
     with open('mpa_readstats_mqc.json', 'w') as ofh:
         json.dump(mpa_readstats_multiqc, ofh, indent=4)
+    with open('mpa_readstats_gs_mqc.json', 'w') as ofh:
+        json.dump(mqc_gs_data, ofh, indent=4)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="""display unaligned/aligned read statistics""")
