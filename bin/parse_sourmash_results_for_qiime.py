@@ -54,9 +54,9 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
         "plot_type": "generalstats",
         "pconfig": {
             "identified_kmers": {
-                "title": "% kmers w/ taxonomy",
+                "title": "% Kmers w/ Taxonomy",
                 "namespace": "sourmash",
-                "description": "% kmers with assigned taxonomy by sourmash",
+                "description": "% Kmers with assigned taxonomy by sourmash",
                 "max": 100,
                 "min": 0,
                 "scale": "RdYlGn",

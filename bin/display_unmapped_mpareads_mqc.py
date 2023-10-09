@@ -14,9 +14,9 @@ def display_unmapped_mpareads(infofiles):
         "plot_type": "generalstats",
         "pconfig": {
             "identified_reads": {
-                "title": "% reads w/ taxonomy",
+                "title": "% Reads w/ Taxonomy",
                 "namespace": "metaphlan4",
-                "description": "% reads with assigned taxonomy by metaphlan4",
+                "description": "% Reads with assigned taxonomy by metaphlan4",
                 "max": 100,
                 "min": 0,
                 "scale": "RdYlGn",
