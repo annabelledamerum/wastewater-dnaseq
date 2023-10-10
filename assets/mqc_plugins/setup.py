@@ -21,7 +21,7 @@ setup(
             'composition_barplots = plugins.modules.composition_barplots:MultiqcModule'
         ],
         'multiqc.hooks.v1': [
-            #'before_config = plugins.utils.hooks:before_config',
+            'before_config = plugins.utils.hooks:before_config',
             'execution_start = plugins.utils.hooks:execution_start'
         ],
     }
