@@ -5,7 +5,7 @@ process METAPHLAN4_UNMAPPED {
     path(mpa_info)
 
     output:
-    path("mpa_readstats_mqc.json"), emit: json
+    path("*mqc.json"), emit: json
 
     script:
     """
