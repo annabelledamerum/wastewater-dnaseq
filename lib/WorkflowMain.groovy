@@ -1,5 +1,5 @@
 //
-// This file holds several functions specific to the main.nf workflow in the nf-core/taxprofiler pipeline
+// This file holds several functions specific to the main.nf workflow in the Zymo-Research/aladdin-shotgun pipeline
 //
 
 class WorkflowMain {

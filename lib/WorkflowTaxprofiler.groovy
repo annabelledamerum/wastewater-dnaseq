@@ -1,5 +1,5 @@
 //
-// This file holds several functions specific to the workflow/taxprofiler.nf in the nf-core/taxprofiler pipeline
+// This file holds several functions specific to the workflow/taxprofiler.nf in the Zymo-Research/aladdin-shotgun pipeline
 //
 
 import groovy.text.SimpleTemplateEngine
