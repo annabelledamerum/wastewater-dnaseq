@@ -22,6 +22,7 @@
 - Ignore samples that failed read QC or profiling. Let pipeline finish successfully regardless of a few bad samples. Add warnings for failed samples to report.
 - Hide most parameters from Aladdin users.
 - Use Aladdin report template.
+- Eliminated 'perform_shortread_qc' and 'perform_shortread_complexityfilter' paramters and merged them into others.
 
 ### `Fixed`
 - Sample name cleaning in report. Now one sample occupy one row in the general stats table.
