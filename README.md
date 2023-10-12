@@ -43,15 +43,15 @@ We recommend you run this pipeline via the [Aladdin Bioinformatics platform](htt
 ### Using AWS Batch
 ```bash
 nextflow run Zymo-Research/aladdin-shotgun \
-	-profile awsbatch \
-	--design "<path to design CSV file>" \
-   --database sourmash-zymo \
-	-work-dir "<work dir on S3>" \
-   --awsregion "<AWS Batch region> \
-	--awsqueue "<SQS ARN>" \
-	--outdir "<output dir on S3>" \
-   -r "0.0.4"
-	--name "<analysis name>"
+    -profile awsbatch \
+    --design "<path to design CSV file>" \
+    --database sourmash-zymo \
+    -work-dir "<work dir on S3>" \
+    --awsregion "<AWS Batch region> \
+    --awsqueue "<SQS ARN>" \
+    --outdir "<output dir on S3>" \
+    -r "0.0.4"
+    --name "<analysis name>"
 ```
 1. The parameter `--design` is required. It must be a CSV file with the following format.
 ```
@@ -77,10 +77,10 @@ There are many other options built in the pipeline to customize your run and han
 ### Using Docker
 ```bash
 nextflow run Zymo-Research/aladdin-shotgun \
-	-profile docker \
-	--design "<path to design CSV file>" \
-   --database sourmash-zymo \
-	--name "<analysis name>"
+    -profile docker \
+    --design "<path to design CSV file>" \
+    --database sourmash-zymo \
+    --name "<analysis name>"
 ```
 Please see above for requirements of the design CSV file.
 
