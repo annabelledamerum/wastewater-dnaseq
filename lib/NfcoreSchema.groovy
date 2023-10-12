@@ -249,11 +249,6 @@ class NfcoreSchema {
         String database = ""
         def mqc_display = []
         def params_map = paramsLoad(getSchemaPath(workflow, schema_filename=schema_filename))
-        //if (params.get("database")  == "sourmash-zymo"){
-        //   mqc_display = ["database", "kmersize", "threshold_bp", "run_khmer_trim_low_abund", "lowread_filter"]
-        //} else{
-        //   mqc_display = ["database", "perform_shortread_qc", "shortread_qc_tool", "shortread_qc_minlength", "perform_shortread_complexityfilter", "shortread_complexityfilter_tool", "hostremoval_reference", "lowread_filter"]
-        //}
         for (group in params_map.keySet()) {
             def sub_params = new LinkedHashMap()
             def group_params = params_map.get(group)  // This gets the parameters of that particular group

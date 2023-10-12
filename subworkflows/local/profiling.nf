@@ -238,7 +238,7 @@ workflow PROFILING {
 
         ch_input_for_metaphlan4 = ch_input_for_profiling
                             .filter{
-                                if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] MetaPhlAn4 currently does not accept FASTA files as input. Skipping MetaPhlAn4 for sample ${it[0].id}."
+                                if (it[0].is_fasta) log.warn "[Zymo-Research/aladdin-shotgun] MetaPhlAn4 currently does not accept FASTA files as input. Skipping MetaPhlAn4 for sample ${it[0].id}."
                                 !it[0].is_fasta
                             }
                             .multiMap {
@@ -265,7 +265,7 @@ workflow PROFILING {
 
         ch_input_for_sourmash =  ch_input_for_profiling
                                 .filter{
-                                    if (it[0].is_fasta) log.warn "[nf-core/taxprofiler] Sourmash currently does not accept FASTA files as input. Skipping Sourmash for sample ${it[0].id}."
+                                    if (it[0].is_fasta) log.warn "[Zymo-Research/aladdin-shotgun] Sourmash currently does not accept FASTA files as input. Skipping Sourmash for sample ${it[0].id}."
                                     !it[0].is_fasta
                                 }
                                 .multiMap {
@@ -276,7 +276,7 @@ workflow PROFILING {
         host_lineage = params.host_lineage ? Channel.fromPath(params.host_lineage) : Channel.empty()
         // Temporary place holder for host lineage file until reconfiguration of database into a config file
 
-        if (params.run_khmer_trim_low_abund) {
+        if (params.sourmash_trim_low_abund) {
             KHMER_TRIM_LOW_ABUND ( ch_input_for_sourmash.reads )
             ch_input_for_sourmash_sketch = KHMER_TRIM_LOW_ABUND.out.reads
             ch_versions = ch_versions.mix( KHMER_TRIM_LOW_ABUND.out.versions.first() )
@@ -380,12 +380,33 @@ workflow PROFILING {
 
     }
 
+    // Find samples that failed profiling and output a warning
+    ch_qiime_profiles
+        .map { [it[0].id, it[1]] }
+        .set { ch_profiling_pass }
+    reads
+        .map { [it[0].id, it[1]] }
+        .join(ch_profiling_pass, remainder:true)
+        .filter { !it[2] }
+        .map { it[0] }
+        .collect()
+        .map {
+            "The following samples failed taxonomy profiling steps:\n${it.join("; ")}\nA common cause for this is lack of significant match against the database."
+        }
+        .set {ch_warning_message }
+    ch_warning_message
+        .subscribe {
+            log.error "$it"
+            params.ignore_failed_samples ? { log.warn "Ignoring failed samples and continue!" } : System.exit(1)
+        }
+
     emit:
     classifications = ch_raw_classifications
     profiles        = ch_raw_profiles    // channel: [ val(meta), [ reads ] ] - should be text files or biom
-    qiime_profiles  = ch_qiime_profiles  // channel: [ val(meta), relative abundance profiles, absolute abundance profiles ]
+    qiime_profiles  = ch_qiime_profiles  // channel: [ val(meta), absolute abundance profiles ]
     qiime_taxonomy  = ch_taxonomy
-    versions        = ch_versions          // channel: [ versions.yml ]
+    versions        = ch_versions
     motus_version   = params.profiler == "motus" ? MOTUS_PROFILE.out.versions.first() : Channel.empty()
     mqc             = ch_multiqc_files
+    warning         = ch_warning_message
 }

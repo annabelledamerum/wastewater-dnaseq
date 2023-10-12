@@ -7,6 +7,7 @@ process MULTIQC {
     path(extra_multiqc_config)
     path(multiqc_logo)
     path "multiqc_custom_plugins"
+    val warnings
 
     output:
     path "*multiqc_report.html", emit: report
@@ -21,6 +22,7 @@ process MULTIQC {
     def args = task.ext.args ?: ''
     def config = multiqc_config ? "--config $multiqc_config" : ''
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
+    def comment = warnings ? "--comment \"$warnings\"" : '' 
     """
     cd multiqc_custom_plugins
     python setup.py develop
@@ -31,6 +33,7 @@ process MULTIQC {
         $args \\
         $config \\
         $extra_config \\
+        $comment \\
         .
 
     cat <<-END_VERSIONS > versions.yml

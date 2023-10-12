@@ -14,8 +14,9 @@ workflow SHORTREAD_PREPROCESSING {
     adapterlist // file
 
     main:
-    ch_versions       = Channel.empty()
-    ch_multiqc_files  = Channel.empty()
+    ch_versions        = Channel.empty()
+    ch_multiqc_files   = Channel.empty()
+    ch_warning_message = Channel.empty()
 
     if ( params.shortread_qc_tool == "fastp" ) {
         ch_processed_reads = SHORTREAD_FASTP ( reads, adapterlist ).reads
@@ -28,6 +29,27 @@ workflow SHORTREAD_PREPROCESSING {
     } else {
         ch_processed_reads = reads
     }
+
+    //Filter empty files
+    ch_processed_reads
+        .branch{
+            failed: it[0].single_end ? it[1].size() < 1.KB : it[1][0].size() < 1.KB || it[1][1].size() < 1.KB
+            passed: it[0].single_end ? it[1].size() >= 1.KB : it[1][0].size() >= 1.KB && it[1][1].size() >= 1.KB
+        }
+        .set { ch_filtered_reads }
+    ch_filtered_reads.passed.set { ch_processed_reads }
+    ch_filtered_reads.failed
+        .map { meta, reads -> [ meta.id ] }
+        .collect()
+        .map {
+            "The following samples had too small file size (<1kB) after trimming and read length filtering:\n${it.join("; ")}\nThis could happen when your sequencing quality is poor or your reads are not long enough for k-mer based taxonomy profiling."
+        }
+        .set { ch_warning_message }
+    ch_warning_message
+        .subscribe {
+            log.error "$it"
+            params.ignore_failed_samples ? { log.warn "Ignoring failed samples and continue!" } : System.exit(1)
+        }
 
     if (params.preprocessing_qc_tool == 'fastqc') {
         FASTQC_PROCESSED ( ch_processed_reads )
@@ -43,5 +65,6 @@ workflow SHORTREAD_PREPROCESSING {
     reads    = ch_processed_reads   // channel: [ val(meta), [ reads ] ]
     versions = ch_versions          // channel: [ versions.yml ]
     mqc      = ch_multiqc_files
+    warning  = ch_warning_message
 }
 

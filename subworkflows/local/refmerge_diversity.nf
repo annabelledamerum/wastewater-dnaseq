@@ -30,11 +30,6 @@ workflow REFMERGE_DIVERSITY {
 
     REFMERGE_MERGEMETA( user_metadata, ref_metadata)
 
-    REFMERGE_ALPHARAREFACTION ( REFMERGE_MERGEMETA.out.metadata, REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total.map{it.getText()} )
-    ch_output_file_paths = ch_output_file_paths.mix(
-        REFMERGE_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/refmerged/alpha-rarefaction/" + it.getName() }
-        )
-
     REFMERGE_DIVERSITYCORE ( REFMERGE_TAXAMERGE.out.merged, REFMERGE_TAXAMERGE.out.min_total.map{it.getText()}, REFMERGE_MERGEMETA.out.metadata.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
         REFMERGE_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/refmerged/diversity_core/" + it.getName() }
@@ -53,8 +48,9 @@ workflow REFMERGE_DIVERSITY {
     REFMERGE_PLOT_MULTIQC( 
         REFMERGE_MERGEMETA.out.metadata,
         REFMERGE_DIVERSITYCORE.out.pcoa.ifEmpty([]),
-        REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]), 
-        REFMERGE_ALPHARAREFACTION.out.rarefaction_csv.collect().ifEmpty([]),
+        REFMERGE_ALPHADIVERSITY.out.alphadiversity_tsv.collect().ifEmpty([]),
+        [],
+        true, 
         true )
     ch_multiqc_files = ch_multiqc_files.mix( REFMERGE_PLOT_MULTIQC.out.mqc_plot )
 

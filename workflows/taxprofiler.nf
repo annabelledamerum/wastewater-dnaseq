@@ -43,20 +43,20 @@ if (params.database) {
     exit 1, "Database not specified!"
 }
 
-if (params.shortread_qc_includeunmerged && !params.shortread_qc_mergepairs) exit 1, "ERROR: [nf-core/taxprofiler] cannot include unmerged reads when merging is not turned on. Please specify --shortread_qc_mergepairs"
+if (params.shortread_qc_includeunmerged && !params.shortread_qc_mergepairs) exit 1, "ERROR: cannot include unmerged reads when merging is not turned on. Please specify --shortread_qc_mergepairs"
 
-if (params.shortread_complexityfilter_tool == 'fastp' && ( params.perform_shortread_qc == false || params.shortread_qc_tool != 'fastp' ))  exit 1, "ERROR: [nf-core/taxprofiler] cannot use fastp complexity filtering if preprocessing not turned on and/or tool is not fastp. Please specify --perform_shortread_qc and/or --shortread_qc_tool 'fastp'"
+if (params.shortread_complexityfilter_tool == 'fastp' && params.shortread_qc_tool != 'fastp' )  exit 1, "ERROR: cannot use fastp complexity filtering if preprocessing tool is not fastp. Please specify --shortread_qc_tool 'fastp'"
 
-if (params.perform_shortread_hostremoval && !params.hostremoval_reference) { exit 1, "ERROR: [nf-core/taxprofiler] --shortread_hostremoval requested but no --hostremoval_reference FASTA supplied. Check input." }
-if (!params.hostremoval_reference && params.shortread_hostremoval_index) { exit 1, "ERROR: [nf-core/taxprofiler] --shortread_hostremoval_index provided but no --hostremoval_reference FASTA supplied. Check input." }
+if (params.perform_shortread_hostremoval && !params.hostremoval_reference) { exit 1, "ERROR: --shortread_hostremoval requested but no --hostremoval_reference FASTA supplied. Check input." }
+if (!params.hostremoval_reference && params.shortread_hostremoval_index) { exit 1, "ERROR: --shortread_hostremoval_index provided but no --hostremoval_reference FASTA supplied. Check input." }
 
 if (params.hostremoval_reference           ) { ch_reference = file(params.hostremoval_reference) }
 if (params.shortread_hostremoval_index     ) { ch_shortread_reference_index = Channel.fromPath(params.shortread_hostremoval_index).map{[[], it]} } else { ch_shortread_reference_index = [] }
 if (params.longread_hostremoval_index      ) { ch_longread_reference_index  = file(params.longread_hostremoval_index     ) } else { ch_longread_reference_index  = [] }
 
-if (params.profiler=='malt' && params.run_krona && !params.krona_taxonomy_directory) log.warn "[nf-core/taxprofiler] Krona can only be run on MALT output if path to Krona taxonomy database supplied to --krona_taxonomy_directory. Krona will not be executed in this run for MALT."
+if (params.profiler=='malt' && params.run_krona && !params.krona_taxonomy_directory) log.warn "Krona can only be run on MALT output if path to Krona taxonomy database supplied to --krona_taxonomy_directory. Krona will not be executed in this run for MALT."
 //Not supporting sequential kraken2-bracken yet
-//if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: [nf-core/taxprofiler] You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
+//if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,8 +68,6 @@ def mqcPlugins = Channel.fromPath("${baseDir}/assets/mqc_plugins/", checkIfExist
 ch_multiqc_config          = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
 ch_multiqc_custom_config   = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
 ch_multiqc_logo            = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
-//ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
@@ -120,14 +118,14 @@ def multiqc_report = []
 workflow TAXPROFILER {
 
     ch_versions = Channel.empty()
-    ch_multiqc_logo= Channel.fromPath("$projectDir/docs/images/nf-core-taxprofiler_logo_custom_light.png")
     ch_multiqc_files = Channel.empty()
+    ch_warnings = Channel.empty()
     ch_output_file_paths = Channel.empty()
     adapterlist = params.shortread_qc_adapterlist ? file(params.shortread_qc_adapterlist) : []
 
     if ( params.shortread_qc_adapterlist ) {
-        if ( params.shortread_qc_tool == 'adapterremoval' && !(adapterlist.extension == 'txt') ) error "[nf-core/taxprofiler] ERROR: AdapterRemoval2 adapter list requires a `.txt` format and extension. Check input: --shortread_qc_adapterlist ${params.shortread_qc_adapterlist}"
-        if ( params.shortread_qc_tool == 'fastp' && !adapterlist.extension.matches(".*(fa|fasta|fna|fas)") ) error "[nf-core/taxprofiler] ERROR: fastp adapter list requires a `.fasta` format and extension (or fa, fas, fna). Check input: --shortread_qc_adapterlist ${params.shortread_qc_adapterlist}"
+        if ( params.shortread_qc_tool == 'adapterremoval' && !(adapterlist.extension == 'txt') ) error "ERROR: AdapterRemoval2 adapter list requires a `.txt` format and extension. Check input: --shortread_qc_adapterlist ${params.shortread_qc_adapterlist}"
+        if ( params.shortread_qc_tool == 'fastp' && !adapterlist.extension.matches(".*(fa|fasta|fna|fas)") ) error "ERROR: fastp adapter list requires a `.fasta` format and extension (or fa, fas, fna). Check input: --shortread_qc_adapterlist ${params.shortread_qc_adapterlist}"
     }
 
     /*
@@ -164,10 +162,11 @@ workflow TAXPROFILER {
         SUBWORKFLOW: PERFORM PREPROCESSING
     */
 
-    if ( params.perform_shortread_qc ) {
+    if ( params.shortread_qc_tool != 'DO_NOT_RUN') {
         ch_shortreads_preprocessed = SHORTREAD_PREPROCESSING ( INPUT_CHECK.out.fastq, adapterlist ).reads
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_PREPROCESSING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_PREPROCESSING.out.versions )
+        ch_warnings = ch_warnings.mix( SHORTREAD_PREPROCESSING.out.warning )
     } else {
         ch_shortreads_preprocessed = INPUT_CHECK.out.fastq
     }
@@ -186,7 +185,7 @@ workflow TAXPROFILER {
     */
 
     // fastp complexity filtering is activated via modules.conf in shortread_preprocessing
-    if ( params.perform_shortread_complexityfilter && params.shortread_complexityfilter_tool != 'fastp' ) {
+    if ( params.shortread_complexityfilter_tool != 'DO_NOT_RUN' && params.shortread_complexityfilter_tool != 'fastp' ) {
         ch_shortreads_filtered = SHORTREAD_COMPLEXITYFILTERING ( ch_shortreads_preprocessed ).reads
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_COMPLEXITYFILTERING.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_COMPLEXITYFILTERING.out.versions )
@@ -263,6 +262,7 @@ workflow TAXPROFILER {
     PROFILING ( ch_reads_runmerged, ch_db )
     ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
+    ch_warnings = ch_warnings.mix( PROFILING.out.warning )
 
     /*
         SUBWORKFLOW: DIVERSITY with Qiime2
@@ -342,12 +342,21 @@ workflow TAXPROFILER {
     //ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
+    ch_warnings
+        .collect()
+        .map {
+            it.join('<br>').replace('\n','<br>')
+        }
+        .ifEmpty('')
+        .set { ch_warnings }
+
     MULTIQC (
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
-        mqcPlugins
+        mqcPlugins,
+        ch_warnings
     )
     multiqc_report = MULTIQC.out.report.toList()
     report_path = MULTIQC.out.report.map { "${params.outdir}/multiqc/" + it.getName() }
