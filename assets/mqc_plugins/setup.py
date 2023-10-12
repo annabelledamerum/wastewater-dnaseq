@@ -8,13 +8,13 @@ _version = '0.0.1'
 setup(
     name='multiqc_custom_plugins',
     version=_version,
-    description="Custom MultiQC plugins for zymobiomics pipeline",
+    description="Custom MultiQC plugins for shotgun pipeline",
     packages=find_packages(),
     include_package_data=True,
     install_requires=['multiqc==1.14'],
     entry_points={
         'multiqc.templates.v1': [
-            'default = multiqc.templates.default'
+            'aladdin = plugins.templates.aladdin'
         ],
         'multiqc.modules.v1': [
             'plot_heatmap = plugins.modules.plot_heatmap:MultiqcModule',
