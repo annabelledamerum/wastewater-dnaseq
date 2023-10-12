@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/taxprofiler
+    Zymo-Research/aladdin-shotgun
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/taxprofiler
+    Github : https://github.com/Zymo-Research/aladdin-shotgun
 
     Website: https://nf-co.re/taxprofiler
     Slack  : https://nfcore.slack.com/channels/taxprofiler
@@ -36,13 +36,6 @@ WorkflowMain.initialise(workflow, params, log)
 
 include { TAXPROFILER } from './workflows/taxprofiler'
 
-//
-// WORKFLOW: Run main nf-core/taxprofiler analysis pipeline
-//
-workflow NFCORE_TAXPROFILER {
-    TAXPROFILER ()
-}
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN ALL WORKFLOWS
@@ -54,7 +47,7 @@ workflow NFCORE_TAXPROFILER {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    NFCORE_TAXPROFILER ()
+    TAXPROFILER ()
 }
 
 /*

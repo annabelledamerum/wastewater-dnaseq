@@ -1,111 +1,92 @@
-# ![nf-core/taxprofiler](docs/images/nf-core-taxprofiler_logo_custom_light.png#gh-light-mode-only) ![nf-core/taxprofiler](docs/images/nf-core-taxprofiler_logo_custom_dark.png#gh-dark-mode-only)
-
-[![AWS CI](https://img.shields.io/badge/CI%20tests-full%20size-FF9900?labelColor=000000&logo=Amazon%20AWS)](https://nf-co.re/taxprofiler/results)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.7728364-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.7728364)
-
-[![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A522.10.1-23aa62.svg)](https://www.nextflow.io/)
-[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
-[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
-[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Nextflow Tower](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Nextflow%20Tower-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/nf-core/taxprofiler)
-
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23taxprofiler-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/taxprofiler)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
-
 ## Introduction
 
-**nf-core/taxprofiler** is a bioinformatics best-practice analysis pipeline for taxonomic classification and profiling of shotgun metagenomic data. It allows for in-parallel taxonomic identification of reads or taxonomic abundance estimation with multiple classification and profiling tools against multiple databases, produces standardised output tables.
+This is a bioinformatics analysis pipeline used for shotgun metagenomic data developed at Zymo Research. This pipeline was adpated from community-developed [nf-core/taxprofiler](https://github.com/nf-core/taxprofiler) pipeline version 1.0.0. Many changes were made to the original pipeline. Some are based on our experience or preferences. But more importatntly, we want to make the pipeline and its results easier to use/understand by people without bioinformatics experience. People can run the pipeline on the point-and-click bioinformatics platform [Aladdin Bioinformatics](https://www.aladdin101.org). Changes include but are not limited to:
+* Changed the behavior of pipeline so that user choose one taxonomy profiler instead of running all available taxonomy profilers. We found that some of the profilers have worse performances or outdated databases. We have diabled those profilers temporarily, but kept the code to run them, with a plan to add them if necessary. This is a philosophical change, we believe this approach offers simplicity and avoids confusion for researchers.
+* Added [sourmash](https://github.com/sourmash-bio/sourmash) as the prefered taxonomy profiler.
+* Added a Zymo version of sourmash database that include common host genomes so that host removal step does not need to be run anymore.
+* Upgraded MetaPhlAn3 to MetaPhlAn4.
+* Added visualizations of sourmash and MetaPhlAn4 results to the report.
+* Added diversity analysis using [Qiime2](https://qiime2.org/) and corresponding visualizations to the report.
+* Fixed, simplified, and improved the report.
+* Made the pipeline more resistant to bad samples, so that they don't stop the processing of others.
+* Added a function to compare to reference datasets that are already processed, so that user can quickly assess similarity of their samples to well curated samples of known phenotype, e.g. healthy/disease. This function is still experimental. 
 
-The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
-
-On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources.The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/taxprofiler/results).
-
-The nf-core/taxprofiler CI test dataset uses sequencing data from [Maixner et al. (2021) Curr. Bio.](https://doi.org/10.1016/j.cub.2021.09.031). The AWS full test dataset uses sequencing data and reference genomes from [Meslier (2022) _Sci. Data_](https://doi.org/10.1038/s41597-022-01762-z)
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
 
 ## Pipeline summary
 
-![](docs/images/taxprofiler_tube.png)
-
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/) or [`falco`](https://github.com/smithlabcode/falco) as an alternative option)
-2. Performs optional read pre-processing
+2. Performs optional read pre-processing (*code for long-read inherited from nf-core/taxprofiler, but not separately tested by us yet*)
    - Adapter clipping and merging (short-read: [fastp](https://github.com/OpenGene/fastp), [AdapterRemoval2](https://github.com/MikkelSchubert/adapterremoval); long-read: [porechop](https://github.com/rrwick/Porechop))
    - Low complexity and quality filtering (short-read: [bbduk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/), [PRINSEQ++](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus); long-read: [Filtlong](https://github.com/rrwick/Filtlong))
-   - Host-read removal (short-read: [BowTie2](http://bowtie-bio.sourceforge.net/bowtie2/); long-read: [Minimap2](https://github.com/lh3/minimap2))
-   - Run merging
-3. Supports statistics for host-read removal ([Samtools](http://www.htslib.org/))
-4. Performs taxonomic classification and/or profiling using one or more of:
-   - [Kraken2](https://ccb.jhu.edu/software/kraken2/)
+3. Perform Host-read removal
+   - Host-read removal (short-read: [BowTie2](http://bowtie-bio.sourceforge.net/bowtie2/); long-read: [Minimap2](https://github.com/lh3/minimap2)). This is not performed when `sourmash-zymo` is selected as the database because it already contains host sequences. 
+   - Statistics for host-read removal ([Samtools](http://www.htslib.org/))
+4. Run merging when applicable
+5. Performs taxonomic profiling using one of: (*nf-core/taxprofiler has more choices for this step, if there are tools you'd like for this step, please let us know.*)
+   - [sourmash](https://github.com/sourmash-bio/sourmash)
    - [MetaPhlAn4](https://huttenhower.sph.harvard.edu/metaphlan/)
-   - [MALT](https://uni-tuebingen.de/fakultaeten/mathematisch-naturwissenschaftliche-fakultaet/fachbereiche/informatik/lehrstuehle/algorithms-in-bioinformatics/software/malt/)
-   - [DIAMOND](https://github.com/bbuchfink/diamond)
-   - [Centrifuge](https://ccb.jhu.edu/software/centrifuge/)
-   - [Kaiju](https://kaiju.binf.ku.dk/)
-   - [mOTUs](https://motu-tool.org/)
-   - [KrakenUniq](https://github.com/fbreitwieser/krakenuniq)
-5. Perform optional post-processing with:
-   - [bracken](https://ccb.jhu.edu/software/bracken/)
-6. Standardises output tables ([`Taxpasta`](https://taxpasta.readthedocs.io))
-7. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
-8. Plotting Kraken2, Centrifuge, Kaiju and MALT results ([`Krona`](https://hpc.nih.gov/apps/kronatools.html))
+6. Merge all taxonomic profiling results into one table and perform alpha/beta diversity analysis ([Qiime2](https://qiime2.org/)).
+7. Compare user samples with already profiled reference datasets ([Qiime2](https://qiime2.org/))
+8. Present all results in above steps in a report ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 
-1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=22.10.1`).
+We recommend you run this pipeline via the [Aladdin Bioinformatics platform](https://www.aladdin101.org). It is much easier to run without any requirement for coding. Also, because the Zymo sourmash database is private, public users would not be able to use it via the command line. If you would still like to run the pipeline via CLI, see instruction below.
 
-2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) (you can follow [this tutorial](https://singularity-tutorial.github.io/01-installation/)), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility _(you can use [`Conda`](https://conda.io/miniconda.html) both to install Nextflow itself and also to manage software within pipelines. Please only use it within pipelines as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_.
+### Prerequisites
+* [Nextflow](https://www.nextflow.io) version 22.10.1 or later
+* At least 8 CPU threads and 60GB memory. The default config file [nextflow.config](./nextflow.config) has higher settings, please modify to fit your device.
+* [Docker](https://www.docker.com/) if you are running locally.
+* Permissions to AWS S3 and Batch resources if you are running on AWS Batch.
 
-3. Download the pipeline and test it on a minimal dataset with a single command:
+### Using AWS Batch
+```bash
+nextflow run Zymo-Research/aladdin-shotgun \
+	-profile awsbatch \
+	--design "<path to design CSV file>" \
+   --database sourmash-zymo \
+	-work-dir "<work dir on S3>" \
+   --awsregion "<AWS Batch region> \
+	--awsqueue "<SQS ARN>" \
+	--outdir "<output dir on S3>" \
+   -r "0.0.4"
+	--name "<analysis name>"
+```
+1. The parameter `--design` is required. It must be a CSV file with the following format.
+```
+sample,read_1,read_2,group,run_accession
+sample1,s1_run1_R1.fastq.gz,s1_run1_R2.fastq.gz,groupA,run1
+sample1,s1_run2_R1.fastq.gz,s1_run2_R2.fastq.gz,groupA,run2
+sample2,s2_run1_R1.fastq.gz,,groupB,,
+sample3,s3_run1_R1.fastq.gz,s3_run1_R2.fastq.gz,groupB,,
+```
+   - The header line must be present. 
+   - The columns "sample", "read_1", "read_2", "group" must be present. Column "run_accession" is optional.
+   - The column "sample" contains the name/label for each sample. It can be duplicate. When duplicated, it means the same sample has multiple sequencing runs. In those cases, a different value for "run_accession" is expected. See "sample1" in above example. Sample names must contain only alphanumerical characters or underscores, and must start with a letter.
+   - The columns "read_1", "read_2" refers to the paths, including S3 paths, of Read 1 and 2 of Illumina paired-end data. They must be ".fastq.gz" or ".fq.gz" files. When your data are single-end Illumina or PacBio data, simply use "read_1" column, and leave "read_2" column empty. FASTA files from Nanopore data are currently not supported.
+   - The column "group" contains the group name/label for comparison purposes in the diversity analysis. If you don't have/need this information, simply leave the column empty, but this column must be present regardless. Same rules for legal characters of sample names apply here too. 
+   - The column "run_accesssion" is optional. It is only required when there are duplicates in the "sample" column. This is to mark different run names for the sample. 
+2. The parameter `--database` is used to change taxonomy profiler and database. It has a default value 'sourmash-zymo'. You can skip this if you don't want to change it.
+3. The parameters `--awsregion`, `--awsqueue`, `-work-dir`, and `--outdir` are required when running on AWS Batch, the latter two must be directories on S3.
+4. The parameter `-r` will run a specific release of the pipeline. If not specified, it will run the the `main` branch instead.
+5. The parameter `--name` will add a title to the report. This is optional.
 
-   ```bash
-   nextflow run nf-core/taxprofiler -profile test,YOURPROFILE --outdir <OUTDIR>
-   ```
+There are many other options built in the pipeline to customize your run and handle specific situations, please refer to the [Usage Documentation](docs/usage.md).
 
-   Note that some form of configuration will be needed so that Nextflow knows how to fetch the required software. This is usually done in the form of a config profile (`YOURPROFILE` in the example command above). You can chain multiple config profiles in a comma-separated string.
-
-   > - The pipeline comes with config profiles called `docker`, `singularity`, `podman`, `shifter`, `charliecloud` and `conda` which instruct the pipeline to use the named tool for software management. For example, `-profile test,docker`.
-   > - Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
-   > - If you are using `singularity`, please use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to download images first, before running the pipeline. Setting the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options enables you to store and re-use the images from a central location for future pipeline runs.
-   > - If you are using `conda`, it is highly recommended to use the [`NXF_CONDA_CACHEDIR` or `conda.cacheDir`](https://www.nextflow.io/docs/latest/conda.html) settings to store the environments in a central location for future pipeline runs.
-
-4. Start running your own analysis!
-
-   ```console
-   nextflow run nf-core/taxprofiler --input samplesheet.csv --databases database.csv --outdir <OUTDIR> --run_<TOOL1> --run_<TOOL1> -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
-   ```
-
-## Documentation
-
-The nf-core/taxprofiler pipeline comes with documentation about the pipeline [usage](https://nf-co.re/taxprofiler/usage), [parameters](https://nf-co.re/taxprofiler/parameters) and [output](https://nf-co.re/taxprofiler/output).
+### Using Docker
+```bash
+nextflow run Zymo-Research/aladdin-shotgun \
+	-profile docker \
+	--design "<path to design CSV file>" \
+   --database sourmash-zymo \
+	--name "<analysis name>"
+```
+Please see above for requirements of the design CSV file.
 
 ## Credits
 
-nf-core/taxprofiler was originally written by [James A. Fellows Yates](https://github.com/jfy133), [Moritz Beber](https://github.com/Midnighter), and [Sofia Stamouli](https://github.com/sofsam).
-
-We thank the following people for their contributions to the development of this pipeline:
-
-[Lauri Mesilaakso](https://github.com/ljmesi), [Tanja Normark](https://github.com/talnor), [Maxime Borry](https://github.com/maxibor),[Thomas A. Christensen II](https://github.com/MillironX), [Jianhong Ou](https://github.com/jianhong), [Rafal Stepien](https://github.com/rafalstepien), [Mahwash Jamy](https://github.com/mjamy), and the [nf-core/community](https://nf-co.re/community).
-
-We also are grateful for the feedback and comments from:
-
-- [Alex Hübner](https://github.com/alexhbnr)
-- [LilyAnderssonLee](https://github.com/LilyAnderssonLee)
-
-Credit and thanks also goes to [Zandra Fagernäs](https://github.com/ZandraFagernas) for the logo.
-
-## Contributions and Support
-
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on the [Slack `#taxprofiler` channel](https://nfcore.slack.com/channels/taxprofiler) (you can join with [this invite](https://nf-co.re/join/slack)).
-
-## Citations
-
-If you use nf-core/taxprofiler for your analysis, please cite it using the following doi: [10.5281/zenodo.7728364](https://doi.org/10.5281/zenodo.7728364)
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
+This pipeline was adapted from nf-core/taxprofiler version 1.0.0. Please refer to [credits](https://github.com/nf-core/taxprofiler#credits) for list of orginal contributors. Contributors from Zymo Research include:
+- Zymo Research microbiomics team (source code, database, review)
+- [Nora Sharp](https://github.com/nsharp2) (Pipeline coding)
+- [Zhenfeng Liu](https://github.com/zxl124) (Pipeline coding)
