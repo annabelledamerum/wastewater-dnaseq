@@ -22,6 +22,7 @@ process QIIME_DATAMERGE {
     path('merged_filtered_counts_collapsed.tsv') , emit: filtered_counts_collapsed_tsv
     path('versions.yml')                         , emit: versions
     path('*.qza')
+    path('merged_filtered_counts.tsv')
 
     script:
     """
@@ -39,6 +40,11 @@ process QIIME_DATAMERGE {
         --p-min-frequency ${params.min_frequency} \
         --p-min-samples ${params.min_samples} \
         --o-filtered-table merged_filtered_counts.qza
+    
+    qiime tools export \
+        --input-path merged_filtered_counts.qza \
+        --output-path merged_filtered_counts_out
+    biom convert -i merged_filtered_counts_out/feature-table.biom -o merged_filtered_counts.tsv --to-tsv
 
     qiime_taxmerge.py $taxonomy
     qiime tools import \

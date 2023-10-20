@@ -78,6 +78,8 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     
     # Read gather results
     profile = pd.read_csv(sourmash_results)
+    # Extract accession number from subject names in the gather results
+    profile["accession"] = profile["name"].map(lambda x:x.split()[0])
 
     # Filter false positives if requested
     if filter_fp:
@@ -91,9 +93,7 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
     # Read host lineage file to get a list of host genome accessions and species names
     if host_lineage:
         host_info = pd.read_csv(host_lineage)
-        host_info = host_info[["ident","species"]]
-        # Extract accession number from subject names in the gather results
-        profile["accession"] = profile["name"].map(lambda x:x.split()[0])
+        host_info = host_info[["ident","species"]]  
         # Separate host and other matches
         host = profile.loc[profile["accession"].isin(host_info["ident"])]
         profile = profile.loc[~profile["accession"].isin(host_info["ident"])]
@@ -104,20 +104,17 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
         # Record the no. reads of each host organism
         mqc_data["data"][name].update(host.set_index("species")["f_unique_weighted"].mul(readcount).round(2).to_dict())
 
-    profile = profile[["lineage","f_unique_weighted"]]
+    profile = profile[["accession","lineage","f_unique_weighted"]]
     profile["lineage"] = profile["lineage"].map(add_prefix_to_lineage)
-    profile = profile.rename(columns={'f_unique_weighted':name})
-    # Collapsing rows together in case of duplicate clade name
-    profile = profile.groupby('lineage').sum()    
+    profile = profile.rename(columns={"f_unique_weighted":name, "lineage":"Taxon", "accession":"Feature ID"})
+    # Collapsing rows together in case of duplicate accession (unlikely, but just in case)
+    profile = profile.groupby("Feature ID").agg({"Taxon":"first", name:"sum"})
     # Calculate absolute abundance (approximate)
-    profile = profile.mul(readcount)
-    profile.to_csv(name+'_absabun_parsed_profile.txt', sep="\t")
-
-    # Create a taxonomy file, in this case the lineage are already in qiime's taxonomy format
-    profile['Taxon'] = profile.index
-    profile = profile.drop(name, axis=1)
-    profile.index.name = 'Feature ID'
-    profile.to_csv(name+"_profile_taxonomy.txt", sep="\t")
+    profile[name] = profile[name].mul(readcount)
+    # Create a table file
+    profile[name].to_csv(name+"_absabun_parsed_profile.txt", sep="\t")
+    # Create a taxonomy file
+    profile["Taxon"].to_csv(name+"_profile_taxonomy.txt", sep="\t")
 
     # Output mqc results
     with open(name+"_sourmash_stats_mqc.json", "w") as fh:
