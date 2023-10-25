@@ -1,5 +1,10 @@
 # aladdin-shotgun: Changelog
 
+## v0.0.5
+
+### `Changed`
+- Sourmash output now uses sequence IDs (assembly accession numbers) as keys. Pipeline now generates a Qiime2 feature table with these keys, in addition to the table with collapsed taxonomy.
+
 ## v0.0.4 
 
 ### `Added`
