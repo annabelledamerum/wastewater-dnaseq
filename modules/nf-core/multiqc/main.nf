@@ -22,6 +22,8 @@ process MULTIQC {
     def args = task.ext.args ?: ''
     def config = multiqc_config ? "--config $multiqc_config" : ''
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
+    def rtitle = params.run_name ? "--title \"Shotgun report for ${params.run_name}\"" : ''
+    def rfilename = params.run_name ? "--filename " + params.run_name.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
     def comment = warnings ? "--comment \"$warnings\"" : '' 
     """
     cd multiqc_custom_plugins
@@ -33,6 +35,7 @@ process MULTIQC {
         $args \\
         $config \\
         $extra_config \\
+        $rtitle $rfilename \\
         $comment \\
         .
 
