@@ -4,6 +4,7 @@
 
 ### `Changed`
 - Sourmash output now uses sequence IDs (assembly accession numbers) as keys. Pipeline now generates a Qiime2 feature table with these keys, in addition to the table with collapsed taxonomy.
+- MultiQC report has a title that matches the run name. User can use `-name` to change the report title.
 
 ## v0.0.4 
 
