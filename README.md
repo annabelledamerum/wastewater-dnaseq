@@ -50,7 +50,8 @@ nextflow run Zymo-Research/aladdin-shotgun \
     --awsregion "<AWS Batch region> \
     --awsqueue "<SQS ARN>" \
     --outdir "<output dir on S3>" \
-    -r "0.0.4"
+    -r "0.0.4" \
+    -name "<report title>"
 ```
 1. The parameter `--design` is required. It must be a CSV file with the following format.
 ```
@@ -69,6 +70,7 @@ sample3,s3_run1_R1.fastq.gz,s3_run1_R2.fastq.gz,groupB,,
 2. The parameter `--database` is used to change taxonomy profiler and database. It has a default value 'sourmash-zymo'. You can skip this if you don't want to change it.
 3. The parameters `--awsregion`, `--awsqueue`, `-work-dir`, and `--outdir` are required when running on AWS Batch, the latter two must be directories on S3.
 4. The parameter `-r` will run a specific release of the pipeline. If not specified, it will run the the `main` branch instead.
+5. The parameter `-name` will define the title of the MultiQC report.
 
 There are many other options built in the pipeline to customize your run and handle specific situations, please refer to the [Usage Documentation](docs/usage.md).
 
