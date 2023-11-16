@@ -56,9 +56,7 @@ def pcoa_plot(ordinations, metadata, output):
     # File name to metric translation
     index_name = {
         'bray_curtis_pcoa_ordination.txt': 'Bray-Curtis',
-        'jaccard_pcoa_ordination.txt': 'Jaccard',
-        'weighted_unifrac_pcoa_ordination.txt': 'Weighted Unifrac',
-        'unweighted_unifrac_pcoa_ordination.txt': 'Unweighted Unifrac'
+        'jaccard_pcoa_ordination.txt': 'Jaccard'
         }
     
     # Get all sample IDs to help parse the ordination txt file
