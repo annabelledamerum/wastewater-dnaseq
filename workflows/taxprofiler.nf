@@ -263,6 +263,7 @@ workflow TAXPROFILER {
     if ( params.run_amr ) {
     	AMRPLUSPLUS(ch_reads_runmerged)
         ch_versions = ch_versions.mix( AMRPLUSPLUS.out.versions )
+        ch_multiqc_files = ch_multiqc_files.mix( AMRPLUSPLUS.out.multiqc_files.collect().ifEmpty([]) )
     }
 
     /*

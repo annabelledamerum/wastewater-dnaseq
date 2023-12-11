@@ -83,6 +83,7 @@ module_order:
   - custom_content
   - composition_barplots
   - plot_heatmap
+  - resistome_stackedbar
 
 sp:
   alpha_diversity:
@@ -170,6 +171,12 @@ top_modules:
       target: "heatmap"
       path_filters:
         "*taxo_heatmap.csv"
+  - "resistome_stackedbar":
+      name: "Resistome Stacked Barplot"
+      anchor: "resistome_stackedbar"
+      target: "resistome_barplot"
+      path_filters:
+        - "*analytic_matrix.csv"
   - "malt":
       name: "MALT"
   - "diamond"
