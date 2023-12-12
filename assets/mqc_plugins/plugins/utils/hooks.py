@@ -20,9 +20,6 @@ def execution_start():
         },
         'composition_barplots': {
             'fn': '*level-*.csv'
-        },
-        'resistome_stackedbar': {
-            'fn': '*analytic_matrix.csv'
         }
     }
     fn_clean_exts = [

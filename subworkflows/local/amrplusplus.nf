@@ -21,8 +21,8 @@ workflow AMRPLUSPLUS {
     )
     ch_versions = ch_versions.mix( BWA_ALIGN.out.versions )
     RESISTOME_RUN(BWA_ALIGN.out.bwa_bam, params.amr_fasta, params.amr_annotation)
-    RESISTOME_RESULTS(RESISTOME_RUN.out.resistome_counts.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(RESISTOME_RESULTS.out.analytic_matrix)
+    RESISTOME_RESULTS(RESISTOME_RUN.out.class_resistome_counts.collect())
+    ch_multiqc_files = ch_multiqc_files.mix(RESISTOME_RESULTS.out.class_resistome_count_matrix)
 
     emit:
     versions      = ch_versions          // channel: [ versions.yml ]
