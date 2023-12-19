@@ -5,6 +5,8 @@ process RESISTOME_SNPVERIFY {
     input:
     tuple val(meta), path(bam)
     path(gene_count_matrix)
+    path(snp_config)
+    path(snp_verify)
 
     output:
     path("*SNP_confirmed_gene.tsv"), emit: snp_counts
@@ -17,7 +19,7 @@ process RESISTOME_SNPVERIFY {
         mv $bam ${prefix}.bam
     fi
 
-    python3 ./AmrPlusPlus_SNP/SNP_Verification.py -c config.ini -t $task.cpus -a true -i ${prefix}.bam -o ${prefix}.AMR_SNPs --count_matrix ${gene_count_matrix}
+    SNP_Verification.py -c $snp_config -t $task.cpus -a true -i ${prefix}.bam -o ${prefix}.AMR_SNPs --count_matrix ${gene_count_matrix}
 
     cut -d ',' -f `awk -v RS=',' "/${prefix}/{print NR; exit}" ${prefix}.AMR_SNPs${gene_count_matrix}` ${prefix}.AMR_SNPs${gene_count_matrix} > ${prefix}.AMR_SNP_count_col
 
