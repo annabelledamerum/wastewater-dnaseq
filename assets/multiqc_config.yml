@@ -9,6 +9,8 @@ report_section_order:
     after: composition_barplot
   individ_alpha_barchart:
     after: Diversity_Analysis
+  resistome_amr_composition:
+    before : top20genes_amr_composition
   "nf-core-taxprofiler-methods-description":
     order: -1000
   software_versions:
