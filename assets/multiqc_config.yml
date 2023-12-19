@@ -170,6 +170,12 @@ top_modules:
       target: "heatmap"
       path_filters:
         "*taxo_heatmap.csv"
+  - "resistome_stackedbar":
+      name: "Resistome Stacked Barplot"
+      anchor: "resistome_stackedbar"
+      target: "resistome_barplot"
+      path_filters:
+        - "class_resistomechart_mqc.json"
   - "malt":
       name: "MALT"
   - "diamond"

@@ -9,7 +9,10 @@ process RESISTOME_RUN {
 
     output:
     tuple val(meta), path("*resistome*.tsv"), emit: resistome_tsv
-    path("*.gene.tsv"), emit: resistome_counts
+    path("*gene.tsv"), emit: gene_resistome_counts
+    path("*group.tsv"), emit: group_resistome_counts
+    path("*mechanism.tsv"), emit: mechanism_resistome_counts
+    path("*class.tsv"), emit: class_resistome_counts
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
