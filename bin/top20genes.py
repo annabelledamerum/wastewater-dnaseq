@@ -22,7 +22,7 @@ def top20genes(resistome_results):
             "id": "top20genes_composition_bargraph",
             "title": "AMR Top 20 Gene composition (AMRplusplus)",
             "cpswitch_c_active": True,
-            "cpswitch_counts_label": "Read counts (Estimated)",
+            "cpswitch_counts_label": "Read counts",
             "cpswitch_percent_label": "Relative percentage"
             }
     }

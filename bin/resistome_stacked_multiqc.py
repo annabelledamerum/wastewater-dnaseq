@@ -22,7 +22,7 @@ def parse_resistome(resistome_results):
             "id": "resistome_composition_bargraph",
             "title": "AMR Class composition (AMRplusplus)",
             "cpswitch_c_active": True,
-            "cpswitch_counts_label": "Read counts (Estimated)",
+            "cpswitch_counts_label": "Read counts",
             "cpswitch_percent_label": "Relative percentage"
             }
     }
