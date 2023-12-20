@@ -9,8 +9,6 @@ report_section_order:
     after: composition_barplot
   individ_alpha_barchart:
     after: Diversity_Analysis
-  top20genes_amr_composition:
-    after: resistome_amr_composition
   "nf-core-taxprofiler-methods-description":
     order: -1000
   software_versions:
@@ -65,6 +63,12 @@ custom_data:
     section_name: "Beta Diversity"
     description: "This section displays the beta diversity of user and reference data, determined by the `Bray-Curtis` and `Jaccard` metrics. Click on the icon for each group in the legend to hide or reveal samples."
 
+  resistome_class_composition:
+    anchor: "resistome_amr_composition"
+   
+  top20_genes_composition:
+    anchor: "top20genes_amr_composition"
+
 module_order:
   - fastqc
   - adapterRemoval
@@ -99,6 +103,10 @@ sp:
     fn: "comparative_alpha_rarefaction_mqc.html"
   comparative_alpha_diversity:
     fn: "comparative_alpha_diversity_mqc.html"
+  resistome_class_composition:
+    fn:  "class_resistomechart_mqc.json"
+  top20_genes_composition:
+    fn: "genelevel_resistomechart_mqc.json"
   diamond:
     contents: "diamond v"
     num_lines: 10
@@ -172,12 +180,6 @@ top_modules:
       target: "heatmap"
       path_filters:
         "*taxo_heatmap.csv"
-  - "resistome_stackedbar":
-      name: "Resistome Stacked Barplot"
-      anchor: "resistome_stackedbar"
-      target: "resistome_barplot"
-      path_filters:
-        - "class_resistomechart_mqc.json"
   - "malt":
       name: "MALT"
   - "diamond"

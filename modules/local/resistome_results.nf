@@ -19,7 +19,7 @@ process RESISTOME_RESULTS {
     amr_long_to_wide.py -i $classes -o class_AMR_analytic_matrix.csv
     amr_long_to_wide.py -i $genes -o genes_AMR_analytic_matrix.csv
     amr_long_to_wide.py -i $mechanism -o mechanism_AMR_analytic_matrix.csv
-    resistome_stacked_multiqc.py class_AMR_analytic_matrix.csv
-    top20genes.py genes_AMR_analytic_matrix.csv
+    display_resistome_stacked_mqc.py class_AMR_analytic_matrix.csv
+    display_top20genes_mqc.py genes_AMR_analytic_matrix.csv
     """
 }
