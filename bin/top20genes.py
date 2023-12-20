@@ -40,10 +40,12 @@ def top20genes(resistome_results):
     AMRgene = AMRgene.reindex(AMRperc.index, axis=0)
     others = AMRgene.iloc[20:,:].sum(axis = 'rows')
     others.name = "Others"
+    others = pd.DataFrame(others).T
     AMRgene = AMRgene.iloc[:20,:]
-    AMRgene = pd.concat([AMRgene,pd.DataFrame(others)])
-
+    AMRgene = pd.concat([AMRgene,pd.DataFrame(others)], axis = 0)
     AMRgene_json = AMRgene.to_json()
+    AMRgene_parsed = json.loads(AMRgene_json)
+
     geneorder = list(AMRgene.index)
     colors = ['#a1c9f4','#b9f2f0','#ffb482','#cfcfcf','#fbafe4','#8de5a1','#029e73','#fab0e4','#949494','#ca9161','#d55e00','#d0bbff','#debb9b','#56b4e9','#0173b2','#de8f05','#ece133','#cc78bc','#ff9f9b', '#fffea3', '#999999']
     geneorder_dict = defaultdict()
@@ -51,7 +53,7 @@ def top20genes(resistome_results):
         geneorder_dict[gene] = {"color":color}
 
     genelevel_resistome_mqc["categories"] = geneorder_dict
-    genelevel_resistome_mqc["data"] = AMRgene_json
+    genelevel_resistome_mqc["data"] = AMRgene_parsed
     with open('genelevel_resistomechart_mqc.json', 'w') as ofh:
         json.dump(genelevel_resistome_mqc, ofh, indent=4)
 
