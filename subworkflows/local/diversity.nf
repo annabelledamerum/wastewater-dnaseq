@@ -9,6 +9,7 @@ include { QIIME_FILTER_SINGLETON_SAMPLE                 } from '../../modules/nf
 include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
 include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
+include { GROUP_COMPOSITION                             } from '../../modules/local/group_composition'
 include { HEATMAP_INPUT                                 } from '../../modules/local/heatmap_input'
 include { QIIME_ALPHADIVERSITY                          } from '../../modules/nf-core/qiime/alphadiversity/main'
 include { QIIME_BETAGROUPCOMPARE                        } from '../../modules/nf-core/qiime/beta_groupcompare/main'
@@ -24,7 +25,13 @@ workflow DIVERSITY {
     ch_versions             = Channel.empty()
     ch_multiqc_files        = Channel.empty()
     ch_output_file_paths    = Channel.empty()
+    ch_excel                = Channel.empty()
 
+
+    if(params.group_interest_composition){
+    	ch_excel = Channel.from([file(params.groupinterest.excel_path, checkIfExists: true)])
+    }
+ 
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
 
@@ -40,6 +47,9 @@ workflow DIVERSITY {
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime_composition_barplot/" + it.getName() }
         )
+
+    GROUP_COMPOSITION( ch_excel, QIIME_BARPLOT.out.genus, QIIME_BARPLOT.out.species )
+    ch_multiqc_files = ch_multiqc_files.mix( GROUP_COMPOSITION.out.groupinterest_compcsv.collect() )
 
     QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_collapsed_tsv )
 
