@@ -20,6 +20,9 @@ def execution_start():
         },
         'composition_barplots': {
             'fn': '*level-*.csv'
+        },
+        'interestgroup_comp': {
+            'fn': '*_groupinterest_comp.csv'
         }
     }
     fn_clean_exts = [

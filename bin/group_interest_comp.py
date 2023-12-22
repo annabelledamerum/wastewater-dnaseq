@@ -48,6 +48,7 @@ def group_interest_comp(excel, level6, level7):
             fullcsv.index = fullcsv["#OTU ID"]
             fullcsv = fullcsv.drop(columns = ["#OTU ID"])
 
+            sheet = re.sub(" ", "_", sheet)
             fullcsv.to_csv("./"+sheet+"_groupinterest_comp.csv")
 
 if __name__ == "__main__":
