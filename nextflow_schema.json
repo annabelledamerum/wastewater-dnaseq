@@ -838,6 +838,7 @@
                 "amr_index_files": {
                     "type": "string",
                     "description": "Path to files related to AMR analysis.",
+                    "default": "s3://aladdin-genomes/shotgun_reference/amrplusplus_ref/",
                     "hidden": true
                 }
             }
