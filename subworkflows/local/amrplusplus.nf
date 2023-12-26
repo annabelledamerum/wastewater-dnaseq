@@ -12,21 +12,26 @@ include { RESISTOME_SNPRESULTS                       } from '../../modules/local
 workflow AMRPLUSPLUS {
     take:
     reads // [ [ meta ], readfiles ]
+    amr_file_path
 
     main:
     ch_versions             = Channel.empty()
     ch_bwa_bam_output       = Channel.empty()
     ch_multiqc_files        = Channel.empty()
 
-    snp_config = Channel.from(file(params.amr_SNP_config, checkIfExists: true))
-    ch_snpverify_dataset = Channel.from([file(params.amr_SNP_verification_database, checkIfExists: true)])
+    // Prepare various AMR files
+    index_files = Channel.fromPath(amr_file_path, checkIfExists:true)
+    amr_fasta = Channel.fromPath("${amr_file_path}/megares_database_v3.00.fasta", checkIfExists:true)
+    amr_annotation = Channel.fromPath("${amr_file_path}/megares_annotations_v3.00.csv", checkIfExists:true)
+    snp_config = Channel.fromPath("${amr_file_path}/config.ini", checkIfExists:true)
+    ch_snpverify_dataset = Channel.fromPath("${amr_file_path}/SNP_verification/*{.csv,.fasta}", checkIfExists:true)
 
-    BWA_ALIGN(params.amr_index_files, params.amr_index_name, reads)
+    BWA_ALIGN(params.amr_index_files, reads)
     ch_bwa_bam_output = ch_bwa_bam_output.mix(
         BWA_ALIGN.out.bwa_bam
     )
     ch_versions = ch_versions.mix( BWA_ALIGN.out.versions )
-    RESISTOME_RUN(BWA_ALIGN.out.bwa_bam, params.amr_fasta, params.amr_annotation)
+    RESISTOME_RUN(BWA_ALIGN.out.bwa_bam, amr_fasta, amr_annotation)
     RESISTOME_RESULTS(RESISTOME_RUN.out.class_resistome_counts.collect(), RESISTOME_RUN.out.gene_resistome_counts.collect(), RESISTOME_RUN.out.mechanism_resistome_counts.collect(), RESISTOME_RUN.out.group_resistome_counts.collect() )
     ch_multiqc_files = ch_multiqc_files.mix(RESISTOME_RESULTS.out.class_resistome_count_matrix, RESISTOME_RESULTS.out.top20_genelevel_resistome)
     RESISTOME_SNPVERIFY( BWA_ALIGN.out.bwa_bam, RESISTOME_RESULTS.out.gene_count_matrix.collect(), snp_config.collect(), ch_snpverify_dataset.collect())   

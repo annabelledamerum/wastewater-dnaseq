@@ -261,7 +261,7 @@ workflow TAXPROFILER {
         SUBWORKFLOW: AMR PLUS PLUS 
     */ 
     if ( params.run_amr ) {
-    	AMRPLUSPLUS(ch_reads_runmerged)
+    	AMRPLUSPLUS(ch_reads_runmerged, params.amr_index_files)
         ch_versions = ch_versions.mix( AMRPLUSPLUS.out.versions )
         ch_multiqc_files = ch_multiqc_files.mix( AMRPLUSPLUS.out.multiqc_files.collect().ifEmpty([]) )
     }
