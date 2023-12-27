@@ -4,7 +4,6 @@ process BWA_ALIGN {
 
     input:
     path ref_index_files
-    val ref_name
     tuple val(meta), path(input)
 
     output:

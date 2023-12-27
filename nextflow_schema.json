@@ -817,7 +817,7 @@
                 }
             }
         },
-        "amr_options:": {
+        "amr_options": {
             "title": "AMR analysis options",
             "type": "object",
             "description": "Options related to AMR analysis.",
