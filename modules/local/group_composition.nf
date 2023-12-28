@@ -2,14 +2,14 @@ process GROUP_COMPOSITION {
 
     input:
     path excel
-    path genus
-    path species 
+    path compositions
 
     output:
-    path('*_groupinterest_comp.csv'), emit: groupinterest_compcsv
+    path('*_groupinterest_comp.csv'), optional: true, emit: compcsv
+    path('Groups_of_interest.xlsx'), optional: true, emit: search_results
 
     script:
     """
-    group_interest_comp.py -e $excel -g $genus -s $species
+    group_interest_comp.py -i $excel -c level-7.csv
     """
 }

@@ -2,59 +2,47 @@
 import pandas as pd
 import argparse
 import re
-import json
 
-#the following function takes in all taxonomy files and create a non-redundant taxonomy file
-def group_interest_comp(excel, level6, level7):
-    genuscsv = pd.read_csv(level6)
-    speciescsv = pd.read_csv(level7)
+def group_interest_comp(interest, comp_file):
 
-    #For every row in genus csv and species csv, shave OTU ID down to genus
-    for place in genuscsv.index:
-        genus = re.search(r'g__(.*)', genuscsv["#OTU ID"][place])
-        genus = genus.group(1)
-        genuscsv.at[place, "#OTU ID"] = genus
+    valid_levels = ["domain", "phylum", "class", "order", "family", "genus", "species"]
 
-    for place in speciescsv.index:
-        searchterm = re.search(r'g__(.*);s__(.*)', speciescsv["#OTU ID"][place])
-        species = searchterm.group(2)
-        speciescsv.at[place, "#OTU ID"] = species
+    # Read in the group of interest EXCEL file first
+    groups = pd.read_excel(interest, sheet_name=None)
+    compositions = pd.read_csv(comp_file, index_col=0)
 
-    with pd.ExcelFile(excel) as xls:
-        sheetnames = xls.sheet_names
-
-        for sheet,num in zip(sheetnames, range(1,len(sheetnames))):
-            df = pd.read_excel(xls, sheet)
-            df = df[["ID", "type"]]
-            #for every sheet, place genus specific selections and species specific selections into a list
-            genuslist = df[df["type"] == "genus"]
-            genuslist = list(genuslist["ID"])
-            specieslist = df[df["type"] == "species"]
-            specieslist = list(specieslist["ID"]) 
-
-            genuslist = '|'.join(genuslist)
-            specieslist = '|'.join(specieslist)
-             
-            if genuslist=="":
-                csvhalf1_genus = genuscsv.iloc[:0,:].copy()
+    with pd.ExcelWriter("Groups_of_interest.xlsx") as fh:
+        # Iterate through each category
+        for sheet_name, df in groups.items():
+            all_results = []
+            # Iterate through each item
+            for idx, row in df.iterrows():
+                lvl = row["type"].lower()
+                if lvl in valid_levels:
+                    search_term = lvl[0] + '__' + row["ID"]
+                    if isinstance(row["Other_name"],str):
+                        names = row["Other_name"].split(';')
+                        for n in names:
+                            search_term += "|" + lvl[0] + '__' + n
+                    search_result = compositions[compositions.index.str.contains(search_term, case=False)].copy()
+                    if len(search_result):
+                        search_result["Matching_ID"] = row["ID"]
+                        all_results.append(search_result)
+                else:
+                    print("{} is not a recognized taxonomy level in {}. Skipped.".format(lvl, sheet_name))
+            # Output detail matches to a EXCEL sheet and sum by entries to a CSV file if anything was found
+            if len(all_results):
+                df = pd.concat(all_results)
+                df.to_excel(fh, sheet_name)
+                df = df.groupby("Matching_ID").sum()
+                sheet_name = re.sub(r"\s+", "_", sheet_name)
+                df.to_csv(sheet_name+"_groupinterest_comp.csv")
             else:
-                csvhalf1_genus = genuscsv[genuscsv["#OTU ID"].str.contains(genuslist)]
-            if specieslist =="":
-                csvhalf2_species = speciescsv.iloc[:0,:].copy()
-            else:
-                csvhalf2_species = speciescsv[speciescsv["#OTU ID"].str.contains(specieslist)]
-
-            fullcsv = pd.concat([csvhalf1_genus,csvhalf2_species], axis = 0)
-            fullcsv.index = fullcsv["#OTU ID"]
-            fullcsv = fullcsv.drop(columns = ["#OTU ID"])
-
-            sheet = re.sub(" ", "_", sheet)
-            fullcsv.to_csv("./"+sheet+"_groupinterest_comp.csv")
+                print("No reads were detected for any entry in the category {}".format(sheet_name))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="""Tally genus and species composition within groups of interest""")
-    parser.add_argument("-e", "--excel", dest="excel", type=str, help="excel file containing specified species and genus. Can have multiple tabs for multiple groups")
-    parser.add_argument("-g", "--genus", dest="level6", type=str, help="genus percentage count file")
-    parser.add_argument("-s", "--species", dest="level7", type=str, help="species percentage count file")
+    parser = argparse.ArgumentParser(description="""Tally composition within groups of interest""")
+    parser.add_argument("-i", "--interest", dest="interest", type=str, required=True, help="EXCEL file containing specified taxa of interests. Can have multiple tabs for multiple groups")
+    parser.add_argument("-c", "--composition", dest="comp_file", type=str, required=True, help="Qiime composition file at the species level")
     args = parser.parse_args()
-    group_interest_comp(args.excel, args.level6, args.level7)
+    group_interest_comp(args.interest, args.comp_file)

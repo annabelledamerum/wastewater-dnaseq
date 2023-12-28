@@ -28,10 +28,6 @@ workflow DIVERSITY {
     ch_excel                = Channel.empty()
 
 
-    if(params.group_interest_composition){
-    	ch_excel = Channel.from([file(params.groupinterest.excel_path, checkIfExists: true)])
-    }
- 
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
 
@@ -47,9 +43,15 @@ workflow DIVERSITY {
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime_composition_barplot/" + it.getName() }
         )
-
-    GROUP_COMPOSITION( ch_excel, QIIME_BARPLOT.out.genus, QIIME_BARPLOT.out.species )
-    ch_multiqc_files = ch_multiqc_files.mix( GROUP_COMPOSITION.out.groupinterest_compcsv.collect() )
+    
+    if (params.group_of_interest != 'NONE') {
+    	ch_excel = Channel.fromPath(params.groupinterest[params.group_of_interest].excel_path, checkIfExists: true)
+        GROUP_COMPOSITION( ch_excel, QIIME_BARPLOT.out.barplot_composition.collect() )
+        ch_multiqc_files = ch_multiqc_files.mix( GROUP_COMPOSITION.out.compcsv.collect() )
+        ch_output_file_paths = ch_output_file_paths.mix(
+            GROUP_COMPOSITION.out.search_results.map { "${params.outdir}/groups_of_interest/" + it.getName() }
+            )
+    }
 
     QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_collapsed_tsv )
 

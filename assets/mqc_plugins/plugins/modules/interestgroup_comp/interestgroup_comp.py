@@ -8,9 +8,9 @@ from multiqc import config
 from multiqc.plots import bargraph
 from multiqc.modules.base_module import BaseMultiqcModule
 import pandas as pd
-import numpy as np
+import seaborn as sns
+import random
 from collections import OrderedDict
-import os
 
 # Initialise the main MultiQC logger
 log = logging.getLogger("multiqc")
@@ -23,7 +23,7 @@ class MultiqcModule(BaseMultiqcModule):
 
         # Initialise the parent module Class object
         super(MultiqcModule, self).__init__(
-            name="Genus and Species Composition of Groups of Interest", target="", anchor="interestgroup_charts"
+            name="Abundances of Groups of Interest", target="", anchor="interestgroup_charts"
         )
 
         self.data_dict = dict()
@@ -34,7 +34,7 @@ class MultiqcModule(BaseMultiqcModule):
             # Parse the data file
             parsed_data = pd.read_csv(f["f"], sep=",", index_col=0)
             if parsed_data is not None:
-                self.data_dict[f["fn"]] = parsed_data
+                self.data_dict[f["fn"].replace("_groupinterest_comp.csv", "")] = parsed_data
             else:
                 log.debug("Could not parse interest group composition data in {}".format(f["fn"]))
                 raise UserWarning
@@ -55,24 +55,27 @@ class MultiqcModule(BaseMultiqcModule):
 
         pconfig = {
             "id": "interestgroup_composition_bargraph",
-            "title": "Genus and Species Composition in Groups of Interest",
+            "title": "Abundances of Groups of Interest",
             "cpswitch": False,
             "cpswitch_c_active": False,
             "yDecimals": True,
             "ymax": 100,
             "ymin": 0,
+            "xlab": "Samples",
+            "ylab": "Percentage",
             "tt_decimals": 2,
             "tt_percentages": False,
+            "tt_suffix": "%",
             "data_labels" : []
         }
 
         cats = []
 
-        for filename, data in self.data_dict.items():
+        for category_name, data in self.data_dict.items():
             color = ['#a1c9f4','#b9f2f0','#ffb482','#cfcfcf','#fbafe4','#8de5a1','#029e73','#fab0e4','#949494','#ca9161','#d55e00','#d0bbff','#debb9b','#56b4e9','#0173b2','#de8f05','#ece133','#cc78bc','#ff9f9b', '#fffea3']
             if len(data)>0:
                 data_todict = data.to_dict()
-                pconfig["data_labels"].append(filename)
+                pconfig["data_labels"].append(category_name)
                 datalist.append(data_todict)
                 #Settings for colors
                 if len(data) > 20:
@@ -81,11 +84,8 @@ class MultiqcModule(BaseMultiqcModule):
                     color = color + color_21
                 else:
                     color = color[0:len(data)]
-                    print(len(data))
-                    print(data)
-                    print(color)
-                    full_datacolor = pd.DataFrame(index=data.index)
-                    full_datacolor['color'] = color
+                full_datacolor = pd.DataFrame(index=data.index)
+                full_datacolor['color'] = color
 
                 cats.append(full_datacolor.to_dict('index'))
 
@@ -93,9 +93,9 @@ class MultiqcModule(BaseMultiqcModule):
 
         self.add_section(
             name=" ",
-            description="This plot depicts the composition of groups defined by a user provided list. "
-            "Each group contains data on the percentage composition of genus and species within the group. "
-            "detected in each shotgun sample. Different genus and species counts are demarcated by "
-            "different colored bars. All other taxonomy not under the group are labeled as 'Other' .",
+            description=("This plot depicts the abundances of groups of taxa of interest defined by a user provided list. "
+            "Each tab plots the abundances of specific taxa of interest in each group detected in all samples. "
+            "The abundances are in percentages of reads among all microbial reads with assigned taxonomy. "
+            "If a group of interest is not listed here, it means no read of that group was detected in any sample."),
             plot = html_content
         )

@@ -11,8 +11,6 @@ process QIIME_BARPLOT {
     output:
     path('*exported_QIIME_barplot/*')           , emit: barplot_export
     path('*exported_QIIME_barplot/*.csv')       , emit: barplot_composition
-    path('*exported_QIIME_barplot/level-6.csv') , emit: genus
-    path('*exported_QIIME_barplot/level-7.csv') , emit: species
     path('allsamples_compbarplot.qzv')          , emit: qzv
     path "versions.yml"                         , emit: versions
 
