@@ -88,6 +88,7 @@ module_order:
   - motus
   - custom_content
   - composition_barplots
+  - interestgroup_comp
   - plot_heatmap
 
 sp:
@@ -174,6 +175,9 @@ top_modules:
       target: "Barplot"
       path_filters:
         - "*level-*.csv"
+  - "interestgroup_comp":
+      path_filters:
+        - "*_groupinterest_comp.csv"
   - "plot_heatmap":
       name: "Taxonomy Abundance Heatmap"
       anchor: "heatmap"

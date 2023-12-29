@@ -119,7 +119,7 @@ class MultiqcModule(BaseMultiqcModule):
                 'ymax': 100,
                 'labelSize': 8,
                 'tt_decimals': 3,
-                'tt_suffix': '',
+                'tt_suffix': '%',
                 'tt_percentages': False,
                 'height': 1024
                 }
