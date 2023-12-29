@@ -25,7 +25,7 @@
                 "database": {
                     "type": "string",
                     "description": "Select the reference database and the tool you would like to use for taxonomic profiling. Your choice will dictate the ranking and nomenclature of the taxonomy profile. We provide several popular reference databases to choose from, but recommend the sourmash-compatible database from Zymo Research.",
-                    "enum": ["sourmash-zymo", "metaphlan4-db", "sourmash-zymo-dev"],
+                    "enum": ["sourmash-zymo", "metaphlan4-db"],
                     "default": "sourmash-zymo"
                 },
                 "outdir": {
@@ -816,6 +816,32 @@
                     "enum": ["Aladdin-healthy_gut"]
                 }
             }
+        },
+        "amr_options": {
+            "title": "AMR analysis options",
+            "type": "object",
+            "description": "Options related to AMR analysis.",
+            "properties": {
+                "run_amr": {
+                    "type": "boolean",
+                    "description": "Whether or not to conducat analysis for antimicrobial resistance genes.",
+                    "default": false
+                },
+                "resistome_threshold": {
+                    "type": "number",
+                    "description": "The minimum proportion of nucleotides that have aligned reads to for any AMR gene to be reported.",
+                    "default": 0.8,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "advanced": true
+                },
+                "amr_index_files": {
+                    "type": "string",
+                    "description": "Path to files related to AMR analysis.",
+                    "default": "s3://aladdin-genomes/shotgun_reference/amrplusplus_ref/",
+                    "hidden": true
+                }
+            }
         }
     },
     "allOf": [
@@ -854,6 +880,9 @@
         },
         {
             "$ref": "#/definitions/reference_dataset_comparison_options"
+        },
+        {
+            "$ref": "#/definitions/amr_options"
         }
     ]
 }

@@ -27,7 +27,7 @@ process RESISTOME_RUN {
         -mech_fp ${prefix}.resistome.mechanism.tsv \
         -class_fp ${prefix}.resistome.class.tsv \
         -type_fp ${prefix}.resistome.type.tsv \
-        -t ${params.threshold}
+        -t ${params.resistome_threshold}
 
     rm ${prefix}.sam
     """
