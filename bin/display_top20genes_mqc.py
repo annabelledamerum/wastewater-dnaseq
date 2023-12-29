@@ -1,20 +1,17 @@
 #!/usr/bin/env python
 import argparse
 import pandas as pd
-import re
 import json
 from collections import defaultdict
-import seaborn as sns
-import random
 
 def top20genes(resistome_results):
     genelevel_resistome_mqc = {
         "id": "top20_genes_composition",
         "section_name": "Top 20 Genes Composition of Each Sample (AMRplusplus)",
-        "description": ("This plot depicts the composition of genes identified by "
+        "description": ("This plot depicts the composition of reads of antimicrobial resistance genes identified by "
             "<a href='https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master'>AMRplusplus</a>. "
-            "It includes counts of anti-microbial resistant genes detected in each shotgun sample. "
-            "The top 20 mean percentage genes among all samples are demarcated by different colored bars. All other genes are labeled as 'Other' ."
+            "It highlights the top 20 genes by mean relative abundance among all AMR genes. "
+            "All other genes are labeled as 'Other' ."
             ),
         "plot_type": "bargraph",
         "anchor": "top20genes_amr_composition",
