@@ -9,10 +9,10 @@ process QIIME_BARPLOT {
     path(metadata)
 
     output:
-    path('*exported_QIIME_barplot/*')           , emit: barplot_export
-    path('*exported_QIIME_barplot/*.csv')       , emit: barplot_composition
-    path('allsamples_compbarplot.qzv')          , emit: qzv
-    path "versions.yml"                         , emit: versions
+    path('*exported_QIIME_barplot/*')     , emit: barplot_export
+    path('*exported_QIIME_barplot/*.csv') , emit: barplot_composition
+    path('allsamples_compbarplot.qzv')    , emit: qzv
+    path "versions.yml"                   , emit: versions
 
     script:   
     """
