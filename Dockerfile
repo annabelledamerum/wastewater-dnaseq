@@ -1,6 +1,6 @@
 FROM python:3.8-slim
 
-RUN apt-get update && apt install -y procps g++ && apt-get clean
+RUN apt-get update && apt install -y procps g++ bwa samtools && apt-get clean
 
 WORKDIR /opt/analysis
 
