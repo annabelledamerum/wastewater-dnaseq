@@ -62,7 +62,7 @@ class MultiqcModule(BaseMultiqcModule):
             "ymax": 100,
             "ymin": 0,
             "xlab": "Samples",
-            "ylab": "Percentage",
+            "ylab": "Percentages",
             "tt_decimals": 2,
             "tt_percentages": False,
             "tt_suffix": "%",
@@ -75,7 +75,7 @@ class MultiqcModule(BaseMultiqcModule):
             color = ['#a1c9f4','#b9f2f0','#ffb482','#cfcfcf','#fbafe4','#8de5a1','#029e73','#fab0e4','#949494','#ca9161','#d55e00','#d0bbff','#debb9b','#56b4e9','#0173b2','#de8f05','#ece133','#cc78bc','#ff9f9b', '#fffea3']
             if len(data)>0:
                 data_todict = data.to_dict()
-                pconfig["data_labels"].append(category_name)
+                pconfig["data_labels"].append({"name":category_name, "ylab":"Percentages"})
                 datalist.append(data_todict)
                 #Settings for colors
                 if len(data) > 20:

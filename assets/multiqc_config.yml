@@ -166,9 +166,6 @@ top_modules:
       path_filters:
         - "*level-*.csv"
   - "interestgroup_comp":
-      name: "Interest Group Composition Barplots"
-      anchor: "interestgroup_composition"
-      target: "Interestgroup_barplot"
       path_filters:
         - "*_groupinterest_comp.csv"
   - "plot_heatmap":
