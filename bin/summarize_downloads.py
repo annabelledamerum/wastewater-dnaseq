@@ -53,7 +53,11 @@ def summarize_downloads(locations, design):
         'jaccard_distance_matrix-group.qzv'    : ('Beta Diversity Comparison between Groups by Jaccard Distance', 'all_samples'), 
         'bray_curtis_distance_matrix-group.qzv': ('Beta Diversity Comparison between Groups by Bray-Curtis Distance', 'all_samples'),
         # groups of interest
-        'Groups_of_interest.xlsx': ('Detailed abundances among groups of interest', 'all_samples') 
+        'Groups_of_interest.xlsx': ('Detailed abundances among groups of interest', 'all_samples'),
+        # AMR plus plus results
+        'class_AMR_analytic_matrix.csv':     ('AMR Class Level Counts Results Across Samples', 'all_samples'),
+        'mechanism_AMR_analytic_matrix.csv': ('AMR Mechanism Level Counts Results Across Samples', 'all_samples'),
+        'genes_AMR_analytic_matrix.csv':      ('AMR Gene Level Counts Results Across Samples', 'all_samples')
     }
 
     # Read the file locations
