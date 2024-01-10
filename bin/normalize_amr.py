@@ -22,7 +22,6 @@ def normalize_amr(rawcounts, flagstats):
         cat_name = re.sub("_rawcounts_AMR_analytic_matrix.csv", "", cat_type)
         count_df = pd.read_csv(cat_type, index_col = "gene_accession")
         count_df = count_df.reindex(sorted(count_df.columns), axis=1)
-        print(totalcountstable)
         for sample in count_df.columns:
             count_df[sample] = (count_df[sample]/totalcountstable.loc[0,sample])*1000000
         count_df.to_csv(cat_name+"_normalized_AMR_analytic_matrix.csv")
