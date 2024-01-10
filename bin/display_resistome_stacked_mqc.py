@@ -10,7 +10,7 @@ def parse_resistome(resistome_results):
         "section_name": "Resistome composition (AMRplusplus)",
         "description": ("This plot depicts the composition of reads of antimicrobial resistance gene classes identified (or not) by "
             "<a href='https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master'>AMRplusplus</a>. "
-            "Reads have been normalized to counts per one million reads passing trimming filters for each sample."
+            "Read counts have been normalized to counts per one million reads that passed trimming filters for each sample."
             "This plot includes counts of anti-microbial resistant gene classes detected in each shotgun sample. "
             "Each class contains multiple genes. The plotted read counts are the sum of read counts of all genes in that class. "
             "For gene level data, please refer to downloadable table gene_AMR_analytic_matrix. "
