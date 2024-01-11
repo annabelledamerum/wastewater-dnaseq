@@ -14,9 +14,14 @@ def normalize_amr(rawcounts, flagstats):
          with open(sample, "r") as sampleinfo:
              infotext = sampleinfo.read()
              #extract # of properly paired reads from FASTQ samtools flagstat file
-             properly_paired = re.search("(\d+) \+ \d+ paired in sequencing\n", infotext)
-             properly_paired_num = int(properly_paired.group(1))/2
-             totalcountstable.insert(len(totalcountstable.columns), samplename, [properly_paired_num])
+             flagstat_total = re.search("(\d+) \+ \d+ in total", infotext)
+             flagstat_secondary = re.search("(\d+) \+ \d+ secondary", infotext)
+             flagstat_supplementary = re.search("(\d+) \+ \d+ supplementary", infotext)
+             total_num = int(flagstat_total.group(1))
+             secondary_num = int(flagstat_secondary.group(1))
+             supplementary_num = int(flagstat_supplementary.group(1))
+             total_reads = (total_num - secondary_num - supplementary_num)/2
+             totalcountstable.insert(len(totalcountstable.columns), samplename, [total_reads])
 
     totalcountstable = totalcountstable.reindex(sorted(totalcountstable.columns), axis=1)
     for cat_type in rawcounts:
