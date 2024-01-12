@@ -22,7 +22,6 @@ process BWA_ALIGN {
     rm ${prefix}_alignment.bam     
     samtools flagstat ${prefix}_alignment_sorted.bam > ${prefix}_flagstat.txt
 
-
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bwa: \$(echo \$(bwa 2>&1) | sed 's/^.*Version: //; s/Contact:.*\$//')

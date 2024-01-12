@@ -11,7 +11,8 @@ def top20genes(resistome_results):
         "description": ("This plot depicts the composition of reads of antimicrobial resistance genes identified by "
             "<a href='https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master'>AMRplusplus</a>. "
             "It highlights the top 20 genes by mean relative abundance among all AMR genes. "
-            "Read counts have been normalized to counts per one million reads that passed trimming filters for each sample."
+            "Antimicrobial resistance analysis is currently only supported for paired end samples and single end samples will not appear in the below plot. "
+            "Read counts have been normalized to counts per one million reads that passed trimming filters for each sample. "
             "All other genes are labeled as 'Other'."
             ),
         "plot_type": "bargraph",

@@ -20,7 +20,7 @@ def normalize_amr(rawcounts, flagstats):
              total_num = int(flagstat_total.group(1))
              secondary_num = int(flagstat_secondary.group(1))
              supplementary_num = int(flagstat_supplementary.group(1))
-             total_reads = (total_num - secondary_num - supplementary_num)/2
+             total_reads = (total_num - secondary_num - supplementary_num)
              totalcountstable.insert(len(totalcountstable.columns), samplename, [total_reads])
 
     totalcountstable = totalcountstable.reindex(sorted(totalcountstable.columns), axis=1)
