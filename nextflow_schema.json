@@ -830,7 +830,7 @@
             "properties": {
                 "run_amr": {
                     "type": "boolean",
-                    "description": "Whether or not to conducat analysis for antimicrobial resistance genes.",
+                    "description": "Whether or not to conduct analysis for antimicrobial resistance genes. This option is supported for paired end samples only.",
                     "default": false
                 },
                 "resistome_threshold": {

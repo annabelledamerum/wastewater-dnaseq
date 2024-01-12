@@ -33,7 +33,11 @@ workflow AMRPLUSPLUS {
     )
     ch_versions = ch_versions.mix( BWA_ALIGN.out.versions )
     RESISTOME_RUN(BWA_ALIGN.out.bwa_bam, amr_fasta.collect(), amr_annotation.collect())
-    RESISTOME_RESULTS(RESISTOME_RUN.out.class_resistome_counts.collect(), RESISTOME_RUN.out.gene_resistome_counts.collect(), RESISTOME_RUN.out.mechanism_resistome_counts.collect(), RESISTOME_RUN.out.group_resistome_counts.collect() )
+    RESISTOME_RESULTS(RESISTOME_RUN.out.class_resistome_counts.collect(), 
+        RESISTOME_RUN.out.gene_resistome_counts.collect(), 
+        RESISTOME_RUN.out.mechanism_resistome_counts.collect(), 
+        RESISTOME_RUN.out.group_resistome_counts.collect(),
+        BWA_ALIGN.out.bam_flagstats.collect() )
     ch_output_file_paths = ch_output_file_paths.mix( RESISTOME_RESULTS.out.class_count_matrix, RESISTOME_RESULTS.out.mechanism_count_matrix, RESISTOME_RESULTS.out.gene_count_matrix)
     ch_output_file_paths = ch_output_file_paths.map{ "${params.outdir}/resistome_results/" + it.getName() }
     ch_multiqc_files = ch_multiqc_files.mix(RESISTOME_RESULTS.out.class_resistome_count_matrix, RESISTOME_RESULTS.out.top20_genelevel_resistome)

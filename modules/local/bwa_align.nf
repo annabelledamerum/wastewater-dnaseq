@@ -9,6 +9,7 @@ process BWA_ALIGN {
     output:
     tuple val(meta), path("*_alignment_sorted.bam"), emit: bwa_bam
     tuple val(meta), path("*_alignment_dedup.bam"), emit: bwa_dedup_bam, optional: true
+    path("*_flagstat.txt"), emit: bam_flagstats
     path "versions.yml", emit: versions
 
     script:
@@ -19,6 +20,7 @@ process BWA_ALIGN {
     rm ${prefix}_alignment.sam
     samtools sort -@ $task.cpus -n ${prefix}_alignment.bam -o ${prefix}_alignment_sorted.bam
     rm ${prefix}_alignment.bam     
+    samtools flagstat ${prefix}_alignment_sorted.bam > ${prefix}_flagstat.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
