@@ -1,15 +1,16 @@
 ## Introduction
 
 This is a bioinformatics analysis pipeline used for shotgun metagenomic data developed at Zymo Research. This pipeline was adpated from community-developed [nf-core/taxprofiler](https://github.com/nf-core/taxprofiler) pipeline version 1.0.0. Many changes were made to the original pipeline. Some are based on our experience or preferences. But more importatntly, we want to make the pipeline and its results easier to use/understand by people without bioinformatics experience. People can run the pipeline on the point-and-click bioinformatics platform [Aladdin Bioinformatics](https://www.aladdin101.org). Changes include but are not limited to:
-* Changed the behavior of pipeline so that user choose one taxonomy profiler instead of running all available taxonomy profilers. We found that some of the profilers have worse performances or outdated databases. We have diabled those profilers temporarily, but kept the code to run them, with a plan to add them if necessary. This is a philosophical change, we believe this approach offers simplicity and avoids confusion for researchers.
-* Added [sourmash](https://github.com/sourmash-bio/sourmash) as the prefered taxonomy profiler.
-* Added a Zymo version of sourmash database that include common host genomes so that host removal step does not need to be run anymore.
+* Changed the behavior of pipeline so that the user may choose one taxonomy profiler instead of running all available taxonomy profilers. We found that some of the profilers have worse performances or outdated databases. We have disabled those profilers temporarily, but kept the code to run them, with a plan to add them if necessary. This is a philosophical change, we believe this approach offers simplicity and avoids confusion for researchers.
+* Added [sourmash](https://github.com/sourmash-bio/sourmash) as the preferred taxonomy profiler.
+* Added a Zymo version of the sourmash database that includes common host genomes so that host removal step does not need to be run anymore.
 * Upgraded MetaPhlAn3 to MetaPhlAn4.
+* Added antimicrobial resistance analysis with [AMRplusplus](https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master).
 * Added visualizations of sourmash and MetaPhlAn4 results to the report.
 * Added diversity analysis using [Qiime2](https://qiime2.org/) and corresponding visualizations to the report.
 * Fixed, simplified, and improved the report.
 * Made the pipeline more resistant to bad samples, so that they don't stop the processing of others.
-* Added a function to compare to reference datasets that are already processed, so that user can quickly assess similarity of their samples to well curated samples of known phenotype, e.g. healthy/disease. This function is still experimental. 
+* Added a function to compare sample results to reference datasets that are already processed, so that user can quickly assess similarity of their samples to well curated samples of known phenotype, e.g. healthy/disease. This function is still experimental. 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
 
@@ -23,12 +24,15 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
    - Host-read removal (short-read: [BowTie2](http://bowtie-bio.sourceforge.net/bowtie2/); long-read: [Minimap2](https://github.com/lh3/minimap2)). This is not performed when `sourmash-zymo` is selected as the database because it already contains host sequences. 
    - Statistics for host-read removal ([Samtools](http://www.htslib.org/))
 4. Run merging when applicable
-5. Performs taxonomic profiling using one of: (*nf-core/taxprofiler has more choices for this step, if there are tools you'd like for this step, please let us know.*)
+5. Identifies antimicrobial resistance genes in samples from database [MEGARes version 3](https://academic.oup.com/nar/article/51/D1/D744/6830666)
+   - Reads are aligned to MEGARes reference ([bwa mem](https://bio-bwa.sourceforge.net/bwa.shtml))
+   - Resistome statistics are quantified and compiled for each sample ([AMRplusplus](https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master))
+7. Performs taxonomic profiling using one of: (*nf-core/taxprofiler has more choices for this step, if there are tools you'd like for this step, please let us know.*)
    - [sourmash](https://github.com/sourmash-bio/sourmash)
    - [MetaPhlAn4](https://huttenhower.sph.harvard.edu/metaphlan/)
-6. Merge all taxonomic profiling results into one table and perform alpha/beta diversity analysis ([Qiime2](https://qiime2.org/)).
-7. Compare user samples with already profiled reference datasets ([Qiime2](https://qiime2.org/))
-8. Present all results in above steps in a report ([`MultiQC`](http://multiqc.info/))
+8. Merge all taxonomic profiling results into one table and perform alpha/beta diversity analysis ([Qiime2](https://qiime2.org/)).
+9. Compare user samples with already profiled reference datasets ([Qiime2](https://qiime2.org/))
+10. Present all results in above steps in a report ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 
@@ -46,6 +50,7 @@ nextflow run Zymo-Research/aladdin-shotgun \
     -profile awsbatch \
     --design "<path to design CSV file>" \
     --database sourmash-zymo \
+    --run_amr true \
     -work-dir "<work dir on S3>" \
     --awsregion "<AWS Batch region> \
     --awsqueue "<SQS ARN>" \
@@ -68,9 +73,10 @@ sample3,s3_run1_R1.fastq.gz,s3_run1_R2.fastq.gz,groupB,,
    - The column "group" contains the group name/label for comparison purposes in the diversity analysis. If you don't have/need this information, simply leave the column empty, but this column must be present regardless. Same rules for legal characters of sample names apply here too. 
    - The column "run_accesssion" is optional. It is only required when there are duplicates in the "sample" column. This is to mark different run names for the sample. 
 2. The parameter `--database` is used to change taxonomy profiler and database. It has a default value 'sourmash-zymo'. You can skip this if you don't want to change it.
-3. The parameters `--awsregion`, `--awsqueue`, `-work-dir`, and `--outdir` are required when running on AWS Batch, the latter two must be directories on S3.
-4. The parameter `-r` will run a specific release of the pipeline. If not specified, it will run the the `main` branch instead.
-5. The parameter `-name` will define the title of the MultiQC report.
+3. The parameter `--run_amr` is used to run antimicrobial resistance analysis. This parameter is by default false. If you wish to skip this analysis, remove `--run_amr` from the command line.
+4. The parameters `--awsregion`, `--awsqueue`, `-work-dir`, and `--outdir` are required when running on AWS Batch, the latter two must be directories on S3.
+5. The parameter `-r` will run a specific release of the pipeline. If not specified, it will run the the `main` branch instead.
+6. The parameter `-name` will define the title of the MultiQC report.
 
 There are many other options built in the pipeline to customize your run and handle specific situations, please refer to the [Usage Documentation](docs/usage.md).
 
