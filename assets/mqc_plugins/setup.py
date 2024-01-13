@@ -18,7 +18,8 @@ setup(
         ],
         'multiqc.modules.v1': [
             'plot_heatmap = plugins.modules.plot_heatmap:MultiqcModule',
-            'composition_barplots = plugins.modules.composition_barplots:MultiqcModule'
+            'composition_barplots = plugins.modules.composition_barplots:MultiqcModule',
+            'interestgroup_comp = plugins.modules.interestgroup_comp:MultiqcModule'
         ],
         'multiqc.hooks.v1': [
             'before_config = plugins.utils.hooks:before_config',

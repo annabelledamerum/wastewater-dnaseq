@@ -1,5 +1,11 @@
 # aladdin-shotgun: Changelog
 
+## v0.0.6
+
+### `Added`
+- Added antimicrobial resistance genes with AMRplusplus.
+- An experimental function to highlight the abundance of taxa of interest. The first experimental organism list is wastewater related organisms obtained from LA County Sanitation District. 
+
 ## v0.0.5
 
 ### `Changed`

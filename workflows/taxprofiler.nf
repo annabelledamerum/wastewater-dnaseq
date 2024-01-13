@@ -88,6 +88,7 @@ include { DIVERSITY                     } from '../subworkflows/local/diversity'
 include { REFMERGE_DIVERSITY            } from '../subworkflows/local/refmerge_diversity'
 include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
+include { AMRPLUSPLUS                   } from '../subworkflows/local/amrplusplus'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -254,6 +255,24 @@ workflow TAXPROFILER {
     } else {
         ch_reads_runmerged = ch_shortreads_hostremoved
             .mix( ch_longreads_hostremoved, INPUT_CHECK.out.fasta )
+    }
+
+    ch_amr_reads = ch_reads_runmerged
+        .branch{
+            meta,reads ->
+            //AMR is built to run with paired end reads. For this reason, remove any single end reads.
+            amr: !meta.single_end
+            skip: true
+        }
+
+    /*
+        SUBWORKFLOW: AMR PLUS PLUS 
+    */ 
+    if ( params.run_amr ) {
+    	AMRPLUSPLUS( ch_amr_reads.amr )
+        ch_versions = ch_versions.mix( AMRPLUSPLUS.out.versions )
+        ch_multiqc_files = ch_multiqc_files.mix( AMRPLUSPLUS.out.multiqc_files.collect().ifEmpty([]) )
+        ch_output_file_paths = ch_output_file_paths.mix(AMRPLUSPLUS.out.output_paths)
     }
 
     /*

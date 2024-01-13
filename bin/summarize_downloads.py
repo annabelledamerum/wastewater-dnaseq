@@ -51,7 +51,13 @@ def summarize_downloads(locations, design):
         'observed_features_vector_alpha.qzv' : ('Alpha Diversity Box Plot by Observed Features', 'all_samples'), 
         # beta diversity
         'jaccard_distance_matrix-group.qzv'    : ('Beta Diversity Comparison between Groups by Jaccard Distance', 'all_samples'), 
-        'bray_curtis_distance_matrix-group.qzv': ('Beta Diversity Comparison between Groups by Bray-Curtis Distance', 'all_samples'), 
+        'bray_curtis_distance_matrix-group.qzv': ('Beta Diversity Comparison between Groups by Bray-Curtis Distance', 'all_samples'),
+        # groups of interest
+        'Groups_of_interest.xlsx': ('Detailed abundances among groups of interest', 'all_samples'),
+        # AMR plus plus results
+        'class_rawcounts_AMR_analytic_matrix.csv':     ('AMR Class Level Raw Counts Results Across Samples', 'all_samples'),
+        'mechanism_rawcounts_AMR_analytic_matrix.csv': ('AMR Mechanism Level Raw Counts Results Across Samples', 'all_samples'),
+        'genes_rawcounts_AMR_analytic_matrix.csv':      ('AMR Gene Level Raw Counts Results Across Samples', 'all_samples')
     }
 
     # Read the file locations

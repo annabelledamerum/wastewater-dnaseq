@@ -540,6 +540,12 @@
                     "default": 20,
                     "hidden": true
                 },
+                "group_of_interest": {
+                    "type": "string",
+                    "description": "Group(s) of taxa that are of specific interest. Abundances of these taxa will be summarized in a separate file and a plotted in a separate section in the report to highlight these taxa.",
+                    "default": "NONE",
+                    "enum": ["NONE", "wastewater"]
+                },
                 "skip_alphadiversity": {
                     "type": "boolean",
                     "description": "Turn off alpha diversity analysis and remove alpha diversity plot from MultiQC report",
@@ -816,6 +822,32 @@
                     "enum": ["Aladdin-healthy_gut"]
                 }
             }
+        },
+        "amr_options": {
+            "title": "AMR analysis options",
+            "type": "object",
+            "description": "Options related to AMR analysis.",
+            "properties": {
+                "run_amr": {
+                    "type": "boolean",
+                    "description": "Whether or not to conduct analysis for antimicrobial resistance genes. This option is supported for paired end samples only.",
+                    "default": false
+                },
+                "resistome_threshold": {
+                    "type": "number",
+                    "description": "The minimum proportion of nucleotides that have aligned reads to for any AMR gene to be reported.",
+                    "default": 0.8,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "advanced": true
+                },
+                "amr_index_files": {
+                    "type": "string",
+                    "description": "Path to files related to AMR analysis.",
+                    "default": "s3://aladdin-genomes/shotgun_reference/amrplusplus_ref/",
+                    "hidden": true
+                }
+            }
         }
     },
     "allOf": [
@@ -854,6 +886,9 @@
         },
         {
             "$ref": "#/definitions/reference_dataset_comparison_options"
+        },
+        {
+            "$ref": "#/definitions/amr_options"
         }
     ]
 }
