@@ -57,7 +57,8 @@ def summarize_downloads(locations, design):
         # AMR plus plus results
         'class_rawcounts_AMR_analytic_matrix.csv':     ('AMR Class Level Raw Counts Results Across Samples', 'all_samples'),
         'mechanism_rawcounts_AMR_analytic_matrix.csv': ('AMR Mechanism Level Raw Counts Results Across Samples', 'all_samples'),
-        'genes_rawcounts_AMR_analytic_matrix.csv':      ('AMR Gene Level Raw Counts Results Across Samples', 'all_samples')
+        'genes_rawcounts_AMR_analytic_matrix.csv':     ('AMR Gene Level Raw Counts Results Across Samples', 'all_samples'),
+        'genes_SNPconfirmed_analytic_matrix.csv':      ('AMR SNP Verified Gene Level Count Results Across Samples', 'all_samples') 
     }
 
     # Read the file locations
