@@ -43,6 +43,9 @@ workflow AMRPLUSPLUS {
     ch_multiqc_files = ch_multiqc_files.mix(RESISTOME_RESULTS.out.class_resistome_count_matrix, RESISTOME_RESULTS.out.top20_genelevel_resistome)
     RESISTOME_SNPVERIFY( BWA_ALIGN.out.bwa_bam, RESISTOME_RESULTS.out.gene_count_matrix.collect(), snp_config.collect(), ch_snpverify_dataset.collect())   
     RESISTOME_SNPRESULTS( RESISTOME_SNPVERIFY.out.snp_counts.collect() )
+    ch_output_file_paths = ch_output_file_paths.mix(
+        RESISTOME_SNPRESULTS.out.gene_counts_SNPverified.map{ "${params.outdir}/resistome_results/" + it.getName() }
+    )
 
     emit:
     versions      = ch_versions          // channel: [ versions.yml ]
