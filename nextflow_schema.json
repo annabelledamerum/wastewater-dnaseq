@@ -465,6 +465,12 @@
                     "maximum": 1000000,
 		            "advanced": true
                 },
+                "sourmash_strict_filtering": {
+                    "type": "boolean",
+                    "description": "Apply a strict filtering criteria to sourmash results to increase specificity at the expense of sensitivity. Require matches to genomes to have at least 93.5% identity or 1,000,000bp overlap.",
+                    "deafult": false,
+                    "advanced": true
+                },
                 "sourmash_trim_low_abund": {
                     "type": "boolean",
                     "description": "Runs trim-low-abund.py from the khmer software package, which removes low abundance, potentially erroneous kmers from data before taxonomy assignment. Only applies when sourmash databases were selected.",
@@ -498,7 +504,7 @@
                 "lowread_filter": {
                     "type": "integer",
                     "description": "Applies a read count filter for samples before downstream analysis. Samples must have at least this many reads with assigned taxonomy to be included in analyses such as alpha and beta diversity. Default is 50,000.",
-                    "default": 50000,
+                    "default": 1000,
                     "minimum": 0,
                     "advanced": true
                 },
