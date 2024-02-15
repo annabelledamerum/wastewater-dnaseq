@@ -167,7 +167,7 @@ def nTupleCheck(read, gene, mapOfInterest, seqOfInterest, config):
                     for mt in mtInfo[2]: 
                         currentResBool = False
                         for queryIndex in tuple(mapOfInterest[mtInfo[1]-1]):
-                            if queryIndex == '-': continue
+                            if queryIndex == '-' or queryIndex == None: continue
                             if mt == seqOfInterest[queryIndex]:
                                 currentResBool = True
                                 if config.getboolean('SETTINGS', 'MT_AND_WT'):
