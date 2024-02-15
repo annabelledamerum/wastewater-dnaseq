@@ -1,6 +1,6 @@
 process RESISTOME_RUN {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
     input:
     tuple val(meta), path(bam)
