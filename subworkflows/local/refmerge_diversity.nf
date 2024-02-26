@@ -42,7 +42,7 @@ workflow REFMERGE_DIVERSITY {
 
     REFMERGE_BETAGROUPCOMPARE ( REFMERGE_DIVERSITYCORE.out.distance.flatten(), REFMERGE_MERGEMETA.out.metadata.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
-        REFMERGE_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_group_comparison/" + it.getName() }
+        REFMERGE_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/refmerged/beta_diversity/" + it.getName() }
         )
 
     REFMERGE_PLOT_MULTIQC( 
