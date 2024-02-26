@@ -82,7 +82,7 @@ workflow DIVERSITY {
     QIIME_BETAGROUPCOMPARE ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
     ch_versions = ch_versions.mix( QIIME_BETAGROUPCOMPARE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_group_comparison/" + it.getName() }
+        QIIME_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_diversity/" + it.getName() }
         )
 
     QIIME_PLOT_MULTIQC( 
