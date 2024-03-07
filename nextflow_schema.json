@@ -460,7 +460,7 @@
                 "sourmash_threshold_bp": {
                     "type": "integer",
                     "description": "Sourmash will only report a match to a genome in the database when the estimated overlap between sample and the reference is at least this many base pairs. Choose a smaller number to increase sensitivity to low abundant species. Default is 50,000bp.",
-                    "default": 50000,
+                    "default": 5000,
                     "minimum": 1000,
                     "maximum": 1000000,
 		            "advanced": true
