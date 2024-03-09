@@ -38,8 +38,8 @@ process FASTP {
         [ ! -f  ${prefix}_R1.fastq.gz ] && ln -sf $reads ${prefix}_R1.fastq.gz
 
         fastp \\
-            --stdout \\
             --in1 ${prefix}_R1.fastq.gz \\
+            --out1  ${prefix}_R1.fastp.fastq.gz \\
             --thread $task.cpus \\
             --json ${prefix}.fastp.json \\
             --html ${prefix}.fastp.html \\
@@ -47,8 +47,7 @@ process FASTP {
             $fail_fastq \\
             $min_length \\
             $args \\
-            2> ${prefix}.fastp.log \\
-        | gzip -c > ${prefix}.fastp.fastq.gz
+            2> ${prefix}.fastp.log
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
@@ -60,7 +59,6 @@ process FASTP {
         [ ! -f  ${prefix}_R1.fastq.gz ] && ln -sf $reads ${prefix}_R1.fastq.gz
 
         fastp \\
-            --stdout \\
             --in1 ${prefix}_R1.fastq.gz \\
             --out1  ${prefix}_R1.fastp.fastq.gz \\
             --thread $task.cpus \\
