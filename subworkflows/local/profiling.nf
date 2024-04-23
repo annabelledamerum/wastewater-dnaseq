@@ -391,7 +391,7 @@ workflow PROFILING {
         .map { it[0] }
         .collect()
         .map {
-            "The following samples failed taxonomy profiling steps:\n${it.join("; ")}\nA common cause for this is lack of significant match against the database."
+            "The following samples failed taxonomy profiling steps:\n${it.join("; ")}\nPlease contact us if you want to troubleshoot them."
         }
         .set {ch_warning_message }
     ch_warning_message

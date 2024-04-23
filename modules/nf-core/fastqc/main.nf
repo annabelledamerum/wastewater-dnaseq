@@ -37,7 +37,8 @@ process FASTQC {
         [ -f ${prefix}_R1.fastq.gz ] || ln -s ${reads[0]} ${prefix}_R1.fastq.gz
         [ -f ${prefix}_R2.fastq.gz ] || ln -s ${reads[1]} ${prefix}_R2.fastq.gz
 
-        fastqc $args --threads $task.cpus ${prefix}_R1.fastq.gz ${prefix}_R2.fastq.gz
+        fastqc $args --threads $task.cpus ${prefix}_R1.fastq.gz
+        fastqc $args --threads $task.cpus ${prefix}_R2.fastq.gz
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
