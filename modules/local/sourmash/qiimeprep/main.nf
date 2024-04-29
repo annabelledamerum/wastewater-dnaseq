@@ -10,8 +10,8 @@ process SOURMASH_QIIMEPREP {
     path host_lineage
 
     output:
-    tuple val(meta), path ("*absabun_profile.biom"), emit: biom
-    path "*profile_taxonomy.txt", emit: taxonomy
+    tuple val(meta), path ("*absabun_profile.biom"), optional: true, emit: biom
+    path "*profile_taxonomy.txt", optional: true, emit: taxonomy
     path "*mqc.json", emit: mqc
     path "versions.yml", emit: versions
 
