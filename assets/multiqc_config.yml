@@ -109,8 +109,8 @@ sp:
 
 ignore_images: false
 
-top_modules:
-  - "fastqc":
+module_order:
+  - fastqc:
       name: "FastQC / Falco (pre-Trimming)"
       anchor: "fastqc_raw"
       path_filters:
@@ -118,11 +118,11 @@ top_modules:
       path_filters_exclude:
         - "*_processed_R*fastqc*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
-  - "fastp"
-  - "adapterRemoval"
-  - "porechop":
+  - fastp
+  - adapterRemoval
+  - porechop:
       extra: "ℹ️: if you get the error message 'Error - was not able to plot data.' this means that porechop did not detect any adapters and therefore no statistics generated."
-  - "fastqc":
+  - fastqc:
       name: "FastQC / Falco (post-Trimming)"
       anchor: "fastqc_trimmed"
       path_filters:
@@ -130,19 +130,19 @@ top_modules:
       path_filters_exclude:
         - "*_raw_R*fastqc*"
       extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
-  - "bbduk"
-  - "prinseqplusplus"
-  - "filtlong"
-  - "bowtie2":
+  - bbduk
+  - prinseqplusplus
+  - filtlong
+  - bowtie2:
       name: "bowtie2"
       info: "In this pipeline, bowtie2 aligns sample reads to the host reference genome. Preferably, most reads in a microbiomics sample should not align to the host's genome. Any reads that align with the host are removed with bowtie2 from further analysis."
-  - "samtools":
+  - samtools:
       name: "Samtools Stats"
-  - "kraken":
+  - kraken:
       name: "Kraken"
       path_filters:
         - "*.kraken2.kraken2.report.txt"
-  - "kraken":
+  - kraken:
       name: "Bracken"
       anchor: "bracken"
       target: "Bracken"
@@ -151,7 +151,7 @@ top_modules:
       extra: "ℹ️: plot title will say Kraken2 due to the first step of bracken producing the same output format as Kraken. Abundance information is currently not supported in MultiQC."
       path_filters:
         - "*.bracken.kraken2.report.txt"
-  - "kraken":
+  - kraken:
       name: "Centrifuge"
       anchor: "centrifuge"
       target: "Centrifuge"
@@ -160,9 +160,10 @@ top_modules:
       extra: "ℹ️: plot title will say Kraken2 due to Centrifuge producing the same output format as Kraken. If activated, see the actual Kraken2 results in the section above."
       path_filters:
         - "*.centrifuge.txt"
-  - "composition_barplots"
-  - "interestgroup_comp"
-  - "plot_heatmap"
+  - composition_barplots
+  - interestgroup_comp
+  - plot_heatmap
+  - custom_content
 
 #It is not possible to set placement for custom kraken and centrifuge columns.
 
