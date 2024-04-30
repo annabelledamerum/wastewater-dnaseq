@@ -3,17 +3,11 @@ intro_text: >
   analysis pipeline. For information about how to interpret these results, please see the
   <a href="https://zymo-research.github.io/pipeline-resources/report_docs/shotgun_documentation.html" target="_blank">report documentation</a>.
 report_section_order:
-  mpa_readstats:
-    after: composition_barplot
-  kmer_composition:
-    after: composition_barplot
   individ_alpha_barchart:
     after: Diversity_Analysis
-  "nf-core-taxprofiler-methods-description":
-    order: -1000
   software_versions:
     order: -1001
-  "nf-core-taxprofiler-summary":
+  "Zymo-Research-aladdin-shotgun-summary":
     order: -1002
 
 export_plots: true
