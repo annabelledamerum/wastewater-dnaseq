@@ -38,6 +38,7 @@ workflow DIVERSITY {
         )
     QIIME_DATAMERGE.out.filtered_counts_collapsed_qza
         .ifEmpty('There were no samples or taxa left after filtering! Try lower filtering criteria or examine your data quality.')
+        .filter( String )
         .set{ ch_warning_message }
  
     QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza, groups )
