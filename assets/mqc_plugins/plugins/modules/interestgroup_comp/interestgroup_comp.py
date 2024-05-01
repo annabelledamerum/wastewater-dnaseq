@@ -23,7 +23,7 @@ class MultiqcModule(BaseMultiqcModule):
 
         # Initialise the parent module Class object
         super(MultiqcModule, self).__init__(
-            name="Abundances of Groups of Interest", target="", anchor="interestgroup_charts"
+            name="Abundances of Groups of Interest", target="", anchor="interestgroup_comp"
         )
 
         self.data_dict = dict()
