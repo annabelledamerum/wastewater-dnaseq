@@ -24,6 +24,10 @@
 
   > Chen S, Zhou Y, Chen Y, Gu J. Fastp: An Ultra-Fast All-in-One FASTQ Preprocessor. *Bioinformatics.* 2018;34(17):i884-90. doi: 10.1093/bioinformatics/bty560.
 
+- [AdapterRemoval2](https://doi.org/10.1186/s13104-016-1900-2)
+
+  > Schubert M, Lindgreen S, and Orlando L. AdapterRemoval v2: Rapid Adapter Trimming, Identification, and Read Merging. *BMC Research Notes.* 2016;9:88. doi:10.1186/s13104-016-1900-2.
+
 - [Porechop](https://github.com/rrwick/Porechop)
 
 - [FILTLONG](https://github.com/rrwick/Filtlong)
@@ -46,6 +50,8 @@
 
   > Danecek P, Bonfield JK, Liddle J, et al. Twelve years of SAMtools and BCFtools. *GigaScience.* 2021;10(2). doi: 10.1093/gigascience/giab008
 
+- [bwa - Burrows-Wheeler Alignment Tool](https://bio-bwa.sourceforge.net/bwa.shtml)
+
 - [MetaPhlAn4](https://doi.org/10.7554/eLife.65088)
 
   > Beghini F, McIver L, Blanco-Míguez A, et al. Integrating Taxonomic, Functional, and Strain-Level Profiling of Diverse Microbial Communities with BioBakery 3. *ELife.* 2021;10:e65088. doi: 10.7554/eLife.65088
@@ -56,7 +62,11 @@
 
 - [AMRplusplus](https://doi.org/10.1093/nar/gkac1047)
 
-  > Bonin N, Doster E, Worley H, et al. MEGARes and AMR++, v3.0: an updated comprehensive database of antimicrobial resistance determinants and an improved software pipeline for classification using high-throughput sequencing. *Nucleic Acids Research.* 2023;51(1):744-52. doi: https://doi.org/10.1093/nar/gkac1047
+  > Bonin N, Doster E, Worley H, et al. MEGARes and AMR++, v3.0: an updated comprehensive database of antimicrobial resistance determinants and an improved software pipeline for classification using high-throughput sequencing. *Nucleic Acids Research.* 2023;51(1):744-52. doi: 10.1093/nar/gkac1047
+
+- [QIIME2](https://doi.org/10.1038%2Fs41587-019-0209-9)
+
+  > Bolyen E, Rideout JR, Dillon MR, et al. Reproducible, interactive, scalable, and extensible microbiome data science using QIIME 2. *Nat Biotechnol.* 2020;37(8):852-857. doi: 10.1038/s41587-019-0209-9
 
 ## Software packaging/containerisation tools
 
