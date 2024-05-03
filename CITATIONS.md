@@ -50,8 +50,6 @@
 
   > Danecek P, Bonfield JK, Liddle J, et al. Twelve years of SAMtools and BCFtools. *GigaScience.* 2021;10(2). doi: 10.1093/gigascience/giab008
 
-- [bwa - Burrows-Wheeler Alignment Tool](https://bio-bwa.sourceforge.net/bwa.shtml)
-
 - [MetaPhlAn4](https://doi.org/10.7554/eLife.65088)
 
   > Beghini F, McIver L, Blanco-Míguez A, et al. Integrating Taxonomic, Functional, and Strain-Level Profiling of Diverse Microbial Communities with BioBakery 3. *ELife.* 2021;10:e65088. doi: 10.7554/eLife.65088
@@ -59,6 +57,8 @@
 - [Sourmash](https://doi.org/10.12688/f1000research.19675.1)
 
   > Pierce NT, Irber L, Reiter T, Brooks P, Brown CT. Large-scale sequence comparisons with sourmash. *F1000Research.* 2019;8:1006. doi: 10.12688/f1000research.19675.1
+
+- [bwa - Burrows-Wheeler Alignment Tool](https://bio-bwa.sourceforge.net/bwa.shtml)
 
 - [AMRplusplus](https://doi.org/10.1093/nar/gkac1047)
 
