@@ -25,8 +25,8 @@
                 "database": {
                     "type": "string",
                     "description": "Select the reference database and the tool you would like to use for taxonomic profiling. Your choice will dictate the ranking and nomenclature of the taxonomy profile. We provide several popular reference databases to choose from, but recommend the sourmash-compatible database from Zymo Research.",
-                    "enum": ["sourmash-zymo", "metaphlan4-db"],
-                    "default": "sourmash-zymo"
+                    "enum": ["sourmash-zymo-2024", "metaphlan4-db", "sourmash-zymo-2023"],
+                    "default": "sourmash-zymo-2024"
                 },
                 "outdir": {
                     "type": "string",
@@ -452,14 +452,14 @@
                 },
                 "sourmash_kmersize": {
                     "type": "integer",
-                    "default": 51,
+                    "default": 31,
                     "enum": [51,31,21],
-                    "description": "Sourmash breaks reads down into k-mers which are compared against database for taxonomic assignment. A length of 51 is very robust and allows for good taxonomic resolution down to species level while keeping false positives to a minimum, but is very stringent. Smaller k-mer sizes like 31 can be more sensitive at the genus level but may allow for more false positive calls. We recommend 51 for most projects, however if your samples likely contain poorly annotated genomes, smaller k-mers may provide more useful results.",
+                    "description": "Sourmash breaks reads down into k-mers which are compared against database for taxonomic assignment. Sourmash recommends k=31 for most cases. k=51 increase specificity at the expense of sensitivity, therefore should be used when most species in your samples have very closely related genomes in the database. k=21 is useful when species in your sample have no good reference genomes and you just want classification on the family level or above.",
 		            "advanced": true
                 },
                 "sourmash_threshold_bp": {
                     "type": "integer",
-                    "description": "Sourmash will only report a match to a genome in the database when the estimated overlap between sample and the reference is at least this many base pairs. Choose a smaller number to increase sensitivity to low abundant species. Default is 50,000bp.",
+                    "description": "Sourmash will only report a match to a genome in the database when the estimated overlap between sample and the reference is at least this many base pairs. Choose a smaller number to increase sensitivity to low abundant species or small genomes like virus. Default is 5,000bp.",
                     "default": 5000,
                     "minimum": 1000,
                     "maximum": 1000000,
