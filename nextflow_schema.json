@@ -548,9 +548,10 @@
                 },
                 "group_of_interest": {
                     "type": "string",
-                    "description": "Group(s) of taxa that are of specific interest. Abundances of these taxa will be summarized in a separate file and a plotted in a separate section in the report to highlight these taxa.",
+                    "description": "Group(s) of taxa that are of specific interest. Abundances of these taxa will be summarized in a separate file and plotted in a separate section in the report to highlight these taxa.",
                     "default": "NONE",
-                    "enum": ["NONE", "wastewater"]
+                    "enum": ["NONE", "wastewater"],
+                    "hidden": true
                 },
                 "skip_alphadiversity": {
                     "type": "boolean",
