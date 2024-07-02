@@ -3,6 +3,16 @@
     "$id": "https://raw.githubusercontent.com/Zymo-Research/aladdin-shotgun/main/nextflow_schema.json",
     "title": "Aladdin shotgun pipeline parameters",
     "description": "Taxonomic profiling of shotgun metagenomic data",
+    "metadata_columns": {
+        "type": "object",
+        "properties": {
+            "group": {
+                "type": "string",
+                "description": "Group labels for diversity comparison between groups. Leave empty if not applicable. Alphanumerical characters only, must start with letters.",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+            }
+        }
+    },
     "type": "object",
     "definitions": {
         "input_output_options": {
