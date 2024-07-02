@@ -6,7 +6,7 @@ from collections import defaultdict
 
 def top20genes(resistome_results):
     genelevel_resistome_mqc = {
-        "id": "top20_genes_composition",
+        "id": "top20genes_amr_composition",
         "section_name": "Top 20 Genes Composition of Each Sample (AMRplusplus)",
         "description": ("This plot depicts the composition of reads of antimicrobial resistance genes identified by "
             "<a href='https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master'>AMRplusplus</a>. "

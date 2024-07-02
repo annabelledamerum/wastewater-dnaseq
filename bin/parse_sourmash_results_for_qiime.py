@@ -104,17 +104,20 @@ def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
         # Record the no. reads of each host organism
         mqc_data["data"][name].update(host.set_index("species")["f_unique_weighted"].mul(readcount).round(2).to_dict())
 
-    profile = profile[["accession","lineage","f_unique_weighted"]]
-    profile["lineage"] = profile["lineage"].map(add_prefix_to_lineage)
-    profile = profile.rename(columns={"f_unique_weighted":name, "lineage":"Taxon", "accession":"Feature ID"})
-    # Collapsing rows together in case of duplicate accession (unlikely, but just in case)
-    profile = profile.groupby("Feature ID").agg({"Taxon":"first", name:"sum"})
-    # Calculate absolute abundance (approximate)
-    profile[name] = profile[name].mul(readcount)
-    # Create a table file
-    profile[name].to_csv(name+"_absabun_parsed_profile.txt", sep="\t")
-    # Create a taxonomy file
-    profile["Taxon"].to_csv(name+"_profile_taxonomy.txt", sep="\t")
+    if len(profile)>0:
+        profile = profile[["accession","lineage","f_unique_weighted"]]
+        profile["lineage"] = profile["lineage"].map(add_prefix_to_lineage)
+        profile = profile.rename(columns={"f_unique_weighted":name, "lineage":"Taxon", "accession":"Feature ID"})
+        # Collapsing rows together in case of duplicate accession (unlikely, but just in case)
+        profile = profile.groupby("Feature ID").agg({"Taxon":"first", name:"sum"})
+        # Calculate absolute abundance (approximate)
+        profile[name] = profile[name].mul(readcount)
+        # Create a table file
+        profile[name].to_csv(name+"_absabun_parsed_profile.txt", sep="\t")
+        # Create a taxonomy file
+        profile["Taxon"].to_csv(name+"_profile_taxonomy.txt", sep="\t")
+    else:
+        print("There is no identified microbial genomes after filtering out the host genomes for sample {}!".format(name))
 
     # Output mqc results
     with open(name+"_sourmash_stats_mqc.json", "w") as fh:
