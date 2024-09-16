@@ -28,7 +28,7 @@ process MULTIQC {
     """
     virtualenv --system-site-packages venv_multiqc
     source venv_multiqc/bin/activate
-    pip install multiqc_custom_plugins/
+    pip install -e multiqc_custom_plugins/
 
     multiqc \\
         --force \\
