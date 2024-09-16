@@ -1,5 +1,6 @@
 process MULTIQC {
     cache false
+    stageInMode 'copy'
 
     input:
     path  multiqc_files, stageAs: "?/*"
