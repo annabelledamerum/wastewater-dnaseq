@@ -26,12 +26,12 @@ process MULTIQC {
     def rfilename = params.run_name ? "--filename " + params.run_name.replaceAll('\\W','_').replaceAll('_+','_') + "_multiqc_report" : ''
     def comment = warnings ? "--comment \"$warnings\"" : '' 
     """
-    virtualenv --system-site-packages venv_multiqc
+    python -m venv venv_multiqc
     source venv_multiqc/bin/activate
-    pip install -e multiqc_custom_plugins/
+    pip install -e multiqc_custom_plugins/ --no-cache-dir
 
     multiqc \\
-        --force \\
+        --force --ignore "*/venv_multiqc/*" \\
         $args \\
         $config \\
         $extra_config \\
