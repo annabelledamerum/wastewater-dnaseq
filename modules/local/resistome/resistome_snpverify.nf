@@ -1,6 +1,8 @@
 process RESISTOME_SNPVERIFY {
     tag "$meta.id"
     label 'process_high'
+    errorStrategy { task.exitStatus in [1,143,137,104,134,139,Integer.MAX_VALUE] ? 'retry' : 'finish' }
+    maxRetries 2
 
     input:
     tuple val(meta), path(bam)

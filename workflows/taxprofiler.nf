@@ -282,6 +282,7 @@ workflow TAXPROFILER {
     ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( DIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
+    ch_warnings = ch_warnings.mix( DIVERSITY.out.warning )
 
     /*
         SUBWORKFLOW: DIVERSITY with reference database

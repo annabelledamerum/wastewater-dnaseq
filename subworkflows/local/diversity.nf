@@ -22,20 +22,24 @@ workflow DIVERSITY {
     groups // group_metadata.csv
 
     main:
-    ch_versions             = Channel.empty()
-    ch_multiqc_files        = Channel.empty()
-    ch_output_file_paths    = Channel.empty()
-    ch_excel                = Channel.empty()
-
+    ch_versions          = Channel.empty()
+    ch_multiqc_files     = Channel.empty()
+    ch_output_file_paths = Channel.empty()
+    ch_excel             = Channel.empty()
+    ch_warning_message   = Channel.empty()
 
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
 
-    QIIME_DATAMERGE(  QIIME_IMPORT.out.absabun_qza.collect(), qiime_taxonomy.collect() )
+    QIIME_DATAMERGE( QIIME_IMPORT.out.absabun_qza.collect(), qiime_taxonomy.collect() )
     ch_versions = ch_versions.mix( QIIME_DATAMERGE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_DATAMERGE.out.filtered_counts_collapsed_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
         )
+    QIIME_DATAMERGE.out.filtered_counts_collapsed_qza
+        .ifEmpty('There were no samples or taxa left after filtering! Try lower filtering criteria or examine your data quality.')
+        .filter( String )
+        .set{ ch_warning_message }
  
     QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza, groups )
     ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
@@ -95,10 +99,11 @@ workflow DIVERSITY {
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_PLOT_MULTIQC.out.mqc_plot.collect() )
 
     emit:
-    versions        = ch_versions          // channel: [ versions.yml ]
-    mqc             = ch_multiqc_files
-    output_paths    = ch_output_file_paths
-    tables          = QIIME_DATAMERGE.out.filtered_counts_qza
-    taxonomy        = QIIME_DATAMERGE.out.taxonomy_qza
-    metadata        = QIIME_METADATAFILTER.out.ref_comp_metadata
+    versions     = ch_versions          // channel: [ versions.yml ]
+    mqc          = ch_multiqc_files
+    output_paths = ch_output_file_paths
+    tables       = QIIME_DATAMERGE.out.filtered_counts_qza
+    taxonomy     = QIIME_DATAMERGE.out.taxonomy_qza
+    metadata     = QIIME_METADATAFILTER.out.ref_comp_metadata
+    warning      = ch_warning_message
 }
