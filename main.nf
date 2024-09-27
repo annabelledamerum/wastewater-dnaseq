@@ -36,6 +36,7 @@ WorkflowMain.initialise(workflow, params, log)
 */
 
 include { TAXPROFILER } from './workflows/taxprofiler'
+include { WASTEWATER  } from './workflows/wastewater'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,7 +49,8 @@ include { TAXPROFILER } from './workflows/taxprofiler'
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    TAXPROFILER ()
+    //TAXPROFILER ()
+    WASTEWATER ()
 }
 
 /*
