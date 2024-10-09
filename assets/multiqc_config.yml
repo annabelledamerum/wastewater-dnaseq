@@ -164,6 +164,10 @@ module_order:
   - interestgroup_comp
   - plot_heatmap
   - custom_content
+  - metaquast:
+      name: "MetaQUAST"
+      anchor: "metaquast"
+      info: "MetaQUAST evaluates genome assembly quality and provides several statistics."
 
 #It is not possible to set placement for custom kraken and centrifuge columns.
 
@@ -258,6 +262,13 @@ table_columns_placement:
     identified_kmers: 1900
   metaphlan4:
     identified_reads: 1900
+  MetaQUAST:
+    total_contigs: 100
+    longest_contig: 110
+    total_length: 120
+    n50: 130
+    gc_content: 140
+
 
 table_columns_visible:
   FastQC / Falco (pre-Trimming):
@@ -322,6 +333,12 @@ table_columns_visible:
   Kaiju: False
   MALT: False
   motus: False
+  MetaQUAST:
+    total_contigs: True
+    longest_contig: True
+    total_length: True
+    n50: True
+    gc_content: True
 
 table_columns_name:
   FastQC / Falco (pre-Trimming):
@@ -344,6 +361,12 @@ table_columns_name:
     raw_total_sequences: "Nr. Reads Into Mapping"
     reads_mapped: "Nr. Mapped Reads"
     reads_mapped_percent: "% Mapped Reads"
+  MetaQUAST:
+    total_contigs: "Total Contigs"
+    longest_contig: "Longest Contig Length (bp)"
+    total_length: "Total Length (bp)"
+    n50: "N50"
+    gc_content: "GC Content (%)"  
 
 extra_fn_clean_exts:
   - "kraken2.report.txt"

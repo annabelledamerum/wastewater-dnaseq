@@ -14,8 +14,9 @@ workflow SHORTREAD_ASSEMBLY {
     ch_multiqc_files   = Channel.empty()
     
     // SPADES metagenome assembly (short, PE reads)    
-    ch_assembly = SPADES ( reads ).assembly
-    ch_versions      = ch_versions.mix( SPADES.out.versions.first() )
+    SPADES ( reads ).assembly
+    ch_assembly = SPADES.out.assembly
+    ch_versions = ch_versions.mix( SPADES.out.versions.first() )
     
     // QUAST metagenome assessment
     QUAST ( ch_assembly )

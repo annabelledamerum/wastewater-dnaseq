@@ -4,7 +4,7 @@ process QUAST {
     conda "bioconda::quast=5.0.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/quast:5.0.2--py37pl526hb5aa323_2' :
-        'biocontainers/quast:5.0.2--py37pl526hb5aa323_2' }"
+        'quay.io/biocontainers/quast:5.0.2--py37pl526hb5aa323_2' }"
 
     input:
     tuple val(meta), path(assembly)
@@ -20,7 +20,7 @@ process QUAST {
     """
     metaquast.py \
         --threads ${task.cpus} \
-        -rna-finding --max-ref-number 0 \
+        --rna-finding --max-ref-number 0 \
         -o ${prefix} \
         $assembly
     mv ${prefix}/report.tsv ${prefix}_report.tsv
@@ -44,6 +44,4 @@ process QUAST {
         metaquast: \$(metaquast.py --version | sed "s/QUAST v//; s/ (MetaQUAST mode)//")
     END_VERSIONS
     """
-
-
 }

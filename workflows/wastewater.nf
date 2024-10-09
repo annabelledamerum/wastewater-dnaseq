@@ -7,7 +7,7 @@
 def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
 
 // Validate input parameters
-WorkflowTaxprofiler.initialise(params, log)
+WorkflowWastewater.initialise(params, log)
 
 // Check input path parameters to see if they exist
 def checkPathParamList = [  
@@ -93,6 +93,7 @@ include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualizat
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 include { AMRPLUSPLUS                   } from '../subworkflows/local/amrplusplus'
 include { SHORTREAD_ASSEMBLY            } from '../subworkflows/local/shortread_assembly'
+include { BINNING                       } from '../subworkflows/local/binning'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -350,11 +351,32 @@ workflow WASTEWATER {
     */
     // NOTE: shortread assembly with SPADES - PE only
     if ( !params.single_end && !params.skip_spades ) {
-        ch_shortread_assembly = SHORTREAD_ASSEMBLY ( ch_reads_runmerged ).assembly
+        //ch_shortread_assembly = SHORTREAD_ASSEMBLY ( ch_reads_runmerged ).assembly
+        SHORTREAD_ASSEMBLY ( ch_reads_runmerged )
+        ch_shortread_assembly = SHORTREAD_ASSEMBLY.out.assembly
+            .map { meta, assembly ->
+            [meta, assembly]
+            }
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_ASSEMBLY.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_ASSEMBLY.out.versions )
     } 
     // add in support for long reads later
+
+    // add in virus_id subworkflow
+
+    /*
+        SUBWORKFLOW: BINNING
+    */
+    BINNING ( ch_shortread_assembly, ch_reads_runmerged )
+    ch_metabat_bins  = BINNING.out.metabat_bins
+    ch_maxbin_bins   = BINNING.out.maxbin_bins
+    ch_multiqc_files = ch_multiqc_files.mix( BINNING.out.mqc.collect().ifEmpty([]) )
+    ch_versions      = ch_versions.mix( BINNING.out.versions )
+    //ch_warnings = ch_warnings.mix( BINNING.out.warning )
+
+    /*
+        SUBWORKFLOW: BINNING_REFINEMENT
+    */
 
 
 
@@ -368,10 +390,10 @@ workflow WASTEWATER {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    workflow_summary    = WorkflowTaxprofiler.paramsSummaryMultiqc(workflow, summary_params)
+    workflow_summary    = WorkflowWastewater.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
-    //methods_description    = WorkflowTaxprofiler.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
+    //methods_description    = WorkflowWastewater.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description)
     //ch_methods_description = Channel.value(methods_description)
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
