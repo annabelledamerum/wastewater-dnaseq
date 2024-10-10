@@ -1,6 +1,6 @@
 process SPADES {
     tag "$meta.id"
-    label 'SPADES_high_memory'
+    label 'process_high_memory'
 
     conda "bioconda::spades=3.15.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
