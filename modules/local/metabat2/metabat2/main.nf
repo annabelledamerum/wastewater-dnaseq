@@ -31,7 +31,7 @@ process METABAT2_METABAT2 {
     metabat2 \\
         $args \\
         -i $fasta \\
-        $depth \\
+        -a $depth \\
         -t $task.cpus \\
         --saveCls \\
         -o ${prefix}_metabat2
