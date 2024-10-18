@@ -340,11 +340,6 @@ workflow WASTEWATER {
         ch_versions = ch_versions.mix( STANDARDISATION_PROFILES.out.versions )
     }
 
-    /*
-        SUBWORKFLOW: PROFILING STANDARDISATION
-    */    
-    // placeholder
-
 
     /*
         SUBWORKFLOW: ASSEMBLY (metagenome)

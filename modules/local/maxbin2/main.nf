@@ -8,7 +8,8 @@ process MAXBIN2 {
         'quay.io/biocontainers/maxbin2:2.2.7--he1b5a44_2' }"
 
     input:
-    tuple val(meta), path(contigs), path(depth)
+    tuple val(meta), path(contigs)
+    path(depth)
 
     output:
     tuple val(meta), path("*.fasta")   , emit: binned_fastas
@@ -29,17 +30,15 @@ process MAXBIN2 {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    echo "input file maxbin2 fasta: ${contigs}"
-    echo "input file maxbin2 depth: ${depth}"
-
     cut -f1,3 $depth > maxbin2_abund.txt
     mkdir input/ && mv $contigs input/
+    mkdir ${prefix}
     run_MaxBin.pl \\
         -contig input/$contigs \\
         -abund maxbin2_abund.txt \\
         -thread $task.cpus \\
         $args \\
-        -out ${prefix}_maxbin2
+        -out ${prefix}/${prefix}_maxbin2
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
