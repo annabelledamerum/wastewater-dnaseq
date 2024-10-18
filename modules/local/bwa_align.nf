@@ -15,7 +15,7 @@ process BWA_ALIGN {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    bwa mem ${ref_index_files}/ndaro_to_amrpp_db.fasta ${input} -t $task.cpus -R '@RG\\tID:${prefix}\\tSM:${prefix}' > ${prefix}_alignment.sam
+    bwa mem ${ref_index_files}/ndaro_2024-07-22 ${input} -t $task.cpus -R '@RG\\tID:${prefix}\\tSM:${prefix}' > ${prefix}_alignment.sam
     samtools view -@ $task.cpus -S -b ${prefix}_alignment.sam > ${prefix}_alignment.bam
     rm ${prefix}_alignment.sam
     samtools sort -@ $task.cpus -n ${prefix}_alignment.bam -o ${prefix}_alignment_sorted.bam

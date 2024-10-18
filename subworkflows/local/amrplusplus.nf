@@ -22,8 +22,8 @@ workflow AMRPLUSPLUS {
     // Prepare various AMR files
     index_files = Channel.fromPath(params.amr_index_files, checkIfExists:true)
     amr_file_path = params.amr_index_files.replaceAll(/\/*$/,"")
-    amr_fasta = Channel.fromPath("${amr_file_path}/ndaro_to_amrpp_db.fasta", checkIfExists:true)
-    amr_annotation = Channel.fromPath("${amr_file_path}/ndaro_annotations.csv", checkIfExists:true)
+    amr_fasta = Channel.fromPath("${amr_file_path}/ndaro_2024-07-22.fasta", checkIfExists:true)
+    amr_annotation = Channel.fromPath("${amr_file_path}/ndaro_2024-07-22_annotations.csv", checkIfExists:true)
     snp_config = Channel.fromPath("${amr_file_path}/config.ini", checkIfExists:true)
     //ch_snpverify_dataset = Channel.fromPath("${amr_file_path}/SNP_verification/*{.csv,.fasta}", checkIfExists:true)
 
