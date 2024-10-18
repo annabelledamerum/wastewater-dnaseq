@@ -22,10 +22,10 @@ workflow AMRPLUSPLUS {
     // Prepare various AMR files
     index_files = Channel.fromPath(params.amr_index_files, checkIfExists:true)
     amr_file_path = params.amr_index_files.replaceAll(/\/*$/,"")
-    amr_fasta = Channel.fromPath("${amr_file_path}/megares_database_v3.00.fasta", checkIfExists:true)
-    amr_annotation = Channel.fromPath("${amr_file_path}/megares_annotations_v3.00.csv", checkIfExists:true)
+    amr_fasta = Channel.fromPath("${amr_file_path}/ndaro_to_amrpp_db.fasta", checkIfExists:true)
+    amr_annotation = Channel.fromPath("${amr_file_path}/ndaro_annotations.csv", checkIfExists:true)
     snp_config = Channel.fromPath("${amr_file_path}/config.ini", checkIfExists:true)
-    ch_snpverify_dataset = Channel.fromPath("${amr_file_path}/SNP_verification/*{.csv,.fasta}", checkIfExists:true)
+    //ch_snpverify_dataset = Channel.fromPath("${amr_file_path}/SNP_verification/*{.csv,.fasta}", checkIfExists:true)
 
     BWA_ALIGN(index_files.collect(), reads)
     ch_bwa_bam_output = ch_bwa_bam_output.mix(
@@ -41,11 +41,11 @@ workflow AMRPLUSPLUS {
     ch_output_file_paths = ch_output_file_paths.mix( RESISTOME_RESULTS.out.class_count_matrix, RESISTOME_RESULTS.out.mechanism_count_matrix, RESISTOME_RESULTS.out.gene_count_matrix)
     ch_output_file_paths = ch_output_file_paths.map{ "${params.outdir}/resistome_results/" + it.getName() }
     ch_multiqc_files = ch_multiqc_files.mix(RESISTOME_RESULTS.out.class_resistome_count_matrix, RESISTOME_RESULTS.out.top20_genelevel_resistome)
-    RESISTOME_SNPVERIFY( BWA_ALIGN.out.bwa_bam, RESISTOME_RESULTS.out.gene_count_matrix.collect(), snp_config.collect(), ch_snpverify_dataset.collect())   
-    RESISTOME_SNPRESULTS( RESISTOME_SNPVERIFY.out.snp_counts.collect() )
-    ch_output_file_paths = ch_output_file_paths.mix(
-        RESISTOME_SNPRESULTS.out.gene_counts_SNPverified.map{ "${params.outdir}/resistome_results/" + it.getName() }
-    )
+    //RESISTOME_SNPVERIFY( BWA_ALIGN.out.bwa_bam, RESISTOME_RESULTS.out.gene_count_matrix.collect(), snp_config.collect(), ch_snpverify_dataset.collect())   
+    //RESISTOME_SNPRESULTS( RESISTOME_SNPVERIFY.out.snp_counts.collect() )
+    //ch_output_file_paths = ch_output_file_paths.mix(
+    //    RESISTOME_SNPRESULTS.out.gene_counts_SNPverified.map{ "${params.outdir}/resistome_results/" + it.getName() }
+    //)
 
     emit:
     versions      = ch_versions          // channel: [ versions.yml ]
