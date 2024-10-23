@@ -340,12 +340,19 @@ workflow WASTEWATER {
         ch_versions = ch_versions.mix( STANDARDISATION_PROFILES.out.versions )
     }
 
+
     /*
-        SUBWORKFLOW: PROFILING STANDARDISATION
+        SUBWORKFLOW: RGI AMR profiling
     */    
-    // placeholder
+    // 
 
 
+    
+    
+    
+    
+    
+    
     /*
         SUBWORKFLOW: ASSEMBLY (metagenome)
     */

@@ -8,7 +8,8 @@ process MAXBIN2 {
         'quay.io/biocontainers/maxbin2:2.2.7--he1b5a44_2' }"
 
     input:
-    tuple val(meta), path(contigs), path(depth)
+    tuple val(meta), path(contigs)
+    path(depth)
 
     output:
     tuple val(meta), path("*.fasta")   , emit: binned_fastas

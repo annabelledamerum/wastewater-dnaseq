@@ -59,17 +59,17 @@ workflow BINNING {
     ch_versions       = ch_versions.mix( METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.versions.first() )
     
     // create binning input channel
-    ch_binning_input = assemblies
-        .map { meta, assembly ->
-            [meta, assembly] 
-        }
-        .join( ch_metabat_depths, by: 0 )
-        .map { meta, assembly, depth ->
-            [meta, assembly, depth] 
-        }
+    // ch_binning_input = assemblies
+    //     .map { meta, assembly ->
+    //         [meta, assembly] 
+    //     }
+    //     .join( ch_metabat_depths, by: 0 )
+    //     .map { meta, assembly, depth ->
+    //         [meta, assembly, depth] 
+    //     }
     
     // binning  with metabat2
-    METABAT2_METABAT2 ( ch_binning_input )
+    METABAT2_METABAT2 ( assemblies, ch_metabat_depths )
     ch_metabat_bins = METABAT2_METABAT2.out.binned_fastas
         // .map { meta, binned_fastas ->
         // [meta, binned_fastas]
@@ -77,7 +77,7 @@ workflow BINNING {
     ch_versions     = ch_versions.mix( METABAT2_METABAT2.out.versions.first() )
 
     // binning with maxbin2
-    MAXBIN2 ( ch_binning_input )
+    MAXBIN2 ( assemblies, ch_metabat_depths )
     ch_maxbin_bins = MAXBIN2.out.binned_fastas
         // .map { meta, binned_fastas ->
         // [meta, binned_fastas]
