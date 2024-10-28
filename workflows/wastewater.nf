@@ -352,7 +352,7 @@ workflow WASTEWATER {
     */  
     PATHOGEN_ID ( ch_reads_runmerged )
     ch_versions = ch_versions.mix( PATHOGEN_ID.out.versions )
-    ch_multiqc_files = ch_multiqc_files.mix( PATHOGEN_ID.out.multiqc_files.collect().ifEmpty([]) )
+    //ch_multiqc_files = ch_multiqc_files.mix( PATHOGEN_ID.out.multiqc_files.collect().ifEmpty([]) )
     ch_output_file_paths = ch_output_file_paths.mix(PATHOGEN_ID.out.output_paths)
     
     /*

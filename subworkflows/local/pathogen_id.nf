@@ -14,7 +14,7 @@ workflow PATHOGEN_ID {
 
     main:
     ch_versions             = Channel.empty()
-    ch_multiqc_files        = Channel.empty()
+    //ch_multiqc_files        = Channel.empty()
     ch_output_file_paths    = Channel.empty()
 
     // prepare database files
@@ -64,7 +64,7 @@ workflow PATHOGEN_ID {
 
     emit:
     versions         = ch_versions
-    multiqc_files    = ch_multiqc_files
+    //multiqc_files    = ch_multiqc_files
     output_paths     = ch_output_file_paths
     pathogen_heatmap = PATHOGEN_RESULTS.out.heatmap
 }
