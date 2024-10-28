@@ -344,11 +344,18 @@ workflow WASTEWATER {
     /*
         SUBWORKFLOW: RGI AMR profiling
     */    
-    // 
+    // placeholder
 
-
+    /*
+        SUBWORKFLOW: Pathogen ID
+    */
+    if (params.pathogens_db) {
+    pathogens_db = Channel
+        .fromPath(params.pathogens_db, checkIfExists: true)
+        .collect()
+    }
     
-    
+    PATHOGEN_ID ( ch_reads_runmerged, pathogens_db )
     
     
     
@@ -359,11 +366,7 @@ workflow WASTEWATER {
     // NOTE: shortread assembly with SPADES - PE only
     if ( !params.single_end && !params.skip_spades ) {
         //ch_shortread_assembly = SHORTREAD_ASSEMBLY ( ch_reads_runmerged ).assembly
-        SHORTREAD_ASSEMBLY ( ch_reads_runmerged )
-        ch_shortread_assembly = SHORTREAD_ASSEMBLY.out.assembly
-            .map { meta, assembly ->
-            [meta, assembly]
-            }
+        ch_shortread_assembly = SHORTREAD_ASSEMBLY ( ch_reads_runmerged ).assembly
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_ASSEMBLY.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_ASSEMBLY.out.versions )
     } 
@@ -381,12 +384,16 @@ workflow WASTEWATER {
     ch_versions      = ch_versions.mix( BINNING.out.versions )
     //ch_warnings = ch_warnings.mix( BINNING.out.warning )
 
+    
     /*
         SUBWORKFLOW: BINNING_REFINEMENT
     */
+    // placeholder
 
-
-
+    /*
+        SUBWORKFLOW: AMRFinderPlus AMR profiling
+    */
+    // placeholder
 
 
     /*
