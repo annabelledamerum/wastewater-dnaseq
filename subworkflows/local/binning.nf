@@ -20,6 +20,8 @@ workflow BINNING {
     main:
     ch_versions        = Channel.empty()
     ch_multiqc_files   = Channel.empty()
+    ch_bowtie2_bam     = Channel.empty()
+    ch_metabat_depths  = Channel.empty()
    
     // build bowtie2 index for all assemblies
     //ch_BOWTIE2  = BOWTIE2_BUILD ( assemblies ).index
@@ -30,14 +32,16 @@ workflow BINNING {
     // align reads to metagenome assemblies
     //ch_align         = BOWTIE2_ALIGN ( reads, ch_BOWTIE2, true, true ).bam
     BOWTIE2_ALIGN_MAGS ( reads, ch_bowtie2_index, true, true )
-    ch_bowtie2_bam   = BOWTIE2_ALIGN_MAGS.out.bam
+    //ch_bowtie2_bam   = BOWTIE2_ALIGN_MAGS.out.bam
+    ch_bowtie2_bam   = ch_bowtie2_bam.mix(BOWTIE2_ALIGN_MAGS.out.bam)
     ch_versions      = ch_versions.mix( BOWTIE2_ALIGN_MAGS.out.versions.first() )
     ch_multiqc_files = ch_multiqc_files.mix( BOWTIE2_ALIGN_MAGS.out.log )
 
     // binning
     // generate coverage depths for each contig - metabat2 format
     METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS ( ch_bowtie2_bam )
-    ch_metabat_depths = METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth
+    //ch_metabat_depths = METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth
+    ch_metabat_depths = ch_metabat_depths.mix(METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth)
     ch_versions       = ch_versions.mix( METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.versions.first() )
     
     // create binning input channel
