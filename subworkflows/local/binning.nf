@@ -20,18 +20,7 @@ workflow BINNING {
     main:
     ch_versions        = Channel.empty()
     ch_multiqc_files   = Channel.empty()
-
-    // may not be necessary - need to test
-    ch_input_assemblies = assemblies
-        .map { meta, reads ->
-            [meta, reads]
-        }
-
-    ch_input_reads = reads
-        .map { meta, reads ->
-            [meta, reads]
-        }
-    
+   
     // build bowtie2 index for all assemblies
     //ch_BOWTIE2  = BOWTIE2_BUILD ( assemblies ).index
     BOWTIE2_BUILD_MAGS ( assemblies )
@@ -42,10 +31,6 @@ workflow BINNING {
     //ch_align         = BOWTIE2_ALIGN ( reads, ch_BOWTIE2, true, true ).bam
     BOWTIE2_ALIGN_MAGS ( reads, ch_bowtie2_index, true, true )
     ch_bowtie2_bam   = BOWTIE2_ALIGN_MAGS.out.bam
-        .map { meta, bam ->
-            [meta, bam]
-            }
-
     ch_versions      = ch_versions.mix( BOWTIE2_ALIGN_MAGS.out.versions.first() )
     ch_multiqc_files = ch_multiqc_files.mix( BOWTIE2_ALIGN_MAGS.out.log )
 
@@ -53,9 +38,6 @@ workflow BINNING {
     // generate coverage depths for each contig - metabat2 format
     METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS ( ch_bowtie2_bam )
     ch_metabat_depths = METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth
-        .map { meta, depth ->
-            [meta, depth]
-        }
     ch_versions       = ch_versions.mix( METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.versions.first() )
     
     // create binning input channel
@@ -71,17 +53,11 @@ workflow BINNING {
     // binning  with metabat2
     METABAT2_METABAT2 ( assemblies, ch_metabat_depths )
     ch_metabat_bins = METABAT2_METABAT2.out.binned_fastas
-        // .map { meta, binned_fastas ->
-        // [meta, binned_fastas]
-        // }
     ch_versions     = ch_versions.mix( METABAT2_METABAT2.out.versions.first() )
 
     // binning with maxbin2
     MAXBIN2 ( assemblies, ch_metabat_depths )
     ch_maxbin_bins = MAXBIN2.out.binned_fastas
-        // .map { meta, binned_fastas ->
-        // [meta, binned_fastas]
-        // } 
     ch_versions    = ch_versions.mix( MAXBIN2.out.versions.first() )
 
     // bin refinement with DAS_Tool
