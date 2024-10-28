@@ -34,7 +34,16 @@ workflow PATHOGEN_ID {
     ch_versions = ch_versions.mix( BWA_ALIGN_PATHDB.out.versions )
 
     // remove duplicate reads from bam
-    PICARD_MARKDUPLICATES(ch_bwa_bam_output, pathogen_fasta)
+    // create binning input channel
+    ch_mkdup_input = ch_bwa_bam_output
+        .map { meta, bwa_bam ->
+            [meta, bwa_bam] 
+        }
+        .join( pathogen_fasta, by: 0 )
+        .map { meta, bwa_bam, pathogen_fasta ->
+            [meta, bwa_bam, pathogen_fasta] 
+        }
+    PICARD_MARKDUPLICATES(ch_mkdup_input)
     ch_versions = ch_versions.mix( PICARD_MARKDUPLICATES.out.versions )
 
     // calculate various statistical summary files with samtools
