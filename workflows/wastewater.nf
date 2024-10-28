@@ -94,6 +94,7 @@ include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardis
 include { AMRPLUSPLUS                   } from '../subworkflows/local/amrplusplus'
 include { SHORTREAD_ASSEMBLY            } from '../subworkflows/local/shortread_assembly'
 include { BINNING                       } from '../subworkflows/local/binning'
+include { PATHOGEN_ID                   } from '../subworkflows/local/pathogen_id.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -348,17 +349,11 @@ workflow WASTEWATER {
 
     /*
         SUBWORKFLOW: Pathogen ID
-    */
-    if (params.pathogens_db) {
-    pathogens_db = Channel
-        .fromPath(params.pathogens_db, checkIfExists: true)
-        .collect()
-    }
-    
-    PATHOGEN_ID ( ch_reads_runmerged, pathogens_db )
-    
-    
-    
+    */  
+    PATHOGEN_ID ( ch_reads_runmerged )
+    ch_versions = ch_versions.mix( PATHOGEN_ID.out.versions )
+    ch_multiqc_files = ch_multiqc_files.mix( PATHOGEN_ID.out.multiqc_files.collect().ifEmpty([]) )
+    ch_output_file_paths = ch_output_file_paths.mix(PATHOGEN_ID.out.output_paths)
     
     /*
         SUBWORKFLOW: ASSEMBLY (metagenome)

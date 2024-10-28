@@ -6,7 +6,7 @@ include { BWA_ALIGN as BWA_ALIGN_PATHDB        } from '../../modules/local/bwa_a
 include { PICARD_MARKDUPLICATES                } from '../../modules/local/picard/markduplicates'
 include { SAMTOOLS_COLLECT_STATS               } from '../../modules/local/samtools_stats'
 include { PATHOGEN_COVERAGE                    } from '../../modules/local/pathogen_coverage_stats.nf'
-include { PATHOGEN_ID                          } from '../../modules/local/pathogen_id.nf'
+include { PATHOGEN_RESULTS                     } from '../../modules/local/pathogen_results.nf'
 
 workflow PATHOGEN_ID {
     take: 
