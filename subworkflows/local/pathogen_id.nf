@@ -57,7 +57,7 @@ workflow PATHOGEN_ID {
     versions         = ch_versions
     multiqc_files    = ch_multiqc_files
     output_paths     = ch_output_file_paths
-    pathogen_heatmap = PATHOGEN_RESULTS.out.pathogen_heatmap
+    pathogen_heatmap = PATHOGEN_RESULTS.out.heatmap
 }
 
 
