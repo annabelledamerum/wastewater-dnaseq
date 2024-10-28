@@ -375,7 +375,7 @@ workflow WASTEWATER {
     BINNING ( ch_shortread_assembly, ch_reads_runmerged )
     ch_metabat_bins  = BINNING.out.metabat_bins
     ch_maxbin_bins   = BINNING.out.maxbin_bins
-    ch_multiqc_files = ch_multiqc_files.mix( BINNING.out.mqc.collect().ifEmpty([]) )
+    //ch_multiqc_files = ch_multiqc_files.mix( BINNING.out.mqc.collect().ifEmpty([]) )
     ch_versions      = ch_versions.mix( BINNING.out.versions )
     //ch_warnings = ch_warnings.mix( BINNING.out.warning )
 
