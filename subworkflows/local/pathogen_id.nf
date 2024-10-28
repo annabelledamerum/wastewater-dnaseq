@@ -30,9 +30,7 @@ workflow PATHOGEN_ID {
 
     // align sample reads to pathogen database
     BWA_ALIGN_PATHDB(pathogen_db_index.collect(), reads)
-    ch_bwa_bam_output = ch_bwa_bam_output.mix(
-        BWA_ALIGN_PATHDB.out.bwa_bam
-    )
+    ch_bwa_bam_output = BWA_ALIGN_PATHDB.out.bwa_bam
     ch_versions = ch_versions.mix( BWA_ALIGN_PATHDB.out.versions )
 
     // remove duplicate reads from bam
