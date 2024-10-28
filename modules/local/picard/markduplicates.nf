@@ -14,7 +14,7 @@ process PICARD_MARKDUPLICATES {
     output:
     tuple val(meta), path("*_mkdup.bam"), path("*_mkdup.bam.bai"), emit: mkdup_bam
     tuple val(meta), path("*_mkdup_metrics.txt")                 , emit: mkdup_metrics
-    path  "versions.yml"                                         , emit: version
+    path  "versions.yml"                                         , emit: versions
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
