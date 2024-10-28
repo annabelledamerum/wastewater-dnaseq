@@ -12,8 +12,8 @@ process SAMTOOLS_COLLECT_STATS {
 
     output:
     tuple val(meta), path("*.stats"), emit: stats
-    tuple val(meta), path("*.flagstat"), emit: stats
-    tuple val(meta), path("*.idxstats"), emit: stats
+    tuple val(meta), path("*.flagstat"), emit: flagstats
+    tuple val(meta), path("*.idxstats"), emit: idxstats
     tuple val(meta), path("*.coverage.txt"), emit: coverage
     path "versions.yml", emit: versions
 
