@@ -49,7 +49,7 @@ workflow PATHOGEN_ID {
     // draw results plot
     PATHOGEN_RESULTS( PATHOGEN_COVERAGE.out.cov_metrics.collect{ it[1] }, pathogen_metadata )
     ch_output_file_paths = ch_output_file_paths.mix(
-    PATHOGEN_RESULTS.out.pathogen_heatmap.map{ "${params.outdir}/pathogen/" + it.getName() }
+    PATHOGEN_RESULTS.out.heatmap.map{ "${params.outdir}/pathogen/" + it.getName() }
     )
     
 
