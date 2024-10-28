@@ -8,13 +8,13 @@ process PATHOGEN_RESULTS{
 
     output:
     path("coverage.csv"), emit: cov_metrics
-
+    path("coverage_heatmap.png"), emit: heatmap
 
 
     script:
     """
     pathogen_coverage_results.py \
         --coverage_directory ./samtools_coverage/ \
-        --metadata_file $pathogen_metadata
+        --metadata_file ${pathogen_metadata}
     """
 }
