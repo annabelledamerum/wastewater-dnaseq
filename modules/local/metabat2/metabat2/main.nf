@@ -8,8 +8,7 @@ process METABAT2_METABAT2 {
         'quay.io/biocontainers/metabat2:2.15--h986a166_1' }"
 
     input:
-    tuple val(meta), path(fasta)
-    path(depth)
+    tuple val(meta), path(fasta), path(depth)
 
     output:
     tuple val(meta), path("*.tooShort")                       , optional:true, emit: tooshort
