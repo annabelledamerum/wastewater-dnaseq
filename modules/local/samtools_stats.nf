@@ -19,8 +19,8 @@ process SAMTOOLS_COLLECT_STATS {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def ff = params.options.excludeFlags ? "--ff ${params.options.excludeFlags}" : ""
-    def q = params.options.threshMapq ? "-q ${params.options.threshMapq}" : ""
+    //def ff = params.options.excludeFlags ? "--ff ${params.options.excludeFlags}" : ""
+    //def q = params.options.threshMapq ? "-q ${params.options.threshMapq}" : ""
     """
     samtools stats -@ ${task.cpus} ${bam} > ${prefix}_mkdup.bam.stats
     samtools flagstat -@ ${task.cpus} ${bam} > ${prefix}_mkdup.flagstat
