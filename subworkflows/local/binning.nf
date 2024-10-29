@@ -10,7 +10,6 @@ include { MAXBIN2                                                         } from
 include { DASTOOL_FASTATOCONTIG2BIN as DASTOOL_FASTATOCONTIG2BIN_METABAT2 } from '../../modules/local/dastool/fastatocontig2bin'
 include { DASTOOL_FASTATOCONTIG2BIN as DASTOOL_FASTATOCONTIG2BIN_MAXBIN2  } from '../../modules/local/dastool/fastatocontig2bin'
 include { DASTOOL_DASTOOL                                                 } from '../../modules/local/dastool/dastool'
-//may create separate bin refinement workflow
 
 workflow BINNING {
     take: 
@@ -32,7 +31,6 @@ workflow BINNING {
     // align reads to metagenome assemblies
     //ch_align         = BOWTIE2_ALIGN ( reads, ch_BOWTIE2, true, true ).bam
     BOWTIE2_ALIGN_MAGS ( reads, ch_bowtie2_index, true, true )
-    //ch_bowtie2_bam   = BOWTIE2_ALIGN_MAGS.out.bam
     ch_bowtie2_bam   = ch_bowtie2_bam.mix(BOWTIE2_ALIGN_MAGS.out.bam)
     ch_versions      = ch_versions.mix( BOWTIE2_ALIGN_MAGS.out.versions.first() )
     ch_multiqc_files = ch_multiqc_files.mix( BOWTIE2_ALIGN_MAGS.out.log )
@@ -40,7 +38,6 @@ workflow BINNING {
     // binning
     // generate coverage depths for each contig - metabat2 format
     METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS ( ch_bowtie2_bam )
-    //ch_metabat_depths = METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth
     ch_metabat_depths = ch_metabat_depths.mix(METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.depth)
     ch_versions       = ch_versions.mix( METABAT2_JGISUMMARIZEBAMCONTIGDEPTHS.out.versions.first() )
     
@@ -64,6 +61,7 @@ workflow BINNING {
     ch_maxbin_bins = MAXBIN2.out.binned_fastas
     ch_versions    = ch_versions.mix( MAXBIN2.out.versions.first() )
 
+    // May create separate bin refinement workflow
     // bin refinement with DAS_Tool
     // prepare contigs-to-bin table input files
     // metabat2

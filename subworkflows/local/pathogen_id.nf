@@ -18,7 +18,6 @@ workflow PATHOGEN_ID {
     ch_output_file_paths    = Channel.empty()
 
     // prepare database files
-    //params.pathogens_db
     pathogen_db_index = Channel.fromPath(params.pathogens_db, checkIfExists:true) 
     pathogen_db_path = params.pathogens_db.replaceAll(/\/*$/,"")
     pathogen_fasta = Channel.fromPath("${pathogen_db_path}/pathogen_reference.fasta", checkIfExists:true)
@@ -35,15 +34,12 @@ workflow PATHOGEN_ID {
 
     // remove duplicate reads from bam
     // create binning input channel
-    ch_mkdup_input = ch_bwa_bam_output
-        .map { meta, bwa_bam ->
-            [meta, bwa_bam] 
-        }
-        .join( pathogen_fasta, by: 0 )
-        .map { meta, bwa_bam, pathogen_fasta ->
-            [meta, bwa_bam, pathogen_fasta] 
-        }
-    PICARD_MARKDUPLICATES(ch_mkdup_input)
+    // ch_bwa_bam_output
+    //     .map { meta, bwa_bam ->
+    //         [meta, bwa_bam] 
+    //     }
+
+    PICARD_MARKDUPLICATES(ch_bwa_bam_output, pathogen_fasta)
     ch_versions = ch_versions.mix( PICARD_MARKDUPLICATES.out.versions )
 
     // calculate various statistical summary files with samtools
