@@ -34,16 +34,20 @@ workflow PATHOGEN_ID {
 
     // remove duplicate reads from bam
     // create binning input channel
-    // ch_bwa_bam_output
-    //     .map { meta, bwa_bam ->
-    //         [meta, bwa_bam] 
-    //     }
-
+    ch_bwa_bam_output
+        .map { meta, bwa_bam ->
+            [meta, bwa_bam] 
+        }
     PICARD_MARKDUPLICATES(ch_bwa_bam_output, pathogen_fasta)
     ch_versions = ch_versions.mix( PICARD_MARKDUPLICATES.out.versions )
 
     // calculate various statistical summary files with samtools
-    SAMTOOLS_COLLECT_STATS( PICARD_MARKDUPLICATES.out.mkdup_bam )
+    ch_BWA_MKDUP = PICARD_MARKDUPLICATES.out.mkdup_bam
+                   .map { meta, bwa_bam ->
+                         [meta, bwa_bam] 
+                        }
+
+    SAMTOOLS_COLLECT_STATS( ch_BWA_MKDUP )
     ch_versions = ch_versions.mix( SAMTOOLS_COLLECT_STATS.out.versions )
 
     // summarize coverage and output results
