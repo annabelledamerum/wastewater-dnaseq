@@ -48,8 +48,7 @@ workflow AMRPLUSPLUS {
                                                     RESISTOME_SNPRESULTS.out.gene_counts_SNPverified_normalized,
                                                     RESISTOME_SNPRESULTS.out.amr_matrix_pivot,
                                                     RESISTOME_SNPRESULTS.out.amr_heatmap)
-        
-    ch_output_file_paths.map{ "${params.outdir}/resistome_results/" + it.getName() }
+                                                .map{ "${params.outdir}/resistome_results/" + it.getName() }
 
     emit:
     versions      = ch_versions          // channel: [ versions.yml ]
