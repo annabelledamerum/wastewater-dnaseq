@@ -43,8 +43,8 @@ workflow PATHOGEN_ID {
 
     // calculate various statistical summary files with samtools
     ch_BWA_MKDUP = PICARD_MARKDUPLICATES.out.mkdup_bam
-                   .map { meta, bwa_bam ->
-                         [meta, bwa_bam] 
+                   .map { meta, mkdup_bam ->
+                         [meta, mkdup_bam] 
                         }
 
     SAMTOOLS_COLLECT_STATS( ch_BWA_MKDUP )
