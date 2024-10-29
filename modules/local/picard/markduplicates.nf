@@ -8,7 +8,8 @@ process PICARD_MARKDUPLICATES {
         'quay.io/biocontainers/picard:3.3.0--hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam), path(reference)
+    tuple val(meta), path(bam)
+    path(reference)
 
     output:
     tuple val(meta), path("*_mkdup.bam"), path("*_mkdup.bam.bai"), emit: mkdup_bam
