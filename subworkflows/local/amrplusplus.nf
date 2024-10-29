@@ -26,6 +26,7 @@ workflow AMRPLUSPLUS {
     amr_annotation = Channel.fromPath("${amr_file_path}/megares_annotations_v3.00.csv", checkIfExists:true)
     snp_config = Channel.fromPath("${amr_file_path}/config.ini", checkIfExists:true)
     ch_snpverify_dataset = Channel.fromPath("${amr_file_path}/SNP_verification/*{.csv,.fasta}", checkIfExists:true)
+    amr_annotation_additional = Channel.fromPath("${amr_file_path}/megares_v3.00_annotations_additional.csv", checkIfExists:true)
 
     BWA_ALIGN_AMRDB(index_files.collect(), reads)
     ch_bwa_bam_output = ch_bwa_bam_output.mix(
@@ -42,7 +43,7 @@ workflow AMRPLUSPLUS {
     ch_output_file_paths = ch_output_file_paths.map{ "${params.outdir}/resistome_results/" + it.getName() }
     ch_multiqc_files = ch_multiqc_files.mix(RESISTOME_RESULTS.out.class_resistome_count_matrix, RESISTOME_RESULTS.out.top20_genelevel_resistome)
     RESISTOME_SNPVERIFY( BWA_ALIGN_AMRDB.out.bwa_bam, RESISTOME_RESULTS.out.gene_count_matrix.collect(), snp_config.collect(), ch_snpverify_dataset.collect())   
-    RESISTOME_SNPRESULTS( RESISTOME_SNPVERIFY.out.snp_counts.collect() )
+    RESISTOME_SNPRESULTS( RESISTOME_SNPVERIFY.out.snp_counts.collect(), BWA_ALIGN_AMRDB.out.bam_flagstats.collect(), amr_annotation_additional )
     ch_output_file_paths = ch_output_file_paths.mix(
         RESISTOME_SNPRESULTS.out.gene_counts_SNPverified.map{ "${params.outdir}/resistome_results/" + it.getName() }
     )
