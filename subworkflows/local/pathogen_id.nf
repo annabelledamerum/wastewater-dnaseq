@@ -16,6 +16,7 @@ workflow PATHOGEN_ID {
     ch_versions             = Channel.empty()
     ch_multiqc_files        = Channel.empty()
     ch_output_file_paths    = Channel.empty()
+    ch_bwa_bam_output       = Channel.empty()
 
     // prepare database files
     pathogen_db_index = Channel.fromPath(params.pathogens_db, checkIfExists:true) 
