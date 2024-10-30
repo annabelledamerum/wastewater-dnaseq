@@ -14,7 +14,7 @@ workflow PATHOGEN_ID {
 
     main:
     ch_versions             = Channel.empty()
-    //ch_multiqc_files        = Channel.empty()
+    ch_multiqc_files        = Channel.empty()
     ch_output_file_paths    = Channel.empty()
 
     // prepare database files
@@ -29,42 +29,33 @@ workflow PATHOGEN_ID {
 
     // align sample reads to pathogen database
     BWA_ALIGN_PATHDB(pathogen_db_index.collect(), reads)
-    ch_bwa_bam_output = BWA_ALIGN_PATHDB.out.bwa_bam
+    ch_bwa_bam_output = ch_bwa_bam_output.mix(
+        BWA_ALIGN_PATHDB.out.bwa_bam
+    )
     ch_versions = ch_versions.mix( BWA_ALIGN_PATHDB.out.versions )
 
     // remove duplicate reads from bam
     // create binning input channel
-    ch_bwa_bam_output
-        .map { meta, bwa_bam ->
-            [meta, bwa_bam] 
-        }
-    PICARD_MARKDUPLICATES(ch_bwa_bam_output, pathogen_fasta)
+    PICARD_MARKDUPLICATES(BWA_ALIGN_PATHDB.out.bwa_bam, pathogen_fasta.collect())
     ch_versions = ch_versions.mix( PICARD_MARKDUPLICATES.out.versions )
 
     // calculate various statistical summary files with samtools
-    ch_BWA_MKDUP = PICARD_MARKDUPLICATES.out.mkdup_bam
-                   .map { meta, mkdup_bam ->
-                         [meta, mkdup_bam] 
-                        }
-
-    SAMTOOLS_COLLECT_STATS( ch_BWA_MKDUP )
+    SAMTOOLS_COLLECT_STATS( PICARD_MARKDUPLICATES.out.mkdup_bam )
     ch_versions = ch_versions.mix( SAMTOOLS_COLLECT_STATS.out.versions )
 
     // summarize coverage and output results
-    PATHOGEN_COVERAGE ( SAMTOOLS_COLLECT_STATS.out.coverage.collect{ it[1] }, pathogen_metadata )
-    ch_output_file_paths = ch_output_file_paths.mix(
-        PATHOGEN_COVERAGE.out.cov_metrics.map{ "${params.outdir}/pathogen/" + it.getName() }
-    )
+    PATHOGEN_COVERAGE ( SAMTOOLS_COLLECT_STATS.out.coverage.collect{ it[1] }, pathogen_metadata.collect() )
     // draw results plot
-    PATHOGEN_RESULTS( PATHOGEN_COVERAGE.out.cov_metrics.collect{ it[1] }, pathogen_metadata )
-    ch_output_file_paths = ch_output_file_paths.mix(
-    PATHOGEN_RESULTS.out.heatmap.map{ "${params.outdir}/pathogen/" + it.getName() }
-    )
+    PATHOGEN_RESULTS( PATHOGEN_COVERAGE.out.cov_metrics.collect{ it[1] }, pathogen_metadata.collect() )
     
+    // outputs
+    ch_multiqc_files = ch_multiqc_files.mix(PATHOGEN_COVERAGE.out.cov_metrics, PATHOGEN_RESULTS.out.heatmap)
+    ch_output_file_paths = ch_output_file_paths.mix(PATHOGEN_COVERAGE.out.cov_metrics, PATHOGEN_RESULTS.out.heatmap)
+    ch_output_file_paths = ch_output_file_paths.map{ "${params.outdir}/pathogen/" + it.getName() }
 
     emit:
     versions         = ch_versions
-    //multiqc_files    = ch_multiqc_files
+    multiqc_files    = ch_multiqc_files
     output_paths     = ch_output_file_paths
     pathogen_heatmap = PATHOGEN_RESULTS.out.heatmap
 }

@@ -22,9 +22,10 @@ process SAMTOOLS_COLLECT_STATS {
     //def ff = params.options.excludeFlags ? "--ff ${params.options.excludeFlags}" : ""
     //def q = params.options.threshMapq ? "-q ${params.options.threshMapq}" : ""
     """
-    samtools stats -@ ${task.cpus} ${bam} > ${prefix}_mkdup.bam.stats
-    samtools flagstat -@ ${task.cpus} ${bam} > ${prefix}_mkdup.flagstat
-    samtools idxstats -@ ${task.cpus} ${bam} > ${prefix}_mkdup.bam.idxstats
+    samtools sort -@ $task.cpus -o ${prefix}_mkdup_sorted.bam ${bam}
+    samtools stats -@ ${task.cpus} ${prefix}_mkdup_sorted.bam > ${prefix}_mkdup_sorted.bam.stats
+    samtools flagstat -@ ${task.cpus} ${bam} > ${prefix}_mkdup_sorted.flagstat
+    samtools idxstats -@ ${task.cpus} ${bam} > ${prefix}_mkdup_sorted.bam.idxstats
     samtools coverage -o ${prefix}.coverage.txt ${bam} --ff UNMAP,QCFAIL,DUP -q 30
 
     cat <<-END_VERSIONS > versions.yml
