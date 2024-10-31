@@ -6,7 +6,7 @@ process PATHOGEN_COVERAGE{
     path(pathogen_metadata)
 
     output:
-    tuple val(meta), path("*.csv"), emit: cov_metrics
+    path("*.csv"), emit: cov_metrics
 
     script:
     """
