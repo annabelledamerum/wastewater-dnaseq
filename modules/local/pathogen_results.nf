@@ -1,5 +1,4 @@
 process PATHOGEN_RESULTS{
-    tag "${meta.id}"
     label 'process_low'
 
     input:
