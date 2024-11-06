@@ -57,9 +57,9 @@ workflow BINNING {
     ch_versions     = ch_versions.mix( METABAT2_METABAT2.out.versions.first() )
 
     // binning with maxbin2
-    MAXBIN2 ( ch_binning_input )
-    ch_maxbin_bins = MAXBIN2.out.binned_fastas
-    ch_versions    = ch_versions.mix( MAXBIN2.out.versions.first() )
+    //MAXBIN2 ( ch_binning_input )
+    //ch_maxbin_bins = MAXBIN2.out.binned_fastas
+    //ch_versions    = ch_versions.mix( MAXBIN2.out.versions.first() )
 
     // May create separate bin refinement workflow
     // bin refinement with DAS_Tool
@@ -76,7 +76,7 @@ workflow BINNING {
     emit:
     //ch_bins_refined = DASTOOL_DASTOOL.out.bins
     metabat_bins = ch_metabat_bins
-    maxbin_bins  = ch_maxbin_bins
+    //maxbin_bins  = ch_maxbin_bins
     versions     = ch_versions
     mqc          = ch_multiqc_files
 }
