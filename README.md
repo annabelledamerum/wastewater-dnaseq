@@ -49,13 +49,13 @@ We recommend you run this pipeline via the [Aladdin Bioinformatics platform](htt
 nextflow run Zymo-Research/aladdin-shotgun \
     -profile awsbatch \
     --design "<path to design CSV file>" \
-    --database sourmash-zymo \
+    --database sourmash-zymo-2024 \
     --run_amr true \
     -work-dir "<work dir on S3>" \
     --awsregion "<AWS Batch region> \
     --awsqueue "<SQS ARN>" \
     --outdir "<output dir on S3>" \
-    -r "0.0.4" \
+    -r "0.0.13" \
     -name "<report title>"
 ```
 1. The parameter `--design` is required. It must be a CSV file with the following format.
@@ -80,15 +80,29 @@ sample3,s3_run1_R1.fastq.gz,s3_run1_R2.fastq.gz,groupB,,
 
 There are many other options built in the pipeline to customize your run and handle specific situations, please refer to the [Usage Documentation](docs/usage.md).
 
-### Using Docker
+### Using Docker locally
 ```bash
 nextflow run Zymo-Research/aladdin-shotgun \
-    -profile docker \
+    -profile docker,dev \
     --design "<path to design CSV file>" \
-    --database sourmash-zymo
+    --database sourmash-zymo-2024
 ```
 Please see above for requirements of the design CSV file.
 
+### Using SLURM on ZymoCloud
+```bash
+nextflow run Zymo-Research/aladdin-shotgun \
+    -profile slurm \
+    --design "<path to design CSV file>" \
+    --database sourmash-zymo-2024 \
+    --run_amr true \
+    -work-dir "<work dir on ZymoCloud>" \
+    --partition "<partition name on ZymoCloud>" \
+    --outdir "<output dir on ZymoCloud>" \
+    -r "0.0.13" \
+    -name "<report title>"
+```
+Using SLURM on ZymoCloud is only supported after release 0.0.13
 ## Credits
 
 This pipeline was adapted from nf-core/taxprofiler version 1.0.0. Please refer to [credits](https://github.com/nf-core/taxprofiler#credits) for list of orginal contributors. Contributors from Zymo Research include:
