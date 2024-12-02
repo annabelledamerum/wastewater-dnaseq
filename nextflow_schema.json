@@ -3,6 +3,7 @@
     "$id": "https://raw.githubusercontent.com/Zymo-Research/aladdin-shotgun/main/nextflow_schema.json",
     "title": "Aladdin shotgun pipeline parameters",
     "description": "Taxonomic profiling of shotgun metagenomic data",
+    "compatible_clouds": ["awsbatch", "zymohpc"],
     "metadata_columns": {
         "type": "object",
         "properties": {
