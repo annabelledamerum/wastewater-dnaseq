@@ -24,7 +24,7 @@ process MEGAHIT {
     megahit \\
         $reads_args \\
         -t ${task.cpus} \\
-        -m ${task.memory.toBytes()} \\
+        $args \\
         --out-prefix ${prefix}
     
     cat <<-END_VERSIONS > versions.yml
