@@ -26,7 +26,7 @@ workflow AMRPLUSPLUS {
     amr_annotation = Channel.fromPath("${amr_file_path}/megares_annotations_v3.00.csv", checkIfExists:true)
     snp_config = Channel.fromPath("${amr_file_path}/config.ini", checkIfExists:true)
     ch_snpverify_dataset = Channel.fromPath("${amr_file_path}/SNP_verification/*{.csv,.fasta}", checkIfExists:true)
-    amr_annotation_additional = Channel.fromPath("${amr_file_path}/megares_v3.00_annotations_additional.csv", checkIfExists:true)
+    amr_annotation_additional = Channel.fromPath('../../assets/megares_v3.00_annotations_additional.csv', checkIfExists:true)
 
     BWA_ALIGN_AMRDB(index_files.collect(), reads)
     ch_bwa_bam_output = ch_bwa_bam_output.mix(
