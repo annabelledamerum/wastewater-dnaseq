@@ -17,7 +17,6 @@ process MEGAHIT {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def maxmem = params.max_memory.toBytes()
     def reads_args = "-1 ${reads[0]} -2 ${reads[1]}"
     def args = task.ext.args ?: ''
     """
