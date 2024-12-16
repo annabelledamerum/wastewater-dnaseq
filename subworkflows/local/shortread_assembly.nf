@@ -17,7 +17,7 @@ workflow SHORTREAD_ASSEMBLY {
     // Conditional execution based on 'assembler_sr' parameter
     if (params.assembler_sr == 'spades') {
         // SPADES metagenome assembly (short, PE reads)    
-        SPADES ( reads ).assembly
+        SPADES ( reads )
         ch_assembly = SPADES.out.assembly
         ch_versions = ch_versions.mix( SPADES.out.versions.first() )
 
@@ -27,7 +27,7 @@ workflow SHORTREAD_ASSEMBLY {
         ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.report )
     } else if (params.assembler_sr == 'megahit') {
         // MEGAHIT metagenome assembly
-        MEGAHIT ( reads ).assembly
+        MEGAHIT ( reads )
         ch_assembly = MEGAHIT.out.assembly
         ch_versions = ch_versions.mix( MEGAHIT.out.versions.first() )
 
