@@ -53,7 +53,7 @@ workflow PATHOGEN_ID {
     ch_multiqc_files = ch_multiqc_files.mix(PATHOGEN_COVERAGE.out.cov_metrics, PATHOGEN_RESULTS.out.heatmap)
     ch_output_file_paths = ch_output_file_paths.mix(PATHOGEN_COVERAGE.out.cov_metrics, PATHOGEN_RESULTS.out.heatmap)
     ch_output_file_paths = ch_output_file_paths.map { 
-        it.collect { path -> "${params.outdir}/pathogen/" + path.getName() }
+        it.collect { path -> "${params.outdir}/pathogens/" + path.getName() }
     }
     emit:
     versions         = ch_versions
