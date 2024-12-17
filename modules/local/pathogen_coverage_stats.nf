@@ -1,6 +1,5 @@
 process PATHOGEN_COVERAGE{
     label 'process_low'
-    cache false
     
     input:
     path(coverage_metrics, stageAs: "samtools_coverage/*")
