@@ -30,6 +30,7 @@ custom_content:
     - mpa_readstats
     - Diversity_Analysis
     - Comparative_Diversity_Analysis
+    - ANCOM_Results
     - resistome_class_composition
     - top20genes_amr_composition
 
@@ -82,6 +83,11 @@ custom_data:
     section_name: "Beta Diversity"
     description: "This section displays the beta diversity of user and reference data, determined by the `Bray-Curtis` and `Jaccard` metrics. Click on the icon for each group in the legend to hide or reveal samples."
 
+  ancombc:
+    anchor: "ancombc_plots"
+    parent_id: ANCOMBC_Diversity_Analysis
+    parent_name: "ANCOMBC Diversity Analysis"
+
 sp:
   alpha_diversity:
     fn: "alpha_diversity_mqc.html"
@@ -95,6 +101,8 @@ sp:
     fn: "comparative_alpha_rarefaction_mqc.html"
   comparative_alpha_diversity:
     fn: "comparative_alpha_diversity_mqc.html"
+  ancombc:
+    fn: "*_ancombc_mqc.html"
   resistome_class_composition:
     fn: "class_resistomechart_mqc.json"
   top20genes_amr_composition:

@@ -13,6 +13,8 @@ include { GROUP_COMPOSITION                             } from '../../modules/lo
 include { HEATMAP_INPUT                                 } from '../../modules/local/heatmap_input'
 include { QIIME_ALPHADIVERSITY                          } from '../../modules/nf-core/qiime/alphadiversity/main'
 include { QIIME_BETAGROUPCOMPARE                        } from '../../modules/nf-core/qiime/beta_groupcompare/main'
+include { QIIME_ANCOMBC                                 } from '../../modules/nf-core/qiime/ancombc/main'
+include { QIIME_PARSEANCOMBC                            } from '../../modules/nf-core/qiime/parse_ancombc/main'
 include { QIIME_PLOT_MULTIQC                            } from '../../modules/nf-core/qiime/plot_multiqc/main'
 
 workflow DIVERSITY {
@@ -88,6 +90,11 @@ workflow DIVERSITY {
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_diversity/" + it.getName() }
         )
+
+    QIIME_ANCOMBC ( QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.filtered_metadata ) 
+    
+    QIIME_PARSEANCOMBC ( QIIME_ANCOMBC.out.ancombc_mqc.collect(), QIIME_ANCOMBC.out.reference_group )
+    ch_multiqc_files = ch_multiqc_files.mix( QIIME_PARSEANCOMBC.out.ancombc_plot.collect() )
 
     QIIME_PLOT_MULTIQC( 
         QIIME_METADATAFILTER.out.filtered_metadata,
