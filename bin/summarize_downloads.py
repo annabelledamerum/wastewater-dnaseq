@@ -52,6 +52,9 @@ def summarize_downloads(locations, design):
         # beta diversity
         'jaccard_distance_matrix-group.qzv'    : ('Beta Diversity Comparison between Groups by Jaccard Distance', 'all_samples'), 
         'bray_curtis_distance_matrix-group.qzv': ('Beta Diversity Comparison between Groups by Bray-Curtis Distance', 'all_samples'),
+        #ANCOM-BC
+        'ancombc.qza'                       : ('ANCOM-BC Overall QIIME qza File', 'all_samples'),
+        '_ancombc_group_overview.csv'       : ('ANCOM-BC Group Level Comparisons', 'comparisons'),
         # groups of interest
         'Groups_of_interest.xlsx': ('Detailed abundances among groups of interest', 'all_samples'),
         # AMR plus plus results

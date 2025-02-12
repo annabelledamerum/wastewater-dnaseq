@@ -92,7 +92,13 @@ workflow DIVERSITY {
         )
 
     QIIME_ANCOMBC ( QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.filtered_metadata ) 
-    
+    ch_output_file_paths = ch_output_file_paths.mix(
+        QIIME_ANCOMBC.out.ancombc.map{ "${params.outdir}/qiime_ancombc/" + it.getName() }
+        )
+    ch_output_file_paths = ch_output_file_paths.mix(
+        QIIME_ANCOMBC.out.group_ancombc_csv.flatten().map{ "${params.outdir}/qiime_ancombc/" + it.getName() } 
+        )
+
     QIIME_PARSEANCOMBC ( QIIME_ANCOMBC.out.ancombc_mqc.collect(), QIIME_ANCOMBC.out.reference_group )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_PARSEANCOMBC.out.ancombc_plot.collect() )
 

@@ -12,7 +12,7 @@ process QIIME_ANCOMBC {
     path "ancombc.qza"        , emit: ancombc
     path "to_multiqc/*/*ancombc-barplot.html", emit: ancombc_mqc
     path "refgroup.txt"       , emit: reference_group
-    path "*ancombc_group_overview.csv"
+    path "*ancombc_group_overview.csv", emit: group_ancombc_csv
 
     script:
     """
