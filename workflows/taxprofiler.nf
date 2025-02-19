@@ -85,7 +85,7 @@ include { LONGREAD_HOSTREMOVAL          } from '../subworkflows/local/longread_h
 include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_complexityfiltering'
 include { PROFILING                     } from '../subworkflows/local/profiling'
 include { DIVERSITY                     } from '../subworkflows/local/diversity'
-include { REFMERGE_DIVERSITY            } from '../subworkflows/local/refmerge_diversity'
+//include { REFMERGE_DIVERSITY            } from '../subworkflows/local/refmerge_diversity'
 include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 include { AMRPLUSPLUS                   } from '../subworkflows/local/amrplusplus'
@@ -287,6 +287,7 @@ workflow TAXPROFILER {
     /*
         SUBWORKFLOW: DIVERSITY with reference database
     */
+    /*
     if ( params.aladdin_ref_dataset ){
         if ( !params.aladdin_ref_db.containsKey(params.aladdin_ref_dataset) ) {
             exit 1, "The reference dataset '${params.aladdin_ref_dataset}' is not available in the Aladdin reference database."
@@ -319,6 +320,7 @@ workflow TAXPROFILER {
         ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.mqc.collect().ifEmpty([]))
         ch_output_file_paths = ch_output_file_paths.mix(REFMERGE_DIVERSITY.out.output_paths)
     }
+    */
     /*
         SUBWORKFLOW: VISUALIZATION_KRONA
     */
