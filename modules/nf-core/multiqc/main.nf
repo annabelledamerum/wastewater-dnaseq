@@ -32,7 +32,7 @@ process MULTIQC {
     pip install -e multiqc_custom_plugins/ --no-cache-dir
 
     multiqc \\
-        --force --ignore "*/venv_multiqc/*" \\
+        --force --ignore "venv_multiqc/*" \\
         $args \\
         $config \\
         $extra_config \\
