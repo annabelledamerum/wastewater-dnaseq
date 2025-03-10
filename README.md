@@ -10,7 +10,6 @@ This is a bioinformatics analysis pipeline used for shotgun metagenomic data dev
 * Added diversity analysis using [Qiime2](https://qiime2.org/) and corresponding visualizations to the report.
 * Fixed, simplified, and improved the report.
 * Made the pipeline more resistant to bad samples, so that they don't stop the processing of others.
-* Added a function to compare sample results to reference datasets that are already processed, so that user can quickly assess similarity of their samples to well curated samples of known phenotype, e.g. healthy/disease. This function is still experimental. 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies.
 
@@ -55,7 +54,7 @@ nextflow run Zymo-Research/aladdin-shotgun \
     --awsregion "<AWS Batch region> \
     --awsqueue "<SQS ARN>" \
     --outdir "<output dir on S3>" \
-    -r "0.0.13" \
+    -r "0.0.14" \
     -name "<report title>"
 ```
 1. The parameter `--design` is required. It must be a CSV file with the following format.
@@ -99,7 +98,7 @@ nextflow run Zymo-Research/aladdin-shotgun \
     -work-dir "<work dir on ZymoCloud>" \
     --partition "<partition name on ZymoCloud>" \
     --outdir "<output dir on ZymoCloud>" \
-    -r "0.0.13" \
+    -r "0.0.14" \
     -name "<report title>"
 ```
 Using SLURM on ZymoCloud is only supported after release 0.0.13
