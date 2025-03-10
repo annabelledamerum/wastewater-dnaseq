@@ -11,13 +11,12 @@ process MEGAHIT {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path("*.contigs.fa")    , emit: assembly
-    tuple val(meta), path("*.log")           , emit: log                             
+    tuple val(meta), path("megahit_out/*.contigs.fa")    , emit: assembly
+    tuple val(meta), path("megahit_out/*.log")           , emit: log                             
     path "versions.yml"                      , emit: versions  
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def maxmem = params.max_memory.toBytes()
     def reads_args = "-1 ${reads[0]} -2 ${reads[1]}"
     def args = task.ext.args ?: ''
     """

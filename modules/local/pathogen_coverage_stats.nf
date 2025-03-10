@@ -1,6 +1,6 @@
 process PATHOGEN_COVERAGE{
     label 'process_low'
-
+    
     input:
     path(coverage_metrics, stageAs: "samtools_coverage/*")
     path(pathogen_metadata)
