@@ -1,0 +1,14 @@
+Sep-27 14:29:47.662 [main] DEBUG nextflow.cli.Launcher - $> nextflow run ../wastewater-dnaseq/main.nf -profile awsbatch --awsqueue 'arn:aws:batch:us-east-1:002226384833:job-queue/rnaseq' --database sourmash-zymo-dev-2024 --design ../wastewater-dnaseq/assets/test_data/sample_sheet.csv -work-dir 's3://zymo-filesystem/tmp/adamerum/nxfwrkdr' --outdir 's3://zymo-filesystem/home/adamerum/Wastewater/wastewater_dnaseq_dev/out_20240926' --run_amr true --perform_shortread_hostremoval true --hostremoval_reference 'https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/genome/genome.fasta' -name in4448_test_2 -resume
+Sep-27 14:29:47.759 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 24.04.4
+Sep-27 14:29:47.795 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/adamerum/.nextflow/plugins; core-plugins: nf-amazon@2.5.3,nf-azure@1.6.1,nf-cloudcache@0.4.1,nf-codecommit@0.2.1,nf-console@1.1.3,nf-ga4gh@1.3.0,nf-google@1.13.2-patch1,nf-tower@1.9.1,nf-wave@1.4.2-patch1
+Sep-27 14:29:47.827 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Sep-27 14:29:47.833 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Sep-27 14:29:47.836 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Sep-27 14:29:47.901 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Sep-27 14:29:47.950 [main] DEBUG nextflow.scm.ProviderConfig - Using SCM config path: /home/adamerum/.nextflow/scm
+Sep-27 14:29:47.976 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+nextflow.exception.AbortOperationException: Cannot find script file: ../wastewater-dnaseq/main.nf
+	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:517)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:321)
+	at nextflow.cli.Launcher.run(Launcher.groovy:503)
+	at nextflow.cli.Launcher.main(Launcher.groovy:657)
