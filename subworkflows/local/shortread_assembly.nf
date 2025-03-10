@@ -25,7 +25,7 @@ workflow SHORTREAD_ASSEMBLY {
         QUAST ( ch_assembly )
         ch_versions      = ch_versions.mix( QUAST.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.report )
-    } else if (params.assembler_sr == 'megahit') {
+    } else (params.assembler_sr == 'megahit') {
         // MEGAHIT metagenome assembly
         MEGAHIT ( reads ).assembly
         ch_assembly = MEGAHIT.out.assembly
@@ -35,8 +35,6 @@ workflow SHORTREAD_ASSEMBLY {
         QUAST ( ch_assembly )
         ch_versions      = ch_versions.mix( QUAST.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.report )
-    } else {
-        error "Unsupported assembler specified: ${params.assembler_sr}. Use 'spades' or 'megahit'."
     }
 
     emit:

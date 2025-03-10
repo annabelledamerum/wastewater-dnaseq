@@ -13,7 +13,6 @@ process BWA_ALIGN {
 
     output:
     tuple val(meta), path("*_alignment_sorted.bam"), emit: bwa_bam
-    tuple val(meta), path("*_alignment_dedup.bam"), emit: bwa_dedup_bam, optional: true
     path("*_flagstat.txt"), emit: bam_flagstats
     path "versions.yml", emit: versions
 

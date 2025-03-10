@@ -359,8 +359,7 @@ workflow WASTEWATER {
         SUBWORKFLOW: ASSEMBLY (metagenome)
     */
     // NOTE: shortread assembly with SPADES - PE only
-    if ( !params.single_end && !params.skip_spades ) {
-        //ch_shortread_assembly = SHORTREAD_ASSEMBLY ( ch_reads_runmerged ).assembly
+    if ( !params.single_end && !params.skip_assembly ) {
         ch_shortread_assembly = SHORTREAD_ASSEMBLY ( ch_reads_runmerged ).assembly
         ch_multiqc_files = ch_multiqc_files.mix( SHORTREAD_ASSEMBLY.out.mqc.collect{it[1]}.ifEmpty([]) )
         ch_versions = ch_versions.mix( SHORTREAD_ASSEMBLY.out.versions )
