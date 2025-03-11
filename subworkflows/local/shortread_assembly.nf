@@ -25,7 +25,7 @@ workflow SHORTREAD_ASSEMBLY {
         QUAST ( ch_assembly )
         ch_versions      = ch_versions.mix( QUAST.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.report )
-    } else (params.assembler_sr == 'megahit') {
+    } else if (params.assembler_sr == 'megahit') {
         // MEGAHIT metagenome assembly
         MEGAHIT ( reads )
         ch_assembly = MEGAHIT.out.assembly
@@ -35,7 +35,7 @@ workflow SHORTREAD_ASSEMBLY {
         QUAST ( ch_assembly )
         ch_versions      = ch_versions.mix( QUAST.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( QUAST.out.report )
-    }
+    } 
 
     emit:
     assembly = ch_assembly
