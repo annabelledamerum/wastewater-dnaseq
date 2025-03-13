@@ -12,6 +12,8 @@ process SOURMASH_GATHER {
 
     output:
     tuple val(meta), path('*with-lineages.csv'), emit: gather
+    tuple val(meta), path('*lineage_summary.tsv'), emit: gather_metagenome
+    tuple val(meta), path('*krona.tsv'), emit: krona
     path "versions.yml", emit: versions 
     path "*.log"
 
@@ -23,7 +25,8 @@ process SOURMASH_GATHER {
 
     sourmash gather $sketch \$DB --dna --ksize ${params.sourmash_kmersize} --threshold-bp ${params.sourmash_threshold_bp} -o ${prefix}_sourmashgather.csv 1> ${prefix}_sourmashgather.log
     sourmash tax annotate -g ${prefix}_sourmashgather.csv -t \$LINEAGE 2> ${prefix}_sourmashannotate.log
-    
+    sourmash tax metagenome -g ${prefix}_sourmashgather.csv -t \$LINEAGE -o ${prefix}_sourmashtaxmetagenome --output-format krona --rank species 1> ${prefix}_sourmashtaxmetagenome.log
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         sourmash: \$(sourmash --version | sed 's/sourmash //')
