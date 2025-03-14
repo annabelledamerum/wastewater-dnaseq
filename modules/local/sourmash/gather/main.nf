@@ -12,7 +12,7 @@ process SOURMASH_GATHER {
 
     output:
     tuple val(meta), path('*with-lineages.csv'), emit: gather
-    tuple val(meta), path('*lineage_summary.tsv'), emit: gather_metagenome
+    //tuple val(meta), path('*lineage_summary.tsv'), emit: gather_metagenome
     tuple val(meta), path('*krona.tsv'), emit: krona
     path "versions.yml", emit: versions 
     path "*.log"
