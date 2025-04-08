@@ -17,6 +17,7 @@ process QIIME_DATAMERGE {
 
     output:
     path('merged_filtered_counts.qza')           , emit: filtered_counts_qza
+    path('merged_taxonomy.qza')                  , emit: taxonomy_qza
     path('merged_taxonomy.tsv')                  , optional: true, emit: taxonomy_tsv
     path('versions.yml')                         , emit: versions
 
@@ -37,7 +38,14 @@ process QIIME_DATAMERGE {
         --p-min-samples ${params.min_samples} \
         --o-filtered-table merged_filtered_counts.qza
     
-    qiime_taxmerge.py $taxonomy
+    qiime_taxmerge.py $taxonomy -o "merged_taxonomy.tsv"
+
+    qiime tools import \
+        --input-path merged_taxonomy.tsv \
+        --type 'FeatureData[Taxonomy]' \
+        --input-format TSVTaxonomyFormat \
+        --output-path merged_taxonomy.qza
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

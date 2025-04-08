@@ -8,6 +8,7 @@ include { QIIME2_EXPORT_RELTAX   } from '../../modules/local/qiime2_export_relta
 workflow QIIME2_EXPORT {
     take:
     ch_asv
+    taxonomy_qza
     taxonomy_tsv
     tax_agglom_min
     tax_agglom_max
@@ -24,7 +25,7 @@ workflow QIIME2_EXPORT {
     tax_max = FIND_MAX_AVAILABLE_TAX.out.max_tax.toInteger().map{ [it, tax_agglom_max].min() }
 
     //export_filtered_dada_output (optional)
-    QIIME2_EXPORT_ABSOLUTE ( ch_asv, taxonomy_tsv, tax_min, tax_max )
+    QIIME2_EXPORT_ABSOLUTE ( ch_asv, taxonomy_qza, taxonomy_tsv, tax_min, tax_max )
 
     QIIME2_EXPORT_ABSOLUTE.out.collapse_lvl7_qza
         .ifEmpty("There were no samples or taxa left after filtering! Try lower filtering criteria or examine your data quality.")
@@ -32,7 +33,6 @@ workflow QIIME2_EXPORT {
         .set{ ch_warning_message }
 
     emit:
-    merged_taxonomy_qza = QIIME2_EXPORT_ABSOLUTE.out.merged_taxonomy_qza
     abs_tsv             = QIIME2_EXPORT_ABSOLUTE.out.tsv
     abs_taxa_levels     = QIIME2_EXPORT_ABSOLUTE.out.abundtable
     collapse_qza        = QIIME2_EXPORT_ABSOLUTE.out.collapse_qza

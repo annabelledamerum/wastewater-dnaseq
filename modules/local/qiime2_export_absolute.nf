@@ -5,12 +5,12 @@ process QIIME2_EXPORT_ABSOLUTE {
     
     input:
     path(table)
+    path(taxonomy_qza)
     path(taxonomy_tsv)
     val(tax_agglom_min)
     val(tax_agglom_max)
 
     output:
-    path("merged_taxonomy.qza")      , emit: merged_taxonomy_qza
     path("feature-table.tsv")        , emit: tsv
     path("feature-table.biom")       , emit: biom
     path("table-[2-7].qza")          , emit: collapse_qza
@@ -41,12 +41,6 @@ process QIIME2_EXPORT_ABSOLUTE {
     then
         biom convert -i feature-table.biom -o merged_filtered_counts.tsv --to-tsv
 
-        qiime tools import \
-            --input-path $taxonomy_tsv \
-            --type 'FeatureData[Taxonomy]' \
-            --input-format TSVTaxonomyFormat \
-            --output-path merged_taxonomy.qza
-
         ##on several taxa level
         array=(\$(seq ${tax_agglom_min} 1 ${tax_agglom_max}))
         for i in \${array[@]}
@@ -54,7 +48,7 @@ process QIIME2_EXPORT_ABSOLUTE {
             #collapse taxa
             qiime taxa collapse \
                 --i-table ${table} \
-                --i-taxonomy merged_taxonomy.qza \
+                --i-taxonomy ${taxonomy_qza} \
                 --p-level \$i \
                 --o-collapsed-table table-\$i.qza
             #export to biom
