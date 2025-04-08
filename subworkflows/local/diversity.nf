@@ -2,6 +2,11 @@
 // Run profiling
 //
 
+
+/// Subworkflow
+include { QIIME2_EXPORT                                } from '../../subworkflows/local/qiime2_export'
+
+// Modules
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
 include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
 include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
@@ -22,6 +27,8 @@ workflow DIVERSITY {
     qiime_profiles // [ [ meta ], absolute counts file ]
     qiime_taxonomy // 
     groups // group_metadata.csv
+    tax_agglom_min
+    tax_agglom_max
 
     main:
     ch_versions          = Channel.empty()
@@ -35,21 +42,20 @@ workflow DIVERSITY {
 
     QIIME_DATAMERGE( QIIME_IMPORT.out.absabun_qza.collect(), qiime_taxonomy.collect() )
     ch_versions = ch_versions.mix( QIIME_DATAMERGE.out.versions )
+    
+    QIIME2_EXPORT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_tsv, tax_agglom_min, tax_agglom_max )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_DATAMERGE.out.filtered_counts_collapsed_tsv.map{ "${params.outdir}/qiime_mergeddata/" + it.getName() }
+        QIIME2_EXPORT.out.abs_taxa_levels.flatten().map{ "${params.outdir}/qiime_export/" + it.getName() }
         )
-    QIIME_DATAMERGE.out.filtered_counts_collapsed_qza
-        .ifEmpty('There were no samples or taxa left after filtering! Try lower filtering criteria or examine your data quality.')
-        .filter( String )
-        .set{ ch_warning_message }
- 
-    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza, groups )
+
+    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME2_EXPORT.out.merged_taxonomy_qza, groups )
     ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime_composition_barplot/" + it.getName() }
         )
-    
+
+
     if (params.group_of_interest != 'NONE') {
     	ch_excel = Channel.fromPath(params.groupinterest[params.group_of_interest].excel_path, checkIfExists: true)
         GROUP_COMPOSITION( ch_excel, QIIME_BARPLOT.out.barplot_composition.collect() )
@@ -59,9 +65,9 @@ workflow DIVERSITY {
             )
     }
 
-    QIIME_METADATAFILTER( groups, QIIME_DATAMERGE.out.filtered_counts_collapsed_tsv )
+    QIIME_METADATAFILTER( groups, QIIME2_EXPORT.out.lvl7_tsv )
 
-    QIIME_FILTER_SINGLETON_SAMPLE( QIIME_DATAMERGE.out.filtered_counts_collapsed_qza, QIIME_METADATAFILTER.out.filtered_metadata )
+    QIIME_FILTER_SINGLETON_SAMPLE( QIIME2_EXPORT.out.lvl7_qza, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_FILTER_SINGLETON_SAMPLE.out.versions )
         
     HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), QIIME_METADATAFILTER.out.filtered_metadata, params.top_taxa )
@@ -116,7 +122,7 @@ workflow DIVERSITY {
     mqc          = ch_multiqc_files
     output_paths = ch_output_file_paths
     tables       = QIIME_DATAMERGE.out.filtered_counts_qza
-    taxonomy     = QIIME_DATAMERGE.out.taxonomy_qza
+    taxonomy     = QIIME2_EXPORT.out.merged_taxonomy_qza
     metadata     = QIIME_METADATAFILTER.out.ref_comp_metadata
     warning      = ch_warning_message
 }

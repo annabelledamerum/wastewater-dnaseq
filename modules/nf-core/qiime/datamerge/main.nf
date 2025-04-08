@@ -17,12 +17,8 @@ process QIIME_DATAMERGE {
 
     output:
     path('merged_filtered_counts.qza')           , emit: filtered_counts_qza
-    path('merged_taxonomy.qza')                  , optional: true, emit: taxonomy_qza
-    path('merged_filtered_counts_collapsed.qza') , optional: true, emit: filtered_counts_collapsed_qza
-    path('merged_filtered_counts_collapsed.tsv') , optional: true, emit: filtered_counts_collapsed_tsv
+    path('merged_taxonomy.tsv')                  , optional: true, emit: taxonomy_tsv
     path('versions.yml')                         , emit: versions
-    path('*.qza')
-    path('merged_filtered_counts.tsv')           , optional: true
 
     script:
     """
@@ -41,36 +37,7 @@ process QIIME_DATAMERGE {
         --p-min-samples ${params.min_samples} \
         --o-filtered-table merged_filtered_counts.qza
     
-    qiime tools export \
-        --input-path merged_filtered_counts.qza \
-        --output-path merged_filtered_counts_out
-
-    biom summarize-table -i merged_filtered_counts_out/feature-table.biom > biom_table_summary.txt
-    SAMPLES=\$(grep 'Num samples' biom_table_summary.txt | sed 's/Num samples: //')
-    FEATURES=\$(grep 'Num observations' biom_table_summary.txt | sed 's/Num observations: //')
-
-    if [ "\$SAMPLES" -gt 0 ] && [ "\$FEATURES" -gt 0 ]
-    then
-        biom convert -i merged_filtered_counts_out/feature-table.biom -o merged_filtered_counts.tsv --to-tsv
-
-        qiime_taxmerge.py $taxonomy
-        qiime tools import \
-            --input-path merged_taxonomy.tsv \
-            --type 'FeatureData[Taxonomy]' \
-            --input-format TSVTaxonomyFormat \
-            --output-path merged_taxonomy.qza
-
-        qiime taxa collapse \
-            --i-table merged_filtered_counts.qza \
-            --i-taxonomy merged_taxonomy.qza \
-            --p-level ${params.taxonomy_collapse_level} \
-            --o-collapsed-table merged_filtered_counts_collapsed.qza
-
-        qiime tools export \
-            --input-path merged_filtered_counts_collapsed.qza \
-            --output-path merged_filtered_counts_collapsed_out
-        biom convert -i merged_filtered_counts_collapsed_out/feature-table.biom -o merged_filtered_counts_collapsed.tsv --to-tsv
-    fi
+    qiime_taxmerge.py $taxonomy
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
