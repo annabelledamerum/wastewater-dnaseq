@@ -391,14 +391,15 @@ workflow PROFILING {
         .map { it[0] }
         .collect()
         .map {
-            "The following samples failed taxonomy profiling steps or didn't have any identifiable microbe:\n${it.join("; ")}\nPlease contact us if you want to troubleshoot them."
+            msg = "The following samples failed taxonomy profiling steps or didn't have any identifiable microbe:\n${it.join("; ")}\nPlease contact us if you want to troubleshoot them."
+            if (params.ignore_failed_samples) {
+                log.warn "$msg"
+                return msg
+            } else{
+                return error(msg)
+            }
         }
         .set {ch_warning_message }
-    ch_warning_message
-        .subscribe {
-            log.error "$it"
-            params.ignore_failed_samples ? { log.warn "Ignoring failed samples and continue!" } : System.exit(1)
-        }
 
     emit:
     classifications = ch_raw_classifications

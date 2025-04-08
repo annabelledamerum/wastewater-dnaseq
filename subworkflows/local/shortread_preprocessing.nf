@@ -42,14 +42,15 @@ workflow SHORTREAD_PREPROCESSING {
         .map { meta, reads -> [ meta.id ] }
         .collect()
         .map {
-            "The following samples had too small file size (<1kB) after trimming and read length filtering:\n${it.join("; ")}\nThis could happen when your sequencing quality is poor or your reads are not long enough for k-mer based taxonomy profiling."
+            msg = "The following samples had too small file size (<1kB) after trimming and read length filtering:\n${it.join("; ")}\nThis could happen when your sequencing quality is poor or your reads are not long enough for k-mer based taxonomy profiling."
+            if (params.ignore_failed_samples) {
+                log.warn "$msg"
+                return msg
+            } else {
+                return error(msg)
+            }
         }
         .set { ch_warning_message }
-    ch_warning_message
-        .subscribe {
-            log.error "$it"
-            params.ignore_failed_samples ? { log.warn "Ignoring failed samples and continue!" } : System.exit(1)
-        }
 
     if (params.preprocessing_qc_tool == 'fastqc') {
         FASTQC_PROCESSED ( ch_processed_reads )
