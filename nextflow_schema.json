@@ -476,12 +476,6 @@
                     "maximum": 1000000,
 		            "advanced": true
                 },
-                "sourmash_strict_filtering": {
-                    "type": "boolean",
-                    "description": "Apply a strict filtering criteria to sourmash results to increase specificity at the expense of sensitivity. Require matches to genomes to have at least 93.5% identity or 1,000,000bp overlap.",
-                    "deafult": false,
-                    "advanced": true
-                },
                 "sourmash_trim_low_abund": {
                     "type": "boolean",
                     "description": "Runs trim-low-abund.py from the khmer software package, which removes low abundance, potentially erroneous kmers from data before taxonomy assignment. Only applies when sourmash databases were selected.",
