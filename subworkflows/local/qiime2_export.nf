@@ -3,7 +3,6 @@
  */
 include { FIND_MAX_AVAILABLE_TAX } from '../../modules/local/find_max_available_tax'
 include { QIIME2_EXPORT_ABSOLUTE } from '../../modules/local/qiime2_export_absolute'
-include { QIIME2_EXPORT_RELTAX   } from '../../modules/local/qiime2_export_reltax'
 
 workflow QIIME2_EXPORT {
     take:
