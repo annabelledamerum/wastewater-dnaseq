@@ -44,6 +44,7 @@ workflow DIVERSITY {
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
 
+    QIIME_IMPORT.out.absabun_qza.collect().view()
     QIIME2_FILTERSAMPLES( QIIME_IMPORT.out.absabun_qza.collect() )
     ch_versions = ch_versions.mix( QIIME2_FILTERSAMPLES.out.versions )
     
@@ -70,12 +71,12 @@ workflow DIVERSITY {
             )
     }
 
-    QIIME2_DIVERSITY( QIIME2_EXPORT.out.lvl7_qza, QIIME2_EXPORT.out.lvl7_tsv, groups ) 
+    QIIME2_DIVERSITY( QIIME2_FILTERSAMPLES.out.filtered_counts_qza, QIIME2_FILTERSAMPLES.out.filtered_counts_tsv, groups ) 
     ch_multiqc_files = ch_multiqc_files.mix( QIIME2_DIVERSITY.out.mqc )
     ch_output_file_paths = ch_output_file_paths.mix( QIIME2_DIVERSITY.out.output_paths )
     ch_versions = ch_versions.mix( QIIME2_DIVERSITY.out.versions )
     
-    HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), QIIME2_DIVERSITY.out.filtered_metadata, params.top_taxa )
+    HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), groups, params.top_taxa )
     ch_multiqc_files = ch_multiqc_files.mix( HEATMAP_INPUT.out.taxo_heatmap.collect()) 
 
     QIIME2_ANCOMBC( QIIME2_DIVERSITY.out.filtered_metadata, QIIME2_EXPORT.out.collapse_qza, QIIME2_PREPTAX.out.taxonomy_qza, tax_agglom_min, tax_agglom_max, ancombc_fdr_cutoff )

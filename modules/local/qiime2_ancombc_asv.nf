@@ -5,7 +5,6 @@ process QIIME2_ANCOMBC_ASV {
     label 'process_long'
     label 'error_ignore'
 
-    conda (params.enable_conda ? { exit 1 "QIIME2 has no conda package" } : null)
     container "quay.io/qiime2/core:2023.2"
 
     input:

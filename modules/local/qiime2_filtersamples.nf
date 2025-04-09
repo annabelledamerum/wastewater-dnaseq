@@ -16,6 +16,7 @@ process QIIME2_FILTERSAMPLES {
 
     output:
     path('merged_filtered_counts.qza')           , emit: filtered_counts_qza
+    path('merged_filtered_counts.tsv')           , emit: filtered_counts_tsv
     path('versions.yml')                         , emit: versions
 
     script:
@@ -34,6 +35,11 @@ process QIIME2_FILTERSAMPLES {
         --p-min-frequency ${params.min_frequency} \
         --p-min-samples ${params.min_samples} \
         --o-filtered-table merged_filtered_counts.qza
+    
+    qiime tools export \
+        --input-path merged_filtered_counts.qza \
+        --output-path merged_filtered_counts_export
+    biom convert -i merged_filtered_counts_export/feature-table.biom -o merged_filtered_counts.tsv --to-tsv
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

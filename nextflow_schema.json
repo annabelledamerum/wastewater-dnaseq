@@ -533,6 +533,31 @@
                     "minimum": 1,
                     "advanced": true
                 },
+		"qiime_tax_agglom_max": {
+		    "type": "integer",
+		    "description": "There are seven levels of taxonomy rankings: kingdom[1], phylum[2], class[3], order[4], family[5], genus[6], and species[7]. ANCOMBC and heatmap analysis will be conducted at the levels between this maximum parameter and the qiime minimum taxa parameter. Default is 7, species level.",
+		    "default": 7,
+		    "minimum": 2,
+		    "maximum": 7,
+		    "hidden": true
+		},
+		"qiime_tax_agglom_min": {
+	            "type": "integer",
+		    "description": "There are seven levels of taxonomy rankings: kingdom[1], phylum[2], class[3], order[4], family[5], genus[6], and species[7]. ANCOMBC and heatmap analysis will be conducted at the levels between this minimum parameter and the qiime maximum taxa parameter. Default is 7, species level.",
+		    "default": 1,
+		    "minimum": 1,
+		    "maximum": 7,
+		    "hidden": true
+		},
+		"ancombc_fdr_cutoff": {
+		    "type": "number",
+		    "default": 0.05,
+		    "description": "FDR threshold for a taxa to be considered significant and displayed on the ANCOM-BC plot",
+		    "help_text": "FDR threshold for a taxa to be considered significant and displayed on the ANCOM-BC plot",
+		    "minimum": 0,
+		    "maximum": 1,
+		    "advanced": true
+	        },
                 "taxonomy_collapse_level": {
                     "type": "integer",
                     "description": "There are seven levels of taxonomy rankings: kingdom[1], phylum[2], class[3], order[4], family[5], genus[6], and species[7]. Diversity analyses will be conducted at the level chosen here. Default is 7, species level.",
