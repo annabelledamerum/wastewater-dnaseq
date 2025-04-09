@@ -12,18 +12,9 @@ include { QIIME2_ANCOMBC                               } from '../../subworkflow
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
 include { QIIME2_FILTERSAMPLES                          } from '../../modules/local/qiime2_filtersamples'
 include { QIIME2_PREPTAX                                } from '../../modules/local/qiime2_preptax'
-include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
-include { QIIME_FILTER_SINGLETON_SAMPLE                 } from '../../modules/nf-core/qiime/filter_singleton_sample/main'
-include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
-include { QIIME_DIVERSITYCORE                           } from '../../modules/nf-core/qiime/diversitycore/main'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
 include { GROUP_COMPOSITION                             } from '../../modules/local/group_composition'
 include { HEATMAP_INPUT                                 } from '../../modules/local/heatmap_input'
-include { QIIME_ALPHADIVERSITY                          } from '../../modules/nf-core/qiime/alphadiversity/main'
-include { QIIME_BETAGROUPCOMPARE                        } from '../../modules/nf-core/qiime/beta_groupcompare/main'
-include { QIIME_ANCOMBC                                 } from '../../modules/nf-core/qiime/ancombc/main'
-include { QIIME_PARSEANCOMBC                            } from '../../modules/nf-core/qiime/parse_ancombc/main'
-include { QIIME_PLOT_MULTIQC                            } from '../../modules/nf-core/qiime/plot_multiqc/main'
 
 workflow DIVERSITY {
     take:
@@ -44,7 +35,6 @@ workflow DIVERSITY {
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
 
-    QIIME_IMPORT.out.absabun_qza.collect().view()
     QIIME2_FILTERSAMPLES( QIIME_IMPORT.out.absabun_qza.collect() )
     ch_versions = ch_versions.mix( QIIME2_FILTERSAMPLES.out.versions )
     
@@ -56,6 +46,9 @@ workflow DIVERSITY {
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime2/composition_barplot/" + it.getName() }
         )
+
+    HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), groups, params.top_taxa )
+    ch_multiqc_files = ch_multiqc_files.mix( HEATMAP_INPUT.out.taxo_heatmap.collect())
 
     QIIME2_EXPORT( QIIME2_FILTERSAMPLES.out.filtered_counts_qza, QIIME2_PREPTAX.out.taxonomy_qza, QIIME2_PREPTAX.out.taxonomy_tsv, tax_agglom_min, tax_agglom_max )
     ch_output_file_paths = ch_output_file_paths.mix(
@@ -76,9 +69,6 @@ workflow DIVERSITY {
     ch_output_file_paths = ch_output_file_paths.mix( QIIME2_DIVERSITY.out.output_paths )
     ch_versions = ch_versions.mix( QIIME2_DIVERSITY.out.versions )
     
-    HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), groups, params.top_taxa )
-    ch_multiqc_files = ch_multiqc_files.mix( HEATMAP_INPUT.out.taxo_heatmap.collect()) 
-
     QIIME2_ANCOMBC( QIIME2_DIVERSITY.out.filtered_metadata, QIIME2_EXPORT.out.collapse_qza, QIIME2_PREPTAX.out.taxonomy_qza, tax_agglom_min, tax_agglom_max, ancombc_fdr_cutoff )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME2_ANCOMBC.out.ch_output_files.flatten().map{ "${params.outdir}/qiime2/ancombc/visualizations/qzv/" + it.getName() }

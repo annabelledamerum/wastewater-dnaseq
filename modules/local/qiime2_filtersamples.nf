@@ -1,8 +1,6 @@
 /* 
 Merge sample feature table qza -> raw merged qza, not used in other process
-Filter sample by no. reads -> filtered merged qza, used in barplot
-Merge sample taxonomy and import to qiime -> taxonomy qza, used in barplot
-Collapse to intended taxonomy level -> filtered collapsed qza, used in diversity analysis
+Filter sample by no. reads -> filtered merged qza, used in barplot, diversity, ancombc
 Export to tsv -> used metadata filtering and delivered to customer
 */ 
 
@@ -40,7 +38,7 @@ process QIIME2_FILTERSAMPLES {
         --input-path merged_filtered_counts.qza \
         --output-path merged_filtered_counts_export
     biom convert -i merged_filtered_counts_export/feature-table.biom -o merged_filtered_counts.tsv --to-tsv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         qiime: \$(qiime --version | sed '2,2d' | sed 's/q2cli version //g')
