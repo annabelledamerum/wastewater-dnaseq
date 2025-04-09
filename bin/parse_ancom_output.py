@@ -144,7 +144,7 @@ def select_species(table, indexlist, group, cleangroup):
     sliced_table.columns = ["(Intercept)", cleangroup]
     return sliced_table
 
-def make_heatmap_input(lfc, stderr, qval, wslice, pval, metadata):
+def make_heatmap_input(lfc, stderr, qval, wslice, pval, metadata, fdr):
     lfc = pd.read_csv(lfc, index_col = "id")
     se_slice = pd.read_csv(stderr, index_col = "id")
     q_val = pd.read_csv(qval, index_col = "id")
@@ -158,8 +158,8 @@ def make_heatmap_input(lfc, stderr, qval, wslice, pval, metadata):
         cleangroup = re.sub("^group", "", group)
      
         grouponly_qval = q_val
-        grouponly_qval = grouponly_qval.sort_values(by=group, ascending=True).iloc[1:50,:]
-        grouponly_qval = grouponly_qval[grouponly_qval[group] < 0.05]
+        grouponly_qval = grouponly_qval[grouponly_qval[group] < fdr]
+        #grouponly_qval = grouponly_qval.sort_values(by=group, ascending=True)
         grouponly_qval = grouponly_qval[["(Intercept)", group]]
         grouponly_qval.columns = ["(Intercept)", cleangroup]
                             
@@ -192,7 +192,7 @@ def make_heatmap_input(lfc, stderr, qval, wslice, pval, metadata):
         group_overview = pd.DataFrame(lfc[group]).merge(pd.DataFrame(p_val[group]), left_index=True, right_index=True, how='inner')
         group_overview = group_overview.merge(pd.DataFrame(q_val[group]), left_index=True, right_index=True, how="inner")
         group_overview = group_overview.merge(pd.DataFrame(se_slice[group]), left_index=True, right_index=True, how="inner")
-        group_overview.columns = [cleangroup+"_lfc", cleangroup+"_pval", cleangroup+"_qval", cleangroup+"_standard_error"]
+        group_overview.columns = [cleangroup+"_vs_"+refgroup+"_lfc",cleangroup+"_vs_"+refgroup+"_pval",cleangroup+"_vs_"+refgroup+"_qval", cleangroup+"_vs"+refgroup+"_standard_error"]
         group_overview.to_csv(cleangroup+"_vs_"+refgroup+"_ancombc_group_overview.csv")
 
 if __name__ == "__main__":
@@ -203,6 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("-w", "--wslice", dest="wslice", type=str, help="")
     parser.add_argument("-p", "--pval", dest="pval", type=str, help="")
     parser.add_argument("-f", "--filtered_metadata", dest="metadata", type=str, help="")
+    parser.add_argument("-c", "--fdr_cutoff", dest="fdr", type=float, help="")
+    parser.add_argument("-t", "--taxa_max_display", dest="taxa_max_display", type=int, help="")
     args = parser.parse_args()
-    make_heatmap_input(args.lfc, args.stderr, args.qval, args.wslice, args.pval, args.metadata)
-
+    make_heatmap_input(args.lfc, args.stderr, args.qval, args.wslice, args.pval, args.metadata, args.fdr)

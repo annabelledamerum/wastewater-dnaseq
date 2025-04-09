@@ -278,7 +278,7 @@ workflow TAXPROFILER {
     /*
         SUBWORKFLOW: DIVERSITY with Qiime2
     */
-    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, INPUT_CHECK.out.groups, params.qiime_tax_agglom_min, params.qiime_tax_agglom_max )
+    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, INPUT_CHECK.out.groups, params.qiime_tax_agglom_min, params.qiime_tax_agglom_max, params.ancombc_fdr_cutoff )
     ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( DIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)

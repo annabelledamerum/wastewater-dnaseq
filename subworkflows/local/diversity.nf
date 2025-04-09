@@ -6,10 +6,12 @@
 /// Subworkflow
 include { QIIME2_EXPORT                                } from '../../subworkflows/local/qiime2_export'
 include { QIIME2_DIVERSITY                             } from '../../subworkflows/local/qiime2_diversity'
+include { QIIME2_ANCOMBC                               } from '../../subworkflows/local/qiime2_ancombc'
 
 // Modules
 include { QIIME_IMPORT                                  } from '../../modules/nf-core/qiime/import/main'
-include { QIIME_DATAMERGE                               } from '../../modules/nf-core/qiime/datamerge/main'
+include { QIIME2_FILTERSAMPLES                          } from '../../modules/local/qiime2_filtersamples'
+include { QIIME2_PREPTAX                                } from '../../modules/local/qiime2_preptax'
 include { QIIME_METADATAFILTER                          } from '../../modules/nf-core/qiime/metadatafilter/main'
 include { QIIME_FILTER_SINGLETON_SAMPLE                 } from '../../modules/nf-core/qiime/filter_singleton_sample/main'
 include { QIIME_ALPHARAREFACTION                        } from '../../modules/nf-core/qiime/alpha_rarefaction/main'
@@ -30,6 +32,7 @@ workflow DIVERSITY {
     groups // group_metadata.csv
     tax_agglom_min
     tax_agglom_max
+    ancombc_fdr_cutoff
 
     main:
     ch_versions          = Channel.empty()
@@ -41,19 +44,21 @@ workflow DIVERSITY {
     QIIME_IMPORT ( qiime_profiles )
     ch_versions = ch_versions.mix( QIIME_IMPORT.out.versions )
 
-    QIIME_DATAMERGE( QIIME_IMPORT.out.absabun_qza.collect(), qiime_taxonomy.collect() )
-    ch_versions = ch_versions.mix( QIIME_DATAMERGE.out.versions )
+    QIIME2_FILTERSAMPLES( QIIME_IMPORT.out.absabun_qza.collect() )
+    ch_versions = ch_versions.mix( QIIME2_FILTERSAMPLES.out.versions )
     
-    QIIME2_EXPORT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza, QIIME_DATAMERGE.out.taxonomy_tsv, tax_agglom_min, tax_agglom_max )
-    ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME2_EXPORT.out.abs_taxa_levels.flatten().map{ "${params.outdir}/qiime_export/" + it.getName() }
-        )
+    QIIME2_PREPTAX( qiime_taxonomy.collect() )
 
-    QIIME_BARPLOT( QIIME_DATAMERGE.out.filtered_counts_qza, QIIME_DATAMERGE.out.taxonomy_qza, groups )
+    QIIME_BARPLOT( QIIME2_FILTERSAMPLES.out.filtered_counts_qza, QIIME2_PREPTAX.out.taxonomy_qza, groups )
     ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime_composition_barplot/" + it.getName() }
+        QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime2/composition_barplot/" + it.getName() }
+        )
+
+    QIIME2_EXPORT( QIIME2_FILTERSAMPLES.out.filtered_counts_qza, QIIME2_PREPTAX.out.taxonomy_qza, QIIME2_PREPTAX.out.taxonomy_tsv, tax_agglom_min, tax_agglom_max )
+    ch_output_file_paths = ch_output_file_paths.mix(
+        QIIME2_EXPORT.out.abs_taxa_levels.flatten().map{ "${params.outdir}/qiime2/export/" + it.getName() }
         )
 
     if (params.group_of_interest != 'NONE') {
@@ -70,27 +75,21 @@ workflow DIVERSITY {
     ch_output_file_paths = ch_output_file_paths.mix( QIIME2_DIVERSITY.out.output_paths )
     ch_versions = ch_versions.mix( QIIME2_DIVERSITY.out.versions )
     
-        
     HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), QIIME2_DIVERSITY.out.filtered_metadata, params.top_taxa )
     ch_multiqc_files = ch_multiqc_files.mix( HEATMAP_INPUT.out.taxo_heatmap.collect()) 
 
-    QIIME_ANCOMBC ( QIIME2_DIVERSITY.out.filtered_abs_qza, QIIME2_DIVERSITY.out.filtered_metadata ) 
+    QIIME2_ANCOMBC( QIIME2_DIVERSITY.out.filtered_metadata, QIIME2_EXPORT.out.collapse_qza, QIIME2_PREPTAX.out.taxonomy_qza, tax_agglom_min, tax_agglom_max, ancombc_fdr_cutoff )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_ANCOMBC.out.ancombc.map{ "${params.outdir}/qiime_ancombc/" + it.getName() }
+        QIIME2_ANCOMBC.out.ch_output_files.flatten().map{ "${params.outdir}/qiime2/ancombc/visualizations/qzv/" + it.getName() }
         )
-    ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_ANCOMBC.out.group_ancombc_csv.flatten().map{ "${params.outdir}/qiime_ancombc/" + it.getName() } 
-        )
-
-    QIIME_PARSEANCOMBC ( QIIME_ANCOMBC.out.ancombc_mqc.collect(), QIIME_ANCOMBC.out.reference_group )
-    ch_multiqc_files = ch_multiqc_files.mix( QIIME_PARSEANCOMBC.out.ancombc_plot.collect() )
+    ch_multiqc_files = ch_multiqc_files.mix( QIIME2_ANCOMBC.out.mqc.collect() )
 
     emit:
     versions     = ch_versions          // channel: [ versions.yml ]
     mqc          = ch_multiqc_files
     output_paths = ch_output_file_paths
-    tables       = QIIME_DATAMERGE.out.filtered_counts_qza
-    taxonomy     = QIIME_DATAMERGE.out.taxonomy_qza
+    tables       = QIIME2_FILTERSAMPLES.out.filtered_counts_qza
+    taxonomy     = QIIME2_PREPTAX.out.taxonomy_qza
     metadata     = QIIME2_DIVERSITY.out.ref_metadata
     warning      = ch_warning_message
 }

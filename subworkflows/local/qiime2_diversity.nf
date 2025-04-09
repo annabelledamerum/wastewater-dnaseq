@@ -27,25 +27,25 @@ workflow QIIME2_DIVERSITY {
     QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.min_total )
     ch_versions = ch_versions.mix( QIIME_ALPHARAREFACTION.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime_alpha_rarefaction/" + it.getName() }
+        QIIME_ALPHARAREFACTION.out.qzv.map{ "${params.outdir}/qiime2/diversity/alpha_rarefaction/" + it.getName() }
         )
 
     QIIME_DIVERSITYCORE( QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.min_total, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_DIVERSITYCORE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/diversity_core/" + it.getName() }
+        QIIME_DIVERSITYCORE.out.qzv.flatten().map{ "${params.outdir}/qiime2/diversity/diversity_core/" + it.getName() }
         )
 
     QIIME_ALPHADIVERSITY( QIIME_DIVERSITYCORE.out.vector.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
     ch_versions = ch_versions.mix( QIIME_ALPHADIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_ALPHADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/alpha_diversity/" + it.getName() }
+        QIIME_ALPHADIVERSITY.out.qzv.flatten().map{ "${params.outdir}/qiime2/diversity/alpha_diversity/" + it.getName() }
         )
 
     QIIME_BETAGROUPCOMPARE ( QIIME_DIVERSITYCORE.out.distance.flatten(), QIIME_METADATAFILTER.out.filtered_metadata.collect() )
     ch_versions = ch_versions.mix( QIIME_BETAGROUPCOMPARE.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(
-        QIIME_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/qiime_diversity/beta_diversity/" + it.getName() }
+        QIIME_BETAGROUPCOMPARE.out.qzv.flatten().map{ "${params.outdir}/qiime2/diversity/beta_diversity/" + it.getName() }
         )
 
     QIIME_PLOT_MULTIQC(
