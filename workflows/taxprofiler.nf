@@ -58,6 +58,14 @@ if (params.profiler=='malt' && params.run_krona && !params.krona_taxonomy_direct
 //Not supporting sequential kraken2-bracken yet
 //if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
 
+if (params.qiime_tax_agglom_min > params.qiime_tax_agglom_max) {
+    log.error "Incompatible parameters: `--qiime_tax_agglom_min` may not be greater than `--qiime_tax_agglom_max`."
+    System.exit(1)
+}
+if (params.qiime_tax_agglom_max < 2) {
+    log.error "Incompatible parameter setting: qiime_tax_agglom_max must be higher than 1."
+    System.exit(1)
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -278,7 +286,7 @@ workflow TAXPROFILER {
     /*
         SUBWORKFLOW: DIVERSITY with Qiime2
     */
-    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, INPUT_CHECK.out.groups )
+    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, INPUT_CHECK.out.groups, params.qiime_tax_agglom_min, params.qiime_tax_agglom_max, params.ancombc_fdr_cutoff )
     ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( DIVERSITY.out.versions )
     ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
