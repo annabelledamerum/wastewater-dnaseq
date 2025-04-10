@@ -1,9 +1,5 @@
 /* 
-Merge sample feature table qza -> raw merged qza, not used in other process
-Filter sample by no. reads -> filtered merged qza, used in barplot
-Merge sample taxonomy and import to qiime -> taxonomy qza, used in barplot
-Collapse to intended taxonomy level -> filtered collapsed qza, used in diversity analysis
-Export to tsv -> used metadata filtering and delivered to customer
+Merge and import sample taxonomy to qiime -> taxonomy qza, used in barplot
 */ 
 
 process QIIME2_PREPTAX {
