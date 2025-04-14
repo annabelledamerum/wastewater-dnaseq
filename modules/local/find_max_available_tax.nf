@@ -1,7 +1,6 @@
 //Find max available taxonomy assignement levels
 //Adjust the requested taxonomy levels for exporting accordingly
 process FIND_MAX_AVAILABLE_TAX{
-    container "zymoresearch/aladdin-ampliseq:1.0.0"
 
     input:
     path(ch_tax_tsv)

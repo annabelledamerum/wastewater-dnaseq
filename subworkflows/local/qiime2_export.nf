@@ -26,16 +26,9 @@ workflow QIIME2_EXPORT {
     //export_filtered_dada_output (optional)
     QIIME2_EXPORT_ABSOLUTE ( ch_asv, taxonomy_qza, taxonomy_tsv, tax_min, tax_max )
 
-    QIIME2_EXPORT_ABSOLUTE.out.collapse_lvl7_qza
-        .ifEmpty("There were no samples or taxa left after filtering! Try lower filtering criteria or examine your data quality.")
-        .filter( String )
-        .set{ ch_warning_message }
-
     emit:
     abs_tsv             = QIIME2_EXPORT_ABSOLUTE.out.tsv
     abs_taxa_levels     = QIIME2_EXPORT_ABSOLUTE.out.abundtable
     collapse_qza        = QIIME2_EXPORT_ABSOLUTE.out.collapse_qza
     collapse_tsv        = QIIME2_EXPORT_ABSOLUTE.out.abundtable
-    lvl7_tsv            = QIIME2_EXPORT_ABSOLUTE.out.collapse_lvl7_tsv
-    lvl7_qza            = QIIME2_EXPORT_ABSOLUTE.out.collapse_lvl7_qza
 }

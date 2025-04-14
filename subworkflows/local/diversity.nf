@@ -40,8 +40,9 @@ workflow DIVERSITY {
     
     QIIME2_PREPTAX( qiime_taxonomy.collect() )
 
-    QIIME_BARPLOT( QIIME2_FILTERSAMPLES.out.filtered_counts_qza, QIIME2_PREPTAX.out.taxonomy_qza, groups )
+    QIIME_BARPLOT( QIIME2_FILTERSAMPLES.out.filtered_counts_qza, QIIME2_PREPTAX.out.taxonomy_qza, groups, tax_agglom_max )
     ch_versions = ch_versions.mix( QIIME_BARPLOT.out.versions )
+    QIIME_BARPLOT.out.barplot_composition.view()
     ch_multiqc_files = ch_multiqc_files.mix( QIIME_BARPLOT.out.barplot_composition.collect() )
     ch_output_file_paths = ch_output_file_paths.mix(
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime2/composition_barplot/" + it.getName() }

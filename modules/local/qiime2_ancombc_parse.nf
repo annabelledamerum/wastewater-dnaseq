@@ -1,6 +1,5 @@
 process QIIME2_ANCOMBC_PARSE {
     label 'process_low'
-    container "zymoresearch/aladdin-ampliseq:1.0.0"
 
     input:
     path(html)

@@ -15,8 +15,6 @@ process QIIME2_EXPORT_ABSOLUTE {
     path("feature-table.biom")       , emit: biom
     path("table-[2-7].qza")          , emit: collapse_qza
     path("abs-abund-table-*.tsv")    , emit: abundtable
-    path("abs-abund-table-7.tsv")    , emit: collapse_lvl7_tsv, optional: true
-    path("table-7.qza")              , emit: collapse_lvl7_qza, optional: true
     path "versions.yml"              , emit: versions
 
     script:
@@ -39,7 +37,6 @@ process QIIME2_EXPORT_ABSOLUTE {
 
     if [ "\$SAMPLES" -gt 0 ] && [ "\$FEATURES" -gt 0 ]
     then
-        biom convert -i feature-table.biom -o merged_filtered_counts.tsv --to-tsv
 
         ##on several taxa level
         array=(\$(seq ${tax_agglom_min} 1 ${tax_agglom_max}))

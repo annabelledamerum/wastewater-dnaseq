@@ -10,8 +10,8 @@ include { QIIME_PLOT_MULTIQC                            } from '../../modules/nf
 
 workflow QIIME2_DIVERSITY {
     take:
-    lvl7_qza
-    lvl7_tsv
+    lvlmax_qza
+    lvlmax_tsv
     groups // group_metadata.csv
 
     main:
@@ -19,9 +19,9 @@ workflow QIIME2_DIVERSITY {
     ch_multiqc_files     = Channel.empty()
     ch_output_file_paths = Channel.empty()
 
-    QIIME_METADATAFILTER( groups, lvl7_tsv )
+    QIIME_METADATAFILTER( groups, lvlmax_tsv )
 
-    QIIME_FILTER_SINGLETON_SAMPLE( lvl7_qza, QIIME_METADATAFILTER.out.filtered_metadata )
+    QIIME_FILTER_SINGLETON_SAMPLE( lvlmax_qza, QIIME_METADATAFILTER.out.filtered_metadata )
     ch_versions = ch_versions.mix( QIIME_FILTER_SINGLETON_SAMPLE.out.versions )
  
     QIIME_ALPHARAREFACTION( QIIME_METADATAFILTER.out.filtered_metadata, QIIME_FILTER_SINGLETON_SAMPLE.out.abs_qza, QIIME_METADATAFILTER.out.min_total )
