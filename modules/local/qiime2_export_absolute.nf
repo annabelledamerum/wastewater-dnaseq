@@ -35,6 +35,8 @@ process QIIME2_EXPORT_ABSOLUTE {
     SAMPLES=\$(grep 'Num samples' biom_table_summary.txt | sed 's/Num samples: //')
     FEATURES=\$(grep 'Num observations' biom_table_summary.txt | sed 's/Num observations: //')
 
+    levels=( "Kingdom" "Phylum" "Class" "Order" "Family" "Genus" "Species" )
+
     if [ "\$SAMPLES" -gt 0 ] && [ "\$FEATURES" -gt 0 ]
     then
 
@@ -54,7 +56,7 @@ process QIIME2_EXPORT_ABSOLUTE {
             #convert to tab separated text file
             biom convert \
                 -i table-\$i/feature-table.biom \
-                -o abs-abund-table-\$i.tsv --to-tsv
+                -o abs-abund-table-\${levels[\${i}-1]}.tsv --to-tsv
         done
     fi
 

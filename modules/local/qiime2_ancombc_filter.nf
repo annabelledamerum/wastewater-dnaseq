@@ -1,4 +1,4 @@
-process QIIME2_ANCOMBC_ASV {
+process QIIME2_ANCOMBC_FILTER {
     tag "taxonomic level: ${taxlevel}"
     label 'process_low'
     label 'single_cpu'

@@ -1,4 +1,4 @@
-process QIIME2_ANCOMBC_TAX {
+process QIIME2_ANCOMBC_INITIAL {
     tag "${table.baseName} - taxonomic level: ${taxlevel}"
     label 'process_low'
     label 'single_cpu'
