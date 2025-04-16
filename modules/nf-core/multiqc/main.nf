@@ -3,7 +3,7 @@ process MULTIQC {
     stageInMode 'copy'
 
     input:
-    path  multiqc_files, stageAs: "?/*"
+    path  multiqc_files, stageAs: "multiqc_input/*"
     path(multiqc_config)
     path(extra_multiqc_config)
     path(multiqc_logo)
@@ -31,14 +31,13 @@ process MULTIQC {
     source venv_multiqc/bin/activate
     pip install -e multiqc_custom_plugins/ --no-cache-dir
 
-    multiqc \\
-        --force --ignore "venv_multiqc/*" \\
+    multiqc --force \\
         $args \\
         $config \\
         $extra_config \\
         $rtitle $rfilename \\
         $comment \\
-        .
+        ./multiqc_input
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
