@@ -30,6 +30,7 @@ custom_content:
     - mpa_readstats
     - Diversity_Analysis
     - Comparative_Diversity_Analysis
+    - ANCOM_Results
     - resistome_class_composition
     - top20genes_amr_composition
 
