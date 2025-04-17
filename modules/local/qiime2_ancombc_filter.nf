@@ -20,7 +20,8 @@ process QIIME2_ANCOMBC_FILTER {
 
     script:
     """
-    export XDG_CONFIG_HOME="\${PWD}/HOME"
+    mkdir tmpdir
+    export TMPDIR=\$PWD/tmpdir
 
     qiime tools export --input-path $qza --output-path ancombc_export/
 

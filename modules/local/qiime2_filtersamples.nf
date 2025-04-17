@@ -19,6 +19,9 @@ process QIIME2_FILTERSAMPLES {
 
     script:
     """
+    mkdir tmpdir
+    export TMPDIR=\$PWD/tmpdir
+
     qiime feature-table merge \
         --i-tables $abs_qza \
         --o-merged-table merged_raw_counts.qza

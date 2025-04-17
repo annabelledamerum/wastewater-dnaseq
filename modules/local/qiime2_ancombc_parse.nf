@@ -10,6 +10,9 @@ process QIIME2_ANCOMBC_PARSE {
 
     script:
     """
+    mkdir tmpdir
+    export TMPDIR=\$PWD/tmpdir
+
     replace_vis.sh "$html"
     """
 }

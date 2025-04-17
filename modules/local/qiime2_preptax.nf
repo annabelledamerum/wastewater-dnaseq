@@ -17,6 +17,9 @@ process QIIME2_PREPTAX {
 
     script:
     """
+    mkdir tmpdir
+    export TMPDIR=\$PWD/tmpdir
+
     qiime_taxmerge.py $taxonomy -o "merged_taxonomy.tsv"
 
     qiime tools import \

@@ -19,7 +19,8 @@ process QIIME2_EXPORT_ABSOLUTE {
 
     script:
     """
-    export XDG_CONFIG_HOME="\${PWD}/HOME"
+    mkdir tmpdir
+    export TMPDIR=\$PWD/tmpdir
 
     #produce raw count table in biom format "table/feature-table.biom"
     qiime tools export --input-path ${table}  \
