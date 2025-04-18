@@ -17,7 +17,9 @@ process QIIME2_ANCOMBC_INITIAL {
     script:
     taxlevel = table.toString() - "table-" - ".qza"
     """
-    export XDG_CONFIG_HOME="\${PWD}/HOME"
+    mkdir tmpdir
+    export TMPDIR=\$PWD/tmpdir
+
     mkdir ancom
 
     # Extract summarised table and output a file with the number of taxa

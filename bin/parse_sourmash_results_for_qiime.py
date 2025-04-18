@@ -18,7 +18,7 @@ def add_prefix_to_lineage(lineage):
             parsed_lineage.append(lvl)
     return ';'.join(parsed_lineage)
 
-def parse_sourmash(sourmash_results, sketch_log, name, filter_fp, host_lineage):
+def parse_sourmash(sourmash_results, sketch_log, name, host_lineage):
     # Get sample name if not specified
     if not name:
         name = sourmash_results.replace('.with-lineages.csv','')
@@ -128,4 +128,4 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--name", dest="name", type=str, help="Sample name")
     parser.add_argument("--host_lineage", dest="host_lineage", type=str, help="Host/pathogen lineage file")
     args = parser.parse_args()
-    parse_sourmash(args.sourmash_results, args.sketch_log, args.name, args.filter_fp, args.host_lineage)
+    parse_sourmash(args.sourmash_results, args.sketch_log, args.name, args.host_lineage)
