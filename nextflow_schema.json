@@ -808,7 +808,7 @@
                     "default": true,
                     "hidden": true
                 },
-                "name": {
+                "report_name": {
                     "type": "string",
                     "description": "Name for report title and report file name.",
                     "hidden": true
