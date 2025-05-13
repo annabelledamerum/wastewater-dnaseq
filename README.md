@@ -1,3 +1,5 @@
+# MGscan<sup>TM</sup> Shotgun Metagnomics Pipeline
+
 ## Introduction
 
 This is a bioinformatics analysis pipeline used for shotgun metagenomic data developed at Zymo Research. **This pipeline was adpated from community-developed [nf-core/taxprofiler](https://github.com/nf-core/taxprofiler) pipeline version 1.0.0.** Many changes were made to the original pipeline. Some are based on our experience or preferences. But more importantly, we want to make the pipeline and its results easier to use/understand by people without bioinformatics experience. People can run the pipeline on the point-and-click bioinformatics platform [Aladdin Bioinformatics](https://www.aladdin101.org). Changes include but are not limited to:
