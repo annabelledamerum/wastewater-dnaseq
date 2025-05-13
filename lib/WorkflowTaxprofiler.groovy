@@ -22,7 +22,8 @@ class WorkflowTaxprofiler {
         def exclude_groups = ['Core Nextflow options', 
                               'Input/output options', 
                               'Institutional config options', 
-                              'Max job request options'] // No need to show these in Aladdin reports
+                              'Max job request options',
+                              'Generic options'] // No need to show these in Aladdin reports
         for (group in summary.keySet()) {
             if (!exclude_groups.contains(group)) {
                 def group_params = summary.get(group)  // This gets the parameters of that particular group
