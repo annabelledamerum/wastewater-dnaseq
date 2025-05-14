@@ -12,6 +12,7 @@ process QIIME_BARPLOT {
     output:
     path('*exported_QIIME_barplot/*')     , emit: barplot_export
     path("level-*.csv")                   , emit: barplot_composition
+    path("level-${taxa_max}.csv")             , emit: krona_tsv
     path('allsamples_compbarplot.qzv')    , emit: qzv
     path "versions.yml"                   , emit: versions
 

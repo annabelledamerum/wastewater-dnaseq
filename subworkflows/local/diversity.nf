@@ -13,6 +13,7 @@ include { QIIME_IMPORT                                  } from '../../modules/nf
 include { QIIME2_FILTERSAMPLES                          } from '../../modules/local/qiime2_filtersamples'
 include { QIIME2_PREPTAX                                } from '../../modules/local/qiime2_preptax'
 include { QIIME_BARPLOT                                 } from '../../modules/nf-core/qiime/barplot/main'
+include { KRONA_REPORT                                  } from '../../subworkflows/local/krona_report'
 include { GROUP_COMPOSITION                             } from '../../modules/local/group_composition'
 include { HEATMAP_INPUT                                 } from '../../modules/local/heatmap_input'
 
@@ -47,6 +48,12 @@ workflow DIVERSITY {
         QIIME_BARPLOT.out.qzv.map{ "${params.outdir}/qiime2/composition_barplot/" + it.getName() }
         )
 
+    if ( params.run_krona ){
+        KRONA_REPORT( QIIME_BARPLOT.out.krona_tsv )
+        ch_versions = ch_versions.mix( KRONA_REPORT.out.versions )
+        ch_output_file_paths = ch_output_file_paths.mix(KRONA_REPORT.out.html.map{ "${params.outdir}/krona/" + it.getName() } )
+    }
+ 
     HEATMAP_INPUT( QIIME_BARPLOT.out.barplot_composition.collect(), groups, params.top_taxa )
     ch_multiqc_files = ch_multiqc_files.mix( HEATMAP_INPUT.out.taxo_heatmap.collect())
 

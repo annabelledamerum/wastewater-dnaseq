@@ -297,6 +297,7 @@ workflow PROFILING {
         ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
         ch_qiime_profiles = ch_qiime_profiles.mix( SOURMASH_QIIMEPREP.out.biom )
         ch_taxonomy = ch_taxonomy.mix( SOURMASH_QIIMEPREP.out.taxonomy )
+        ch_raw_classifications = ch_raw_classifications.mix( SOURMASH_GATHER.out.gather )
 
     }    
 
