@@ -94,7 +94,6 @@ include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_
 include { PROFILING                     } from '../subworkflows/local/profiling'
 include { DIVERSITY                     } from '../subworkflows/local/diversity'
 //include { REFMERGE_DIVERSITY            } from '../subworkflows/local/refmerge_diversity'
-include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 include { AMRPLUSPLUS                   } from '../subworkflows/local/amrplusplus'
 
@@ -329,13 +328,6 @@ workflow TAXPROFILER {
         ch_output_file_paths = ch_output_file_paths.mix(REFMERGE_DIVERSITY.out.output_paths)
     }
     */
-    /*
-        SUBWORKFLOW: VISUALIZATION_KRONA
-    */
-    if ( params.run_krona ) {
-        VISUALIZATION_KRONA ( PROFILING.out.classifications, PROFILING.out.profiles, ch_db )
-        ch_versions = ch_versions.mix( VISUALIZATION_KRONA.out.versions )
-    }
 
     /*
         SUBWORKFLOW: PROFILING STANDARDISATION

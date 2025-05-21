@@ -60,6 +60,7 @@ def summarize_downloads(locations, design):
         'mechanism_rawcounts_AMR_analytic_matrix.csv': ('AMR Mechanism Level Raw Counts Results Across Samples', 'all_samples'),
         'genes_rawcounts_AMR_analytic_matrix.csv':     ('AMR Gene Level Raw Counts Results Across Samples', 'all_samples'),
         'genes_SNPconfirmed_analytic_matrix.csv':      ('AMR SNP Verified Gene Level Count Results Across Samples', 'all_samples'),
+        'krona_report.html':                           ('Krona Composition Report', 'all_samples'),
         'abs-abund-table-'                    : ('Read Counts Table for All Taxa Filtered Samples', 'all_samples')
     }
 
