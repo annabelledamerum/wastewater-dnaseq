@@ -1,11 +1,13 @@
+# MGscan<sup>TM</sup> Shotgun Metagnomics Pipeline
+
 ## Introduction
 
-This is a bioinformatics analysis pipeline used for shotgun metagenomic data developed at Zymo Research. This pipeline was adpated from community-developed [nf-core/taxprofiler](https://github.com/nf-core/taxprofiler) pipeline version 1.0.0. Many changes were made to the original pipeline. Some are based on our experience or preferences. But more importantly, we want to make the pipeline and its results easier to use/understand by people without bioinformatics experience. People can run the pipeline on the point-and-click bioinformatics platform [Aladdin Bioinformatics](https://www.aladdin101.org). Changes include but are not limited to:
-* Changed the behavior of pipeline so that the user may choose one taxonomy profiler instead of running all available taxonomy profilers. We found that some of the profilers have worse performances or outdated databases. We have disabled those profilers temporarily, but kept the code to run them, with a plan to add them if necessary. This is a philosophical change, we believe this approach offers simplicity and avoids confusion for researchers.
+This is a bioinformatics analysis pipeline used for shotgun metagenomic data developed at Zymo Research. **This pipeline was adpated from community-developed [nf-core/taxprofiler](https://github.com/nf-core/taxprofiler) pipeline version 1.0.0.** Many changes were made to the original pipeline. Some are based on our experience or preferences. But more importantly, we want to make the pipeline and its results easier to use/understand by people without bioinformatics experience. People can run the pipeline on the point-and-click bioinformatics platform [Aladdin Bioinformatics](https://www.aladdin101.org). Changes include but are not limited to:
+* Changed the behavior of pipeline so that the user may choose one taxonomy profiler instead of running all available taxonomy profilers. We found that some of the profilers have worse performances or outdated databases. We have disabled those profilers temporarily, but kept the code to run them, with a plan to reactivate them if necessary. This is a philosophical change, we believe this approach offers simplicity and avoids confusion for researchers.
 * Added [sourmash](https://github.com/sourmash-bio/sourmash) as the preferred taxonomy profiler.
 * Added a Zymo version of the sourmash database that includes common host genomes so that host removal step does not need to be run anymore.
 * Upgraded MetaPhlAn3 to MetaPhlAn4.
-* Added antimicrobial resistance analysis with [AMRplusplus](https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master).
+* Added antimicrobial resistance analysis with [AMRplusplus](https://github.com/Microbial-Ecology-Group/AMRplusplus/tree/master) and visualization of its results.
 * Added visualizations of sourmash and MetaPhlAn4 results to the report.
 * Added diversity analysis using [Qiime2](https://qiime2.org/) and corresponding visualizations to the report.
 * Fixed, simplified, and improved the report.
@@ -19,8 +21,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 2. Performs optional read pre-processing (*code for long-read inherited from nf-core/taxprofiler, but not separately tested by us yet*)
    - Adapter clipping and merging (short-read: [fastp](https://github.com/OpenGene/fastp), [AdapterRemoval2](https://github.com/MikkelSchubert/adapterremoval); long-read: [porechop](https://github.com/rrwick/Porechop))
    - Low complexity and quality filtering (short-read: [bbduk](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/), [PRINSEQ++](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus); long-read: [Filtlong](https://github.com/rrwick/Filtlong))
-3. Perform Host-read removal
-   - Host-read removal (short-read: [BowTie2](http://bowtie-bio.sourceforge.net/bowtie2/); long-read: [Minimap2](https://github.com/lh3/minimap2)). This is not performed when `sourmash-zymo` is selected as the database because it already contains host sequences. 
+3. Perform Host-read removal (This is not performed when `sourmash-zymo-xxxx` is selected as the database because it already contains host sequences. )
+   - Host-read removal (short-read: [BowTie2](http://bowtie-bio.sourceforge.net/bowtie2/); long-read: [Minimap2](https://github.com/lh3/minimap2)). 
    - Statistics for host-read removal ([Samtools](http://www.htslib.org/))
 4. Run merging when applicable
 5. Identifies antimicrobial resistance genes in samples from database [MEGARes version 3](https://academic.oup.com/nar/article/51/D1/D744/6830666)
@@ -30,8 +32,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
    - [sourmash](https://github.com/sourmash-bio/sourmash)
    - [MetaPhlAn4](https://huttenhower.sph.harvard.edu/metaphlan/)
 8. Merge all taxonomic profiling results into one table and perform alpha/beta diversity analysis ([Qiime2](https://qiime2.org/)).
-9. Compare user samples with already profiled reference datasets ([Qiime2](https://qiime2.org/))
-10. Present all results in above steps in a report ([`MultiQC`](http://multiqc.info/))
+9. Present all results in above steps in a report ([`MultiQC`](http://multiqc.info/))
 
 ## Quick Start
 

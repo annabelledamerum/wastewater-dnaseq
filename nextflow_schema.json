@@ -807,6 +807,11 @@
                     "description": "Whether to ignore samples that fail QC and taxonomy profiling steps and carry on with good samples. Default True. Set to False to force the pipeline to abort when any samples fails.",
                     "default": true,
                     "hidden": true
+                },
+                "report_name": {
+                    "type": "string",
+                    "description": "Name for report title and report file name.",
+                    "hidden": true
                 }
             }
         },
@@ -861,7 +866,6 @@
                 "amr_index_files": {
                     "type": "string",
                     "description": "Path to files related to AMR analysis.",
-                    "default": "s3://aladdin-genomes/shotgun_reference/amrplusplus_ref/",
                     "hidden": true
                 }
             }
