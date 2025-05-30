@@ -3,6 +3,7 @@
     "$id": "https://raw.githubusercontent.com/Zymo-Research/aladdin-shotgun/main/nextflow_schema.json",
     "title": "Aladdin shotgun pipeline parameters",
     "description": "Taxonomic profiling of shotgun metagenomic data",
+    "compatible_clouds": ["awsbatch", "zymohpc"],
     "metadata_columns": {
         "type": "object",
         "properties": {
@@ -828,18 +829,6 @@
                 }
             }
         },
-        "reference_dataset_comparison_options": {
-            "title": "Reference dataset comparison options",
-            "type": "object",
-            "description": "Compare user samples with reference dataset. This will generate additional visualisations in the report.",
-            "properties": {
-                "aladdin_ref_dataset": {
-                    "type": "string",
-                    "description": "Choose an appropriate reference dataset to compare against. See pipeline repo for details on the reference datasets.",
-                    "enum": ["Aladdin-healthy_gut"]
-                }
-            }
-        },
         "amr_options": {
             "title": "AMR analysis options",
             "type": "object",
@@ -900,9 +889,6 @@
         },
         {
             "$ref": "#/definitions/reference_genome_options"
-        },
-        {
-            "$ref": "#/definitions/reference_dataset_comparison_options"
         },
         {
             "$ref": "#/definitions/amr_options"
