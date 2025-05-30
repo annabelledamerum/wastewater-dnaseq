@@ -12,6 +12,7 @@ include { CENTRIFUGE_KREPORT                            } from '../../modules/nf
 include { KHMER_TRIM_LOW_ABUND                          } from '../../modules/local/khmer_trim_low_abund'
 include { SOURMASH_SKETCH                               } from '../../modules/local/sourmash/sketch/main'
 include { SOURMASH_GATHER                               } from '../../modules/local/sourmash/gather/main'
+include { SOURMASH_EXTRACT                              } from '../../modules/local/sourmash/extract_accessions/main'
 include { METAPHLAN4_METAPHLAN4                         } from '../../modules/nf-core/metaphlan4/metaphlan4/main'
 include { METAPHLAN4_QIIMEPREP                          } from '../../modules/nf-core/metaphlan4/qiimeprep/main'
 include { METAPHLAN4_UNMAPPED                           } from '../../modules/nf-core/metaphlan4/unmapped/main'
@@ -292,7 +293,8 @@ workflow PROFILING {
             .join( SOURMASH_SKETCH.out.sketch )
             .map { [it[0], it[1], it[3]] }
             .set { qiime2_input }
-        SOURMASH_QIIMEPREP ( qiime2_input, host_lineage.collect().ifEmpty([]) )
+        SOURMASH_QIIMEPREP ( qiime2_input, hh,.collect().ifEmpty([]) )
+        SOURMASH_EXTRACT ( SOURMASH_GATHER.out.gather, SOURMASH_GATHER.out.gather )
         ch_versions = ch_versions.mix( SOURMASH_QIIMEPREP.out.versions.first() )
         ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
         ch_qiime_profiles = ch_qiime_profiles.mix( SOURMASH_QIIMEPREP.out.biom )
