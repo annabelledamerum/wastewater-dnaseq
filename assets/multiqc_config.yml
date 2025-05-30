@@ -9,10 +9,6 @@ report_section_order:
     order: -1001
   "workflow-summary":
     order: -1002
-  mpa_readstats:
-    before: bbduk
-  kmer_composition:
-    before: bbduk
   alpha_diversity:
     before: alpha_rarefaction
   beta_diversity:
@@ -33,6 +29,11 @@ custom_content:
     - ANCOM_Results
     - resistome_class_composition
     - top20genes_amr_composition
+
+remove_sections:
+  - fastp-seq-quality
+  - fastp-seq-content-gc
+  - fastp-seq-content-n
 
 custom_data:
   alpha_diversity:
@@ -111,27 +112,9 @@ sp:
 ignore_images: false
 
 module_order:
-  - fastqc:
-      name: "FastQC / Falco (pre-Trimming)"
-      anchor: "fastqc_raw"
-      path_filters:
-        - '*_raw_R1*fastqc*'
-      path_filters_exclude:
-        - "*_processed_R*fastqc*"
-      extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
-  - fastp
   - adapterRemoval
   - porechop:
       extra: "ℹ️: if you get the error message 'Error - was not able to plot data.' this means that porechop did not detect any adapters and therefore no statistics generated."
-  - fastqc:
-      name: "FastQC / Falco (post-Trimming)"
-      anchor: "fastqc_trimmed"
-      path_filters:
-        - '*_processed_R1*fastqc*'
-      path_filters_exclude:
-        - "*_raw_R*fastqc*"
-      extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
-  - bbduk
   - prinseqplusplus
   - filtlong
   - bowtie2:
@@ -165,6 +148,24 @@ module_order:
   - interestgroup_comp
   - plot_heatmap
   - custom_content
+  - bbduk
+  - fastqc:
+    name: "FastQC / Falco (post-Trimming)"
+    anchor: "fastqc_trimmed"
+    path_filters:
+      - '*_processed_R1*fastqc*'
+    path_filters_exclude:
+      - "*_raw_R*fastqc*"
+    extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
+  - fastp
+  - fastqc:
+    name: "FastQC / Falco (pre-Trimming)"
+    anchor: "fastqc_raw"
+    path_filters:
+      - '*_raw_R1*fastqc*'
+    path_filters_exclude:
+      - "*_processed_R*fastqc*"
+    extra: "If used in this run, Falco is a drop-in replacement for FastQC producing the same output, written by Guilherme de Sena Brandine and Andrew D. Smith."
 
 #It is not possible to set placement for custom kraken and centrifuge columns.
 
