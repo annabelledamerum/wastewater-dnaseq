@@ -155,7 +155,7 @@
 		    "type": "boolean",
 		    "default": false,
 		    "description": "Turn post-trim FASTQC off",
-		    "help_text": "Turning this option to true will cause FastQC Post Trimming results to show up in the MultiQC report.",
+		    "help_text": "Turning this option to true will cause Post Trimming QC results to show up in the MultiQC report.",
 		    "hidden": true
 		},
                 "shortread_complexityfilter_tool": {
