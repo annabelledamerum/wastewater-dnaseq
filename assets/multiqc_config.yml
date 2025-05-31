@@ -1,6 +1,6 @@
 intro_text: >
   This report has been generated using <a href="https://github.com/Zymo-Research/aladdin-shotgun" target="_blank">Zymo Research MGscan Shotgun Metagenomics Pipeline</a>.
-  analysis pipeline. For information about how to interpret these results, please see the
+  For information about how to interpret these results, please see the
   <a href="https://zymo-research.github.io/pipeline-resources/report_docs/shotgun_documentation.html" target="_blank">report documentation</a>.
 report_section_order:
   individ_alpha_barchart:
