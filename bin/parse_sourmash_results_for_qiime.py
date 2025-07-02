@@ -72,7 +72,7 @@ def parse_sourmash(sourmash_results, sketch_log, name, host_lineage):
         t = fh.read()
         m = re.search(pattern, t)
         if m:
-            readcount = int(m.group(1)) 
+            readcount = int(m.group(1))
         else:
             raise Exception("Failed to parse sourmash sketch log to get number of reads!")
     
@@ -108,10 +108,14 @@ def parse_sourmash(sourmash_results, sketch_log, name, host_lineage):
         profile = profile.groupby("Feature ID").agg({"Taxon":"first", name:"sum"})
         # Calculate absolute abundance (approximate)
         profile[name] = profile[name].mul(readcount)
+        # Filter if <10 reads
+        profile = profile[profile[name] > 10]
         # Create a table file
         profile[name].to_csv(name+"_absabun_parsed_profile.txt", sep="\t")
         # Create a taxonomy file
         profile["Taxon"].to_csv(name+"_profile_taxonomy.txt", sep="\t")
+        # Output accession list
+        profile["Feature ID"].to_csv(name+"_accession_list.txt", sep="\t")
     else:
         print("There is no identified microbial genomes after filtering out the host genomes for sample {}!".format(name))
 

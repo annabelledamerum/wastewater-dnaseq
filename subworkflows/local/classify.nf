@@ -5,15 +5,15 @@
 include { SOURMASH_SKETCH                               } from '../../modules/local/sourmash/sketch/main'
 include { SOURMASH_GATHER                               } from '../../modules/local/sourmash/gather/main'
 include { SOURMASH_QIIMEPREP                            } from '../../modules/local/sourmash/qiimeprep/main'
-
-
+include { MINIMAP2_INDEX                                } from '../../modules/local/minimap2/index/main.nf'
+include { MINIMAP2_ALIGN                                } from '../../modules/nf-core/minimap2/align/main.nf'
 
 
 workflow CLASSIFY {
     take:
     reads // [ [ meta ], [ reads ] ]
     databases // [ [ meta ], path ]
-    // path to location of fasta sequences for database??
+    genomes // [ [ meta ], path ]
 
     main:
     ch_versions             = Channel.empty()
@@ -31,6 +31,7 @@ workflow CLASSIFY {
                     [meta, reads]
             }//Not sure if this mapping is needed, will test later
             .combine(databases)
+            .combine(genomes)
 
 
     ch_input_for_sourmash =  ch_input_for_profiling
@@ -42,6 +43,7 @@ workflow CLASSIFY {
                                     it ->
                                         reads: [ it[0] + it[2], it[1] ]
                                         db: it[3]
+                                        genomes: it[4]
                                 }
     host_lineage = params.host_lineage ? Channel.fromPath(params.host_lineage) : Channel.empty()
 
@@ -53,9 +55,9 @@ workflow CLASSIFY {
         ch_input_for_sourmash_sketch = ch_input_for_sourmash.reads
     }
 
-    SOURMASH_SKETCH ( ch_input_for_sourmash.reads )
+    SOURMASH_SKETCH ( ch_input_for_sourmash_sketch )
     ch_versions = ch_versions.mix( SOURMASH_SKETCH.out.versions.first() )
-    SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch , ch_input_for_sourmash.db )
+    SOURMASH_GATHER ( SOURMASH_SKETCH.out.sketch, ch_input_for_sourmash.db )
     ch_versions = ch_versions.mix( SOURMASH_GATHER.out.versions.first() )
     SOURMASH_GATHER.out.gather
         .join( SOURMASH_SKETCH.out.sketch )
@@ -66,6 +68,19 @@ workflow CLASSIFY {
     ch_multiqc_files = ch_multiqc_files.mix( SOURMASH_QIIMEPREP.out.mqc.collect().ifEmpty([]) )
     ch_qiime_profiles = ch_qiime_profiles.mix( SOURMASH_QIIMEPREP.out.biom )
     ch_taxonomy = ch_taxonomy.mix( SOURMASH_QIIMEPREP.out.taxonomy )
+
+    //// add in minimap2 primary alignment
+    // create index from: 
+    // accession list == SOURMASH_QIIMEPREP.out.accessions
+    // genomes == ch_input_for_sourmash.genomes
+    MINIMAP2_INDEX ( SOURMASH_QIIMEPREP.out.accessions, ch_input_for_sourmash.genomes )
+    ch_versions = ch_versions.mix( MINIMAP2_INDEX.out.versions.first() )
+    MINIMAP2_ALIGN ( ch_input_for_sourmash_sketch, ch_minimap2_indexes )
+
+    //// add in primary alignment clustering
+
+    //// add in minimap2 secondary alignment
+
 
     // Find samples that failed profiling and output a warning
     ch_qiime_profiles
@@ -87,24 +102,7 @@ workflow CLASSIFY {
             params.ignore_failed_samples ? { log.warn "Ignoring failed samples and continue!" } : System.exit(1)
         }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     emit:
     classifications = ch_raw_classifications
     profiles        = ch_raw_profiles    // channel: [ val(meta), [ reads ] ] - should be text files or biom

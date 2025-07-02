@@ -11,6 +11,7 @@ process SOURMASH_QIIMEPREP {
 
     output:
     tuple val(meta), path ("*absabun_profile.biom"), optional: params.ignore_failed_samples, emit: biom
+    tuple val(meta), path ("*accession_list.txt"), optional: params.ignore_failed_samples, emit: accessions
     path "*profile_taxonomy.txt", optional: params.ignore_failed_samples, emit: taxonomy
     path "*mqc.json", emit: mqc
     path "versions.yml", emit: versions
