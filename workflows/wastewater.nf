@@ -37,6 +37,7 @@ if (params.database) {
         params.db_meta = params.databases[params.database].subMap(['tool','db_param']) + ['db_name': params.database]
         params.profiler = params.databases[params.database].tool
         params.db_path = params.databases[params.database].db_path
+        params.db_genomes = params.databases[params.database].db_genomes
         params.host_lineage = params.databases[params.database].host_lineage ?: false
     }
 } else {
@@ -58,6 +59,14 @@ if (params.shortread_hostremoval_index     ) { ch_shortread_reference_index = Ch
 //Not supporting sequential kraken2-bracken yet
 //if (params.run_bracken && !params.run_kraken2) exit 1, 'ERROR: You are attempting to run Bracken without running kraken2. This is not possible! Please set --run_kraken2 as well.'
 
+if (params.qiime_tax_agglom_min > params.qiime_tax_agglom_max) {
+    log.error "Incompatible parameters: `--qiime_tax_agglom_min` may not be greater than `--qiime_tax_agglom_max`."
+    System.exit(1)
+}
+if (params.qiime_tax_agglom_max < 2) {
+    log.error "Incompatible parameter setting: qiime_tax_agglom_max must be higher than 1."
+    System.exit(1)
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
@@ -85,9 +94,9 @@ include { SHORTREAD_HOSTREMOVAL         } from '../subworkflows/local/shortread_
 include { SHORTREAD_COMPLEXITYFILTERING } from '../subworkflows/local/shortread_complexityfiltering'
 include { PROFILING                     } from '../subworkflows/local/profiling'
 include { DIVERSITY                     } from '../subworkflows/local/diversity'
-include { VISUALIZATION_KRONA           } from '../subworkflows/local/visualization_krona'
 include { STANDARDISATION_PROFILES      } from '../subworkflows/local/standardisation_profiles'
 include { AMRPLUSPLUS                   } from '../subworkflows/local/amrplusplus'
+include { CLASSIFY                      } from '../subworkflows/local/classify'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,6 +152,8 @@ workflow TAXPROFILER {
         ch_versions = ch_versions.mix(UNTAR.out.versions.first())
         ch_db = UNTAR.out.untar
     }
+
+    ch_genomes = Channel.from([[params.db_meta, file(params.db_genomes, checkIfExists: true)]])
 
     /*
         MODULE: Run FastQC
@@ -259,66 +270,30 @@ workflow TAXPROFILER {
     }
 
     /*
+        SUBWORKFLOW: CLASSIFY 
+    */ 
+    CLASSIFY ( ch_reads_runmerged, ch_db, ch_genomes )
+    ch_multiqc_files = ch_multiqc_files.mix( CLASSIFY.out.mqc.collect().ifEmpty([]) )
+    ch_versions = ch_versions.mix( CLASSIFY.out.versions )
+    ch_warnings = ch_warnings.mix( CLASSIFY.out.warning )
+
+    /*
         SUBWORKFLOW: PROFILING
-    */
+    
     PROFILING ( ch_reads_runmerged, ch_db )
     ch_multiqc_files = ch_multiqc_files.mix( PROFILING.out.mqc.collect().ifEmpty([]) )
     ch_versions = ch_versions.mix( PROFILING.out.versions )
     ch_warnings = ch_warnings.mix( PROFILING.out.warning )
+    */
 
     /*
         SUBWORKFLOW: DIVERSITY with Qiime2
     */
-    DIVERSITY ( PROFILING.out.qiime_profiles, PROFILING.out.qiime_taxonomy, INPUT_CHECK.out.groups )
-    ch_multiqc_files = ch_multiqc_files.mix( DIVERSITY.out.mqc.collect().ifEmpty([]) )
-    ch_versions = ch_versions.mix( DIVERSITY.out.versions )
-    ch_output_file_paths = ch_output_file_paths.mix(DIVERSITY.out.output_paths)
-    ch_warnings = ch_warnings.mix( DIVERSITY.out.warning )
-
-    /*
-        SUBWORKFLOW: DIVERSITY with reference database
-    */
-    /*
-    if ( params.aladdin_ref_dataset ){
-        if ( !params.aladdin_ref_db.containsKey(params.aladdin_ref_dataset) ) {
-            exit 1, "The reference dataset '${params.aladdin_ref_dataset}' is not available in the Aladdin reference database."
-        }
-        if ( !params.aladdin_ref_db[params.aladdin_ref_dataset]['data'].containsKey(params.database) ) {
-            exit 1, "The Aladdin reference dataset '${params.aladdin_ref_dataset}' is not compatible with chosen datbase '${params.database}'."
-        } 
-
-        ref_meta = params.aladdin_ref_db[params.aladdin_ref_dataset]['metadata'] ?: false
-        ref_table = params.aladdin_ref_db[params.aladdin_ref_dataset]['data'][params.database].table ?: false
-        ref_tax = params.aladdin_ref_db[params.aladdin_ref_dataset]['data'][params.database].taxonomy ?: false
-        ch_ref_meta = Channel
-        .fromPath("${ref_meta}", checkIfExists: true)
-        .ifEmpty { exit 1, "Aladdin reference metadata not found: ${ref_meta}" }
-        ch_ref_tax = Channel
-        .fromPath("${ref_tax}", checkIfExists: true)
-        .ifEmpty { exit 1, "Aladdin reference taxonomy not found: ${ref_tax}" }
-        ch_ref_table = Channel
-        .fromPath("${ref_table}", checkIfExists: true)
-        .ifEmpty { exit 1, "Aladdin reference counts table not found: ${ref_table}" }
-
-        REFMERGE_DIVERSITY(
-            DIVERSITY.out.tables,
-            DIVERSITY.out.taxonomy,
-            DIVERSITY.out.metadata,
-            ch_ref_table,
-            ch_ref_tax,
-            ch_ref_meta
-        )
-        ch_multiqc_files = ch_multiqc_files.mix(REFMERGE_DIVERSITY.out.mqc.collect().ifEmpty([]))
-        ch_output_file_paths = ch_output_file_paths.mix(REFMERGE_DIVERSITY.out.output_paths)
-    }
-    */
-    /*
-        SUBWORKFLOW: VISUALIZATION_KRONA
-    */
-    if ( params.run_krona ) {
-        VISUALIZATION_KRONA ( PROFILING.out.classifications, PROFILING.out.profiles, ch_db )
-        ch_versions = ch_versions.mix( VISUALIZATION_KRONA.out.versions )
-    }
+    DIVERSITY ( CLASSIFY.out.qiime_profiles, CLASSIFY.out.qiime_taxonomy, INPUT_CHECK.out.groups )
+    ch_multiqc_files = ch_multiqc_files.mix( CLASSIFY.out.mqc.collect().ifEmpty([]) )
+    ch_versions = ch_versions.mix( CLASSIFY.out.versions )
+    ch_output_file_paths = ch_output_file_paths.mix(CLASSIFY.out.output_paths)
+    ch_warnings = ch_warnings.mix( CLASSIFY.out.warning )
 
     /*
         SUBWORKFLOW: PROFILING STANDARDISATION
